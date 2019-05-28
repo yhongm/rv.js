@@ -30,15 +30,12 @@
         rv.watch("child2", () => { alert("child2,change") })
     
         function clickDiv() {
-        //    rv.data.parent
             rv.data.parent = `click Div time:${new Date() / 1000}`
         }
         function clickP1() {
-        //    rv.data.child
             rv.data.child = `click p1 time:${new Date() / 1000}`
         }
         function clickP2() {
-        //    rv.data.child2
             rv.data.child2 = `click p2 time:${new Date() / 1000}`
         }
 

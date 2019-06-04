@@ -544,6 +544,8 @@
                     let value=this.data[RV.getPlaceHolderValue(dom.children[child])]
                     console.log("value:"+value)
                     obj.children[child] = value
+                }else{
+                    obj.children[child] = dom.children[child]
                 }
             } else {
                 obj.children[child] = this.applyTruthfulData(dom.children[child])

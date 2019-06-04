@@ -18,7 +18,7 @@
         this.children = children || []
         this.key = props ? props.key : undefined
         if (!this.key) {
-            throw new Error(`${tagName} ... the key is undefined`)
+            throw new Error(`${tag} ... the key is undefined`)
         }
         let count = 0;
         this.children.forEach(child => {

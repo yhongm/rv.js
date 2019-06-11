@@ -158,7 +158,6 @@
         currentPatche.forEach((currentPatch) => {
             switch (currentPatch.type) {
                 case NODE_REPLACE:
-                    console.log(`replace,node:${JSON.stringify(currentPatch.node)}`)
                     var newNode = Util.isString(currentPatch.node) ? document.createTextNode(currentPatch.node) : currentPatch.node.render()
                     node.parentNode.replaceChild(newNode, node)
                     break
@@ -166,7 +165,6 @@
                     this.reorderChildren(node, currentPatch.moves)
                     break
                 case NODE_PROPS:
-                    console.log(`setProps:1${currentPatch.props}`)
                     this.setProps(node, currentPatch.props)
                     break
                 case NODE_CONTENT:
@@ -236,6 +234,16 @@
             array.push(list[i])
         }
         return array
+    }
+    Util.isForIn = function (direction) {
+        return /^\w* _in_ \w*$/.test(direction)
+    }
+    Util.isForForIn = function (direction) {
+        return /^\w* _in*$/.test(direction)
+    }
+
+    Util.isForOrForFor = function (direction) {
+        return /^\w* _in_ \w|_in*$/.test(direction)
     }
     Util.isIgnoreChildren = function (node) {
         return node.props && node.props.hasOwnProperty("ignore")
@@ -370,12 +378,12 @@
         }
     }
 
-    function observe(obj,observeMap, callback) {
+    function observe(obj, observeMap, callback) {
 
         Object.keys(obj).forEach(key => {
             let internalValue = obj[key]
             var observable = new Observable()
-            observeMap.put(key,observable)
+            observeMap.put(key, observable)
             Object.defineProperty(obj, key, {
                 get() {
                     observable.add(callback)
@@ -446,11 +454,12 @@
         var d = new Diff(oldTree, newTree)
         return d.patches
     }
+    window.diff = diff
 
     function patch(node, patches) {
         return new Patch(node, patches)
     }
-    
+
     /**
      * the map object use to save likily (key,value) data
      */
@@ -460,17 +469,17 @@
     }
     Map.prototype = {
 
-        constructor:this,
-        put : function (key, value) {
+        constructor: this,
+        put: function (key, value) {
             if (!(key in this.map)) {
                 this.length++;
             }
             this.map[key] = value;
         },
-        get :function (key) {
+        get: function (key) {
             return (key in this.map) ? this.map[key] : null;
         },
-        remove : function (key) {
+        remove: function (key) {
             if ((key in this.map)) {
                 delete this.map[key]
                 this.length--;
@@ -498,12 +507,16 @@
         this.ve = this.getVirtualElement(this.applyTruthfulData(dom))
         this.w = this.ve.render()
         root.appendChild(this.w)
-        this.observeMap=new Map()
-        observe(this.data,this.observeMap,()=>{this.updatedom(dom)})
-        this.updatedom(dom) 
+        this.observeMap = new Map()
+        observe(this.data, this.observeMap, () => {
+            this.updatedom(dom)
+        })
+        this.updatedom(dom)
     }
-    RV.prototype.updatedom=function(dom){
+    RV.prototype.updatedom = function (dom) {
         let nve = this.getVirtualElement(this.applyTruthfulData(dom))
+        window.nve = nve
+        window.ve = this.ve
         patch(this.w, diff(this.ve, nve))
         this.ve = nve
 
@@ -511,8 +524,8 @@
     /**
      * the method use to listen the key value change 
      */
-    RV.prototype.watch=function(key,callback){
-       this.observeMap.get(key).add(callback)
+    RV.prototype.watch = function (key, callback) {
+        this.observeMap.get(key).add(callback)
     }
     /**
      * the method use to get virtual dom 
@@ -521,80 +534,198 @@
         var children = []
         for (child in dom.children) {
             var cc = dom.children[child]
-            if (cc instanceof Object) {
+            if (cc instanceof Array) {
+                cc.forEach(c => {
+                    var v = this.getVirtualElement(c)
+                    children.push(v)
+                })
+            } else if (cc instanceof Object) {
                 var v = this.getVirtualElement(cc)
                 children.push(v)
             } else {
                 children.push(cc)
             }
         }
+
         return h(dom.tag, dom.props, children)
     }
     /**
      * the method  use to replace place holder value by real data
      */
     RV.prototype.applyTruthfulData = function (dom) {
-        var obj = {}
-        obj.tag = dom.tag
-        obj.children = []
-        obj.props = {}
-        for (var child in dom.children) {
-            if (Util.isString(dom.children[child])) {
-                if (RV.isPlaceHolder(dom.children[child])) {
-                    let value=this.data[RV.getPlaceHolderValue(dom.children[child])]
-                    console.log("value:"+value)
-                    obj.children[child] = value
-                }else{
-                    obj.children[child] = dom.children[child]
-                }
-            } else {
-                obj.children[child] = this.applyTruthfulData(dom.children[child])
-            }
-        }
 
-        let props = Object.keys(dom.props)
-        for (var prop in props) {
-            var value = props[prop]
-            if (value === "style") {
-                let style = dom.props[value]
-                if (style.indexOf(",") > -1) {
-                    var styles = style.split(",")
-                    obj.props[value] = this.handleArrayStyle(styles)
+        if ("for" in dom.props || "for_for" in dom.props) {
+            let dataArray = []
+            let isForFor = false
+            let dataSingle
+            if (dom.props['for']) { //add for direction
+                if (Util.isForOrForFor(dom.props['for'])) {
+                    if (dom.forData) {
+                        if (Util.isForIn(dom.props['for'])) {
+                            throw new Error("plase use _in direction")
+                        }
+                        dataArray = dom.forData
+                        dataSingle = dom.props['for'].split(" _in")[0]
+                    } else {
+                        if (Util.isForForIn(dom.props['for'])) {
+                            throw new Error("plase use _in_ direction")
+                        }
+                        dataArray = this.data[dom.props['for'].split(" _in_ ")[1]]
+                        dataSingle = dom.props['for'].split(" _in_ ")[0]
+                    }
+                }
+            } else if (dom.props['for_for']) { //add for_for direction
+                if (Util.isForOrForFor(dom.props['for_for'])) {
+                    if (Util.isForForIn(dom.props['for_for'])) {
+                        throw new Error("plase use _in_ direction")
+                    }
+                    isForFor = true
+                    dataArray = this.data[dom.props['for_for'].split(" _in_ ")[1]]
+                    dataSingle = dom.props['for_for'].split(" _in_ ")[0]
                 } else {
-
-                    obj.props[value] = this.handleSingleStyle(style)
                 }
             } else {
-                obj.props[value] = dom.props[value]
+                throw new Error("the for direction use error")
+            }
+            var objs = []
+            dataArray.forEach(data => {
+                    var obj = {}
+                    obj.tag = dom.tag
+                    obj.children = []
+                    obj.props = {}
+                    for (var child in dom.children) {
+                        if (Util.isString(dom.children[child])) {
+                            if (RV.isPlaceHolder(dom.children[child])) {
+                                if (RV.getPlaceHolderValue(dom.children[child]).indexOf(dataSingle) == -1) {
+                                    obj.children[child] = this.data[RV.getPlaceHolderValue(dom.children[child])]
+                                } else {
+                                    obj.children[child] = data[RV.getPlaceHolderValue(dom.children[child]).split(".")[1]]
+                                }
+                            } else {
+                                obj.children[child] = dom.children[child]
+                            }
+                        } else {
+                            if (isForFor) {
+                                dom.children[child].forData = data
+                            }
+                            obj.children[child] = this.applyTruthfulData(dom.children[child])
+                        }
+                    }
+
+                    let props = Object.keys(dom.props)
+                    for (var prop in props) {
+                        var value = props[prop]
+                        if (value === "style") {
+                            let style = dom.props[value]
+                            if (style.indexOf(",") > -1) {
+                                var styles = style.split(",")
+                                obj.props[value] = this.handleArrayStyle(data, styles, dataSingle)
+                            } else {
+
+                                obj.props[value] = this.handleSingleStyle(data, style, dataSingle)
+                            }
+                        } else {
+                            if (RV.isPlaceHolder(dom.props[value])) {
+                                if (RV.getPlaceHolderValue(dom.props[value]).indexOf(dataSingle) == -1) {
+                                    obj.props[value] = this.data[RV.getPlaceHolderValue(dom.props[value])]
+                                } else {
+                                    obj.props[value] = data[RV.getPlaceHolderValue(dom.props[value]).split(".")[1]]
+
+                                }
+                            } else {
+                                obj.props[value] = dom.props[value]
+                            }
+                        }
+
+                    }
+                    objs.push(obj)
+                }
+
+            )
+            return objs
+        } else {
+            var obj = {}
+            obj.tag = dom.tag
+            obj.children = []
+            obj.props = {}
+            for (var child in dom.children) {
+                if (Util.isString(dom.children[child])) {
+                    if (RV.isPlaceHolder(dom.children[child])) {
+                        obj.children[child] = this.data[RV.getPlaceHolderValue(dom.children[child])]
+                    } else {
+                        obj.children[child] = dom.children[child]
+                    }
+                } else {
+                    obj.children[child] = this.applyTruthfulData(dom.children[child])
+
+                }
             }
 
+            let props = Object.keys(dom.props)
+            for (var prop in props) {
+                var value = props[prop]
+                if (value === "style") {
+                    let style = dom.props[value]
+                    if (style.indexOf(",") > -1) {
+                        var styles = style.split(",")
+                        obj.props[value] = this.handleArrayStyle(this.data, styles, undefined)
+                    } else {
+
+                        obj.props[value] = this.handleSingleStyle(this.data, style, undefined)
+                    }
+                } else {
+                    if (RV.isPlaceHolder(dom.props[value])) {
+                        obj.props[value] = this.data[RV.getPlaceHolderValue(dom.props[value])]
+                    } else {
+                        obj.props[value] = dom.props[value]
+                    }
+
+                }
+
+            }
         }
         return obj
     }
     /**
      * the method use to handle single style place holder value
      */
-    RV.prototype.handleSingleStyle = function (style) {
-        var styleKey = style.split(":")[0]
-        var styleValue = style.split(":")[1]
-        var newStyle = ""
-        if (RV.isPlaceHolder(styleValue)) {
-            styleValue = this.data[RV.getPlaceHolderValue(styleValue)]
-            newStyle = styleKey + ":" + styleValue
-        }else{
-            newStyle=styleKey+":"+styleValue
+    RV.prototype.handleSingleStyle = function (data, style, dataSingle) {
+        let newStyle = ''
+        if (dataSingle) {
+            if (RV.isPlaceHolder(style)) {
+                if (RV.getPlaceHolderValue(style).indexOf(dataSingle) != -1) {
+                    var key = RV.getPlaceHolderValue(style).split(".")[1]
+                    newStyle = data[key]
+                } else {
+                    var styleKey = style.split(":")[0]
+                    var styleValue = style.split(":")[1]
+                    styleValue = data[RV.getPlaceHolderValue(styleValue)]
+                    newStyle = styleKey + ":" + styleValue
+                }
+            } else {
+                newStyle = style
+            }
+        } else {
+            if (RV.isPlaceHolder(style)) {
+                var styleKey = style.split(":")[0]
+                var styleValue = style.split(":")[1]
+                styleValue = data[RV.getPlaceHolderValue(styleValue)]
+                newStyle = styleKey + ":" + styleValue
+            } else {
+                newStyle = style
+            }
         }
         return newStyle
     }
     /**
      * the method use to  handle multitude style place holder value
      */
-    RV.prototype.handleArrayStyle = function (styles) {
+    RV.prototype.handleArrayStyle = function (data, styles, dataSingle) {
         var newStyleArray = ""
         for (var i in styles) {
             var style = styles[i]
-            var newStyle = this.handleSingleStyle(style)
-            newStyleArray+=newStyle+";"
+            var newStyle = this.handleSingleStyle(data, style, dataSingle)
+            newStyleArray += newStyle + ";"
         }
         return newStyleArray
 

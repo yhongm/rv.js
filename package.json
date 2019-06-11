@@ -1,0 +1,23 @@
+{
+  "name": "yhongm_rv.js",
+  "version": "1.0.3",
+  "description": "a response virtual dom",
+  "main": "rv.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yhongm/rv.js.git"
+  },
+  "keywords": [
+    "virtual",
+    "dom"
+  ],
+  "author": "yhongm",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yhongm/rv.js/issues"
+  },
+  "homepage": "https://github.com/yhongm/rv.js#readme"
+}

@@ -3,136 +3,256 @@ var NODE_REPLACE = 0 //node replace
 var CHILD_RE_ORDER = 1 //child node re order
 var NODE_PROPS = 2 //prop change 
 var NODE_CONTENT = 3 //content change
-/**
- * virtual dom object constructor
- * @param {*} tag  the html tag name
- * @param {*} props  the prop (key，style..)
- * @param {*} children child data
- */
-function Element(tag, props, children) {
-    if (!(this instanceof Element)) {
-        return new Element(tagName, props, children)
+class Element {
+    constructor(tag, props, children) {
+        if (!(this instanceof Element)) {
+            return new Element(tagName, props, children)
+        }
+        this.tag = tag
+        this.props = props || {}
+        this.children = children || []
+        this.key = props ? props.key : undefined
+        if (!this.key) {
+            throw new Error(`${tag} ... the key is undefined`)
+        }
+        let count = 0;
+        this.children.forEach(child => {
+            if (child instanceof Element) {
+                count += child.count
+            }
+            count++
+        });
+        this.count = count
     }
-    this.tag = tag
-    this.props = props || {}
-    this.children = children || []
-    this.key = props ? props.key : undefined
-    if (!this.key) {
-        throw new Error(`${tag} ... the key is undefined`)
-    }
-    let count = 0;
-    this.children.forEach(child => {
-        if (child instanceof Element) {
-            count += child.count
+    render() {
+        const el = document.createElement(this.tag)
+        const props = this.props
+        for (const propName in props) {
+            Util.setAttr(el, propName, props[propName])
         }
-        count++
-    });
-    this.count = count
-}
-/**
- * the method use to virtual dom  rende to real dom
- */
-Element.prototype.render = function () {
-    const el = document.createElement(this.tag)
-    const props = this.props
-    for (const propName in props) {
-        Util.setAttr(el, propName, props[propName])
-    }
-    this.children.forEach(child => {
-        const childEl = (child instanceof Element) ? child.render() : document.createTextNode(child)
-        el.appendChild(childEl)
-    })
-    return el;
-};
-/**
- * dom tree diff algorithm object constructor
- * @param {*} oldTree the dom tree for before update 
- * @param {*} newTree the dom tree for after update
- */
-function Diff(oldTree, newTree) {
-    this.index = 0
-    this.patches = {}
-    this.dfsWalk(oldTree, newTree, this.index)
-}
-Diff.prototype.dfsWalk = function (oldNode, newNode, index) {
-    var currentPatch = []
-    if (newNode == null) {
-
-    } else if (Util.isString(oldNode) && Util.isString(newNode)) {
-        if (oldNode != newNode) {
-            currentPatch.push({
-                type: NODE_CONTENT,
-                content: newNode
-            })
-        }
-    } else if (oldNode.tagName === newNode.tagName && oldNode.key == newNode.key) {
-        var propsPatches = this.diffProps(oldNode, newNode)
-        if (propsPatches) {
-            currentPatch.push({
-                type: NODE_PROPS,
-                props: propsPatches
-            })
-        }
-        if (!Util.isIgnoreChildren(newNode)) {
-            this.diffChildren(oldNode.children, newNode.children, index, currentPatch)
-        }
-    } else {
-        currentPatch.push({
-            type: NODE_REPLACE,
-            node: newNode
+        this.children.forEach(child => {
+            const childEl = (child instanceof Element) ? child.render() : document.createTextNode(child)
+            el.appendChild(childEl)
         })
+        return el;
     }
-    if (currentPatch.length) {
-        this.patches[index] = currentPatch
-    }
-
 }
-Diff.prototype.diffProps = function (oldNode, newNode) {
+// /**
+//  * virtual dom object constructor
+//  * @param {*} tag  the html tag name
+//  * @param {*} props  the prop (key，style..)
+//  * @param {*} children child data
+//  */
+// function Element(tag, props, children) {
+//     if (!(this instanceof Element)) {
+//         return new Element(tagName, props, children)
+//     }
+//     this.tag = tag
+//     this.props = props || {}
+//     this.children = children || []
+//     this.key = props ? props.key : undefined
+//     if (!this.key) {
+//         throw new Error(`${tag} ... the key is undefined`)
+//     }
+//     let count = 0;
+//     this.children.forEach(child => {
+//         if (child instanceof Element) {
+//             count += child.count
+//         }
+//         count++
+//     });
+//     this.count = count
+// }
 
-    const oldProps = oldNode.props
-    const newProps = newNode.props
+// /**
+//  * the method use to virtual dom  rende to real dom
+//  */
+// Element.prototype.render = function () {
+//     const el = document.createElement(this.tag)
+//     const props = this.props
+//     for (const propName in props) {
+//         Util.setAttr(el, propName, props[propName])
+//     }
+//     this.children.forEach(child => {
+//         const childEl = (child instanceof Element) ? child.render() : document.createTextNode(child)
+//         el.appendChild(childEl)
+//     })
+//     return el;
+// };
+class Diff {
+    constructor(oldTree, newTree) {
+        this.index = 0
+        this.patches = {}
+        this.dfsWalk(oldTree, newTree, this.index)
+    }
+    dfsWalk(oldNode, newNode, index) {
+        let currentPatch = []
+        if (newNode == null) {
 
-    const propsPatches = {}
-    let isSame = true;
-    for (let key in oldProps) {
-        if (newProps[key] !== oldProps[key]) {
-            isSame = false
-            propsPatches[key] = newProps[key]
+        } else if (Util.isString(oldNode) && Util.isString(newNode)) {
+            if (oldNode != newNode) {
+                currentPatch.push({
+                    type: NODE_CONTENT,
+                    content: newNode
+                })
+            }
+        } else if (oldNode.tagName === newNode.tagName && oldNode.key == newNode.key) {
+            let propsPatches = this.diffProps(oldNode, newNode)
+            if (propsPatches) {
+                currentPatch.push({
+                    type: NODE_PROPS,
+                    props: propsPatches
+                })
+            }
+            if (!Util.isIgnoreChildren(newNode)) {
+                this.diffChildren(oldNode.children, newNode.children, index, currentPatch)
+            }
+        } else {
+            currentPatch.push({
+                type: NODE_REPLACE,
+                node: newNode
+            })
+        }
+        if (currentPatch.length) {
+            this.patches[index] = currentPatch
         }
     }
-    for (let key in newProps) {
-        if (!oldProps.hasOwnProperty(key)) {
-            isSame = false
-            propsPatches[key] = newProps[key]
+    diffProps(oldNode, newNode) {
+
+        const oldProps = oldNode.props
+        const newProps = newNode.props
+
+        const propsPatches = {}
+        let isSame = true;
+        for (let key in oldProps) {
+            if (newProps[key] !== oldProps[key]) {
+                isSame = false
+                propsPatches[key] = newProps[key]
+            }
         }
-    }
-    return isSame ? null : propsPatches
-
-}
-Diff.prototype.diffChildren = function (oldChildren, newChildren, index, currentPatch) {
-    var diffList = new DiffList(oldChildren, newChildren)
-    var diffs = diffList.getResult()
-    newChildren = diffs.child
-    if (diffs.moves.length) {
-        var reorderPatch = {
-            type: CHILD_RE_ORDER,
-            moves: diffs.moves
+        for (let key in newProps) {
+            if (!oldProps.hasOwnProperty(key)) {
+                isSame = false
+                propsPatches[key] = newProps[key]
+            }
         }
-        currentPatch.push(reorderPatch)
+        return isSame ? null : propsPatches
+
     }
-    var leftNode = null
-    var currentNodeIndex = index
-    oldChildren.forEach((child, i) => {
-        var newChild = newChildren[i]
-        currentNodeIndex = (leftNode && leftNode.count) ?
-            currentNodeIndex + leftNode.count + 1 :
-            currentNodeIndex + 1
-        this.dfsWalk(child, newChild, currentNodeIndex)
-        leftNode = child
-    })
+    diffChildren(oldChildren, newChildren, index, currentPatch) {
+        var diffList = new DiffList(oldChildren, newChildren)
+        var diffs = diffList.getResult()
+        newChildren = diffs.child
+        if (diffs.moves.length) {
+            var reorderPatch = {
+                type: CHILD_RE_ORDER,
+                moves: diffs.moves
+            }
+            currentPatch.push(reorderPatch)
+        }
+        var leftNode = null
+        var currentNodeIndex = index
+        oldChildren.forEach((child, i) => {
+            var newChild = newChildren[i]
+            currentNodeIndex = (leftNode && leftNode.count) ?
+                currentNodeIndex + leftNode.count + 1 :
+                currentNodeIndex + 1
+            this.dfsWalk(child, newChild, currentNodeIndex)
+            leftNode = child
+        })
 
 
+    }
 }
+// /**
+//  * dom tree diff algorithm object constructor
+//  * @param {*} oldTree the dom tree for before update 
+//  * @param {*} newTree the dom tree for after update
+//  */
+// function Diff(oldTree, newTree) {
+//     this.index = 0
+//     this.patches = {}
+//     this.dfsWalk(oldTree, newTree, this.index)
+// }
+// Diff.prototype.dfsWalk = function (oldNode, newNode, index) {
+//     var currentPatch = []
+//     if (newNode == null) {
+
+//     } else if (Util.isString(oldNode) && Util.isString(newNode)) {
+//         if (oldNode != newNode) {
+//             currentPatch.push({
+//                 type: NODE_CONTENT,
+//                 content: newNode
+//             })
+//         }
+//     } else if (oldNode.tagName === newNode.tagName && oldNode.key == newNode.key) {
+//         var propsPatches = this.diffProps(oldNode, newNode)
+//         if (propsPatches) {
+//             currentPatch.push({
+//                 type: NODE_PROPS,
+//                 props: propsPatches
+//             })
+//         }
+//         if (!Util.isIgnoreChildren(newNode)) {
+//             this.diffChildren(oldNode.children, newNode.children, index, currentPatch)
+//         }
+//     } else {
+//         currentPatch.push({
+//             type: NODE_REPLACE,
+//             node: newNode
+//         })
+//     }
+//     if (currentPatch.length) {
+//         this.patches[index] = currentPatch
+//     }
+
+// }
+// Diff.prototype.diffProps = function (oldNode, newNode) {
+
+//     const oldProps = oldNode.props
+//     const newProps = newNode.props
+
+//     const propsPatches = {}
+//     let isSame = true;
+//     for (let key in oldProps) {
+//         if (newProps[key] !== oldProps[key]) {
+//             isSame = false
+//             propsPatches[key] = newProps[key]
+//         }
+//     }
+//     for (let key in newProps) {
+//         if (!oldProps.hasOwnProperty(key)) {
+//             isSame = false
+//             propsPatches[key] = newProps[key]
+//         }
+//     }
+//     return isSame ? null : propsPatches
+
+// }
+// Diff.prototype.diffChildren = function (oldChildren, newChildren, index, currentPatch) {
+//     var diffList = new DiffList(oldChildren, newChildren)
+//     var diffs = diffList.getResult()
+//     newChildren = diffs.child
+//     if (diffs.moves.length) {
+//         var reorderPatch = {
+//             type: CHILD_RE_ORDER,
+//             moves: diffs.moves
+//         }
+//         currentPatch.push(reorderPatch)
+//     }
+//     var leftNode = null
+//     var currentNodeIndex = index
+//     oldChildren.forEach((child, i) => {
+//         var newChild = newChildren[i]
+//         currentNodeIndex = (leftNode && leftNode.count) ?
+//             currentNodeIndex + leftNode.count + 1 :
+//             currentNodeIndex + 1
+//         this.dfsWalk(child, newChild, currentNodeIndex)
+//         leftNode = child
+//     })
+
+
+// }
 
 
 function Patch(node, patches) {
@@ -220,124 +340,167 @@ Patch.prototype.setProps = function (node, props) {
 
 }
 
-
-function Util() {}
-Util.isString = function (some) {
-    return typeof some === 'string'
-}
-Util.toArray = function (list) {
-    if (!list) {
-        return []
+class Util {
+    static isString(some) {
+        return typeof some === 'string'
     }
-    var array = []
-    for (let i = 0; i < list.length; i++) {
-        array.push(list[i])
+    static toArray(list) {
+        if (!list) {
+            return []
+        }
+        var array = []
+        for (let i = 0; i < list.length; i++) {
+            array.push(list[i])
+        }
+        return array
     }
-    return array
-}
-Util.isForIn = function (direction) {
-    return /^\w* _in_ \w*$/.test(direction)
-}
-Util.isForForIn = function (direction) {
-    return /^\w* _in*$/.test(direction)
-}
+    static isForIn(direction) {
+        return /^\w* _in_ \w*$/.test(direction)
+    }
+    static isForForIn(direction) {
+        return /^\w* _in*$/.test(direction)
+    }
 
-Util.isForOrForFor = function (direction) {
-    return /^\w* _in_ \w|_in*$/.test(direction)
-}
-Util.isIgnoreChildren = function (node) {
-    return node.props && node.props.hasOwnProperty("ignore")
-}
-Util.setAttr = function (node, key, value) {
-    switch (key) {
-        case 'style':
-            node.style.cssText = value
-            break
-        case 'value':
-            let tagName = node.tagName || ''
-            tagName = tagName.toLowerCase()
-            if (tagName === 'input' || tagName === 'textarea') {
-                node.value = value
-            } else {
+    static isForOrForFor(direction) {
+        return /^\w* _in_ \w|_in*$/.test(direction)
+    }
+    static isIgnoreChildren(node) {
+        return node.props && node.props.hasOwnProperty("ignore")
+    }
+    static setAttr(node, key, value) {
+        switch (key) {
+            case 'style':
+                node.style.cssText = value
+                break
+            case 'value':
+                let tagName = node.tagName || ''
+                tagName = tagName.toLowerCase()
+                if (tagName === 'input' || tagName === 'textarea') {
+                    node.value = value
+                } else {
+                    node.setAttribute(key, value)
+                }
+                break
+            default:
                 node.setAttribute(key, value)
-            }
-            break
-        default:
-            node.setAttribute(key, value)
-            break
-    }
+                break
+        }
 
+    }
 }
+// function Util() {}
+// Util.isString = function (some) {
+//     return typeof some === 'string'
+// }
+// Util.toArray = function (list) {
+//     if (!list) {
+//         return []
+//     }
+//     var array = []
+//     for (let i = 0; i < list.length; i++) {
+//         array.push(list[i])
+//     }
+//     return array
+// }
+// Util.isForIn = function (direction) {
+//     return /^\w* _in_ \w*$/.test(direction)
+// }
+// Util.isForForIn = function (direction) {
+//     return /^\w* _in*$/.test(direction)
+// }
 
+// Util.isForOrForFor = function (direction) {
+//     return /^\w* _in_ \w|_in*$/.test(direction)
+// }
+// Util.isIgnoreChildren = function (node) {
+//     return node.props && node.props.hasOwnProperty("ignore")
+// }
+// Util.setAttr = function (node, key, value) {
+//     switch (key) {
+//         case 'style':
+//             node.style.cssText = value
+//             break
+//         case 'value':
+//             let tagName = node.tagName || ''
+//             tagName = tagName.toLowerCase()
+//             if (tagName === 'input' || tagName === 'textarea') {
+//                 node.value = value
+//             } else {
+//                 node.setAttribute(key, value)
+//             }
+//             break
+//         default:
+//             node.setAttribute(key, value)
+//             break
+//     }
 
-/**
- * diff list 
- * @param {*} oldList 
- * @param {*} newList 
- * @param {*} key 
- */
-function DiffList(oldList, newList) {
-    let oldListKeyIndex = makeKeyIndex(oldList).keyIndex
-    let newListKeyIndex = makeKeyIndex(newList).keyIndex
-    this.moveOperator = []
-    this.childList = []
-    for (let i = 0; i < oldList.length; i++) {
-        let oldItem = oldList[i]
-        let oItemKey = getKey(oldItem)
-        if (!newListKeyIndex.hasOwnProperty(oItemKey)) {
-            this.childList.push(null)
-        } else {
-            this.childList.push(newList[newListKeyIndex[oItemKey]])
+// }
+
+class DiffList {
+    constructor(oldList, newList) {
+        let oldListKeyIndex = this.makeKeyIndex(oldList).keyIndex
+        let newListKeyIndex = this.makeKeyIndex(newList).keyIndex
+        this.moveOperator = []
+        this.childList = []
+        for (let i = 0; i < oldList.length; i++) {
+            let oldItem = oldList[i]
+            let oItemKey = this.getKey(oldItem)
+            if (!newListKeyIndex.hasOwnProperty(oItemKey)) {
+                this.childList.push(null)
+            } else {
+                this.childList.push(newList[newListKeyIndex[oItemKey]])
+            }
         }
-    }
-    this.tempList = this.childList.slice(0)
-    let i = 0;
-    while (i < this.tempList.length) {
-        if (this.tempList[i] === null) {
-            this.remove(i)
-            this.removeCopyTempList(i)
-        } else {
-            i++
+        this.tempList = this.childList.slice(0)
+        let i = 0;
+        while (i < this.tempList.length) {
+            if (this.tempList[i] === null) {
+                this.remove(i)
+                this.removeCopyTempList(i)
+            } else {
+                i++
+            }
         }
-    }
-    let index = 0
-    for (let i = 0; i < newList.length; i++) {
-        let nItem = newList[i]
-        let nItemKey = getKey(nItem)
-        let cItem = this.tempList[index]
-        let cItemKey = getKey(cItem)
-        if (cItem) {
-            if (nItemKey != cItemKey) {
-                if (oldListKeyIndex.hasOwnProperty(nItemKey)) {
-                    let cNextItemKey = getKey(this.tempList[index + 1])
-                    if (nItemKey === cNextItemKey) {
-                        this.remove(i)
-                        this.removeCopyTempList(index)
-                        index++
+        let index = 0
+        for (let i = 0; i < newList.length; i++) {
+            let nItem = newList[i]
+            let nItemKey = this.getKey(nItem)
+            let cItem = this.tempList[index]
+            let cItemKey = this.getKey(cItem)
+            if (cItem) {
+                if (nItemKey != cItemKey) {
+                    if (oldListKeyIndex.hasOwnProperty(nItemKey)) {
+                        let cNextItemKey = getKey(this.tempList[index + 1])
+                        if (nItemKey === cNextItemKey) {
+                            this.remove(i)
+                            this.removeCopyTempList(index)
+                            index++
+                        } else {
+                            this.insert(i, nItem)
+                        }
                     } else {
                         this.insert(i, nItem)
                     }
                 } else {
-                    this.insert(i, nItem)
+                    index++
                 }
             } else {
-                index++
+                this.insert(i, nItem)
             }
-        } else {
-            this.insert(i, nItem)
         }
-    }
-    let k = this.tempList.length - index
-    while (index++ < this.tempList.length) {
-        k--
-        this.remove(k + newList.length)
-    }
+        let k = this.tempList.length - index
+        while (index++ < this.tempList.length) {
+            k--
+            this.remove(k + newList.length)
+        }
 
-    function makeKeyIndex(list) {
+        
+    }
+    makeKeyIndex(list) {
         var keyIndex = {}
         for (let i = 0; i < list.length; i++) {
             let item = list[i]
-            let itemKey = getKey(item)
+            let itemKey = this.getKey(item)
             keyIndex[itemKey] = i
         }
         return {
@@ -345,38 +508,145 @@ function DiffList(oldList, newList) {
         }
     }
 
-    function getKey(item) {
+    getKey(item) {
         if (!item) {
             return undefined
         }
         return item["key"]
     }
+    removeCopyTempList(index) {
+        this.tempList.splice(index, 1)
+    }
+    remove(index) {
+        this.moveOperator.push({
+            index: index,
+            type: 0
+        })
+    }
 
-}
-DiffList.prototype.removeCopyTempList = function (index) {
-    this.tempList.splice(index, 1)
-}
-DiffList.prototype.remove = function (index) {
-    this.moveOperator.push({
-        index: index,
-        type: 0
-    })
-}
+    insert(index, item) {
+        this.moveOperator.push({
+            index: index,
+            item: item,
+            type: 1
+        })
+    }
 
-DiffList.prototype.insert = function (index, item) {
-    this.moveOperator.push({
-        index: index,
-        item: item,
-        type: 1
-    })
-}
-
-DiffList.prototype.getResult = function () {
-    return {
-        moves: this.moveOperator,
-        child: this.childList
+    getResult() {
+        return {
+            moves: this.moveOperator,
+            child: this.childList
+        }
     }
 }
+
+// /**
+//  * diff list 
+//  * @param {*} oldList 
+//  * @param {*} newList 
+//  * @param {*} key 
+//  */
+// function DiffList(oldList, newList) {
+//     let oldListKeyIndex = makeKeyIndex(oldList).keyIndex
+//     let newListKeyIndex = makeKeyIndex(newList).keyIndex
+//     this.moveOperator = []
+//     this.childList = []
+//     for (let i = 0; i < oldList.length; i++) {
+//         let oldItem = oldList[i]
+//         let oItemKey = getKey(oldItem)
+//         if (!newListKeyIndex.hasOwnProperty(oItemKey)) {
+//             this.childList.push(null)
+//         } else {
+//             this.childList.push(newList[newListKeyIndex[oItemKey]])
+//         }
+//     }
+//     this.tempList = this.childList.slice(0)
+//     let i = 0;
+//     while (i < this.tempList.length) {
+//         if (this.tempList[i] === null) {
+//             this.remove(i)
+//             this.removeCopyTempList(i)
+//         } else {
+//             i++
+//         }
+//     }
+//     let index = 0
+//     for (let i = 0; i < newList.length; i++) {
+//         let nItem = newList[i]
+//         let nItemKey = getKey(nItem)
+//         let cItem = this.tempList[index]
+//         let cItemKey = getKey(cItem)
+//         if (cItem) {
+//             if (nItemKey != cItemKey) {
+//                 if (oldListKeyIndex.hasOwnProperty(nItemKey)) {
+//                     let cNextItemKey = getKey(this.tempList[index + 1])
+//                     if (nItemKey === cNextItemKey) {
+//                         this.remove(i)
+//                         this.removeCopyTempList(index)
+//                         index++
+//                     } else {
+//                         this.insert(i, nItem)
+//                     }
+//                 } else {
+//                     this.insert(i, nItem)
+//                 }
+//             } else {
+//                 index++
+//             }
+//         } else {
+//             this.insert(i, nItem)
+//         }
+//     }
+//     let k = this.tempList.length - index
+//     while (index++ < this.tempList.length) {
+//         k--
+//         this.remove(k + newList.length)
+//     }
+
+//     function makeKeyIndex(list) {
+//         var keyIndex = {}
+//         for (let i = 0; i < list.length; i++) {
+//             let item = list[i]
+//             let itemKey = getKey(item)
+//             keyIndex[itemKey] = i
+//         }
+//         return {
+//             keyIndex: keyIndex
+//         }
+//     }
+
+//     function getKey(item) {
+//         if (!item) {
+//             return undefined
+//         }
+//         return item["key"]
+//     }
+
+// }
+// DiffList.prototype.removeCopyTempList = function (index) {
+//     this.tempList.splice(index, 1)
+// }
+// DiffList.prototype.remove = function (index) {
+//     this.moveOperator.push({
+//         index: index,
+//         type: 0
+//     })
+// }
+
+// DiffList.prototype.insert = function (index, item) {
+//     this.moveOperator.push({
+//         index: index,
+//         item: item,
+//         type: 1
+//     })
+// }
+
+// DiffList.prototype.getResult = function () {
+//     return {
+//         moves: this.moveOperator,
+//         child: this.childList
+//     }
+// }
 
 function observe(obj, observeMap, callback) {
 
@@ -445,8 +715,8 @@ function clone(obj) {
     return result;
 }
 
-// ROOT={}
-window.h = function (tagName, props, children) {
+
+function h (tagName, props, children) {
     return new Element(tagName, props, children)
 }
 
@@ -532,7 +802,7 @@ RV.prototype.watch = function (key, callback) {
  */
 RV.prototype.getVirtualElement = function (dom) {
     var children = []
-    for (child in dom.children) {
+    for (let child in dom.children) {
         var cc = dom.children[child]
         if (cc instanceof Array) {
             cc.forEach(c => {
@@ -705,13 +975,17 @@ RV.prototype.handleSingleStyle = function (data, style, dataSingle) {
             newStyle = style
         }
     } else {
-        if (RV.isPlaceHolder(style)) {
-            var styleKey = style.split(":")[0]
-            var styleValue = style.split(":")[1]
+        console.log("handle single else")
+        var styleKey = style.split(":")[0]
+        var styleValue = style.split(":")[1]
+        if (RV.isPlaceHolder(styleValue)) {
+
             styleValue = data[RV.getPlaceHolderValue(styleValue)]
             newStyle = styleKey + ":" + styleValue
+            console.log("newStyle:" + newStyle)
         } else {
             newStyle = style
+            console.log("oldStyle:")
         }
     }
     return newStyle
@@ -721,9 +995,10 @@ RV.prototype.handleSingleStyle = function (data, style, dataSingle) {
  */
 RV.prototype.handleArrayStyle = function (data, styles, dataSingle) {
     var newStyleArray = ""
-    for (var i in styles) {
-        var style = styles[i]
+    for (let style of styles) {
+
         var newStyle = this.handleSingleStyle(data, style, dataSingle)
+        console.log(`array.style:${style},newstyle:${newStyle}`)
         newStyleArray += newStyle + ";"
     }
     return newStyleArray
@@ -733,6 +1008,7 @@ RV.prototype.handleArrayStyle = function (data, styles, dataSingle) {
  * the method use to param is place holder
  */
 RV.isPlaceHolder = function (content) {
+    console.log("content:" + content)
     if (content) {
         if (content.startsWith("%#") && content.endsWith("#%")) {
             return true
@@ -749,11 +1025,12 @@ RV.isPlaceHolder = function (content) {
 RV.getPlaceHolderValue = function (content) {
     return content.slice(2, -2)
 }
-// export default RV
+export default RV
 
 // export default {
-//     RV:RV
+//     RV: RV
 // };
+// ROOT.RV=RV
 
 
 // })(window)

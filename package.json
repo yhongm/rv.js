@@ -1,10 +1,12 @@
 {
   "name": "yhongm_rv.js",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "a response virtual dom",
   "main": "rv.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx webpack",
+    "watch": "webpack --watch"
   },
   "repository": {
     "type": "git",
@@ -19,5 +21,20 @@
   "bugs": {
     "url": "https://github.com/yhongm/rv.js/issues"
   },
-  "homepage": "https://github.com/yhongm/rv.js#readme"
+  "homepage": "https://github.com/yhongm/rv.js#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.5",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-es2015": "^6.24.1",
+    "clean-webpack-plugin": "^3.0.0",
+    "html-webpack-plugin": "^3.2.0",
+    "webpack": "^4.34.0",
+    "webpack-cli": "^3.3.4"
+  },
+  "dependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/preset-env": "^7.4.5"
+  }
 }

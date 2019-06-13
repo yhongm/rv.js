@@ -1,49 +1,12 @@
 <html>
 
 <head>
-    <script src="rv.js"></script>
+
 </head>
 
 <body>
     <div id="app"></div>
-
-    <script>
-
-
-        var rv = new RV(
-            {
-                el: "#app",
-                data: { parent: "parent", child: "child", pcolor: "red", c1color: "blue", c2color:"green",child2: "child2" },
-                dom: {
-                    tag: "div",
-                    props: { key: 1, style: "color:%#pcolor#%,width:100px,height:100px", onclick:"clickDiv()" },
-                    children: ["%#parent#%",
-                        { tag: "p", props: { key: 2, style: "color:%#c1color#%,width:50px,height:50px" ,onclick:"clickP1()"}, children: ["%#child#%"] },
-                        { tag: "p", props: { key: 3, style: "color:%#c2color#%,width:50px,height:50px" ,onclick:"clickP2()"}, children: ["%#child2#%"] }
-                    ]
-                }
-            })
-
-        
-        rv.watch("parent", () => { alert("parent,change") })
-        rv.watch("child", () => { alert("child,change") })
-        rv.watch("child2", () => { alert("child2,change") })
-    
-        function clickDiv() {
-            rv.data.parent = `click Div time:${new Date() / 1000}`
-        }
-        function clickP1() {
-            rv.data.child = `click p1 time:${new Date() / 1000}`
-        }
-        function clickP2() {
-            rv.data.child2 = `click p2 time:${new Date() / 1000}`
-        }
-
-
-        
-
-
-    </script>
+    <script src="./dist/bundle.js"></script>
 </body>
 
 </html>

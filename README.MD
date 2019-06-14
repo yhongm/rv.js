@@ -11,7 +11,7 @@
 npm install yhongm_rv.js 安装  
 
 
-1 . demo
+1. demo及使用说明
 ```javascript
    
 
@@ -53,7 +53,7 @@ npm install yhongm_rv.js 安装
 
 
 ```
-2 .for指令:单层for指令嵌套
+2. for指令:单层for指令嵌套
 ```
                             {
                                 tag: 'td',
@@ -65,7 +65,7 @@ npm install yhongm_rv.js 安装
                                 children: ["%#v.value#%"]
                             },
 ```
-3 .for-for指令:双层for指令嵌套
+3. for-for指令:双层for指令嵌套
 ```javascript 
                     children: [{
                         tag: 'tr',
@@ -90,7 +90,10 @@ npm install yhongm_rv.js 安装
                         }, ]
                     }, ]
 ```
-
+4. rv.watch(data,callback)观察data属性对象变化,变化后触发callback
+5. el挂载对象节点选择器
+6. data数据对象,虚拟dom中使用%##%访问data中数据
+7. dom为虚拟dom对象,tag为html标签名称,prop为html属性,children子节点
 
 
 

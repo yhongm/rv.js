@@ -1,0 +1,10 @@
+{
+    "git.ignoreLimitWarning": true,
+    "editor.formatOnSave":true
+}
+
+{
+    "key": "cmd+b",//自己定键位
+    "command": "HookyQR.beautify",
+    "when": "editorFocus"
+  }

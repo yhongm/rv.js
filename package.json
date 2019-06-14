@@ -1,8 +1,8 @@
 {
   "name": "yhongm_rv.js",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "a response virtual dom",
-  "main": "rv.js",
+  "main": "dist/bundle.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx webpack",

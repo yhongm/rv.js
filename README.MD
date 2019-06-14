@@ -8,8 +8,13 @@
 
 
 ## 使用方法:
+npm install yhongm_rv.js 安装  
+
+
+1 . demo
 ```javascript
    
+
    var rv = new RV(  //创建对象
             {
                 el: "#app",
@@ -30,7 +35,8 @@
             })
 
         
-        rv.watch("parent", () => { alert("parent,change") })//rv.watch("key",callback) 观察data数据对象对应key的数值变化,变化触发callback
+        rv.watch("parent", () => { alert("parent,change") })
+        //rv.watch("key",callback) 观察data数据对象对应key的数值变化,变化触发callback
         rv.watch("child", () => { alert("child,change") })
         rv.watch("child2", () => { alert("child2,change") })
     
@@ -47,6 +53,44 @@
 
 
 ```
+2 .for指令:单层for指令嵌套
+```
+                            {
+                                tag: 'td',
+                                props: {
+                                    style: 'color:#000000;background-color:#C0D0E8;height:20px;width:11%;text-align:center;',
+                                    key: "%#v.id#%",
+                                    for: "v _in_ weekTitles"
+                                },
+                                children: ["%#v.value#%"]
+                            },
+```
+3 .for-for指令:双层for指令嵌套
+```javascript 
+                    children: [{
+                        tag: 'tr',
+                        props: {
+                            style: 'cursor:hand',
+                            key: "%#week.id#%",
+                            for_for: 'week _in_ weeks'
+                        },
+
+                        children: [{
+                            tag: 'td',
+                            props: {
+                                key: "%#v.id#%",
+                                onclick: 'clickDay(this)',
+                                style: '%#v.style#%',
+                                lable: '%#v.lable#%',
+                                onMouseover: 'mouseOver(this);',
+                                onMouseOut: 'mouseOut(this);',
+                                for: 'v _in'
+                            },
+                            children: ["%#v.content#%"]
+                        }, ]
+                    }, ]
+```
+
 
 
 

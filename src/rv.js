@@ -1,15 +1,14 @@
-
 const NODE_REPLACE = 0 //node replace 
 const CHILD_RE_ORDER = 1 //child node re order
 const NODE_PROPS = 2 //prop change 
 const NODE_CONTENT = 3 //content change
 class Element {
     /**
-   * virtual dom object constructor
-   * @param {*} tag  the html tag name
-   * @param {*} props  the prop (key，style..)
-   * @param {*} children child data
-    */
+     * virtual dom object constructor
+     * @param {*} tag  the html tag name
+     * @param {*} props  the prop (key，style..)
+     * @param {*} children child data
+     */
     constructor(tag, props, children) {
         if (!(this instanceof Element)) {
             return new Element(tagName, props, children)
@@ -31,8 +30,8 @@ class Element {
         this.count = count
     }
     /**
-    * the method use to virtual dom  rende to real dom
-    */
+     * the method use to virtual dom  rende to real dom
+     */
     render() {
         const el = document.createElement(this.tag)
         const props = this.props
@@ -49,10 +48,10 @@ class Element {
 
 class Diff {
     /**
-    * dom tree diff algorithm object constructor
-    * @param {*} oldTree the dom tree for before update 
-    * @param {*} newTree the dom tree for after update
-    */
+     * dom tree diff algorithm object constructor
+     * @param {*} oldTree the dom tree for before update 
+     * @param {*} newTree the dom tree for after update
+     */
     constructor(oldTree, newTree) {
         this.index = 0
         this.patches = {}
@@ -138,86 +137,89 @@ class Diff {
     }
 }
 
-class Patch{
-    constructor(node, patches){
-        let walker = {index: 0}
+class Patch {
+    constructor(node, patches) {
+        let walker = {
+            index: 0
+        }
         this.dfsWalk(node, walker, patches)
     }
     dfsWalk(node, walker, patches) {
-     let currentPatches = patches[walker.index]
-     let len = node.childNodes ? node.childNodes.length : 0
-     for (let i = 0; i < len; i++) {
-        let child = node.childNodes[i]
-        walker.index++
-        this.dfsWalk(child, walker, patches)
-     }
-     if (currentPatches) {
-        this.applyPatches(node, currentPatches)
-     }
+        let currentPatches = patches[walker.index]
+        let len = node.childNodes ? node.childNodes.length : 0
+        for (let i = 0; i < len; i++) {
+            let child = node.childNodes[i]
+            walker.index++
+            this.dfsWalk(child, walker, patches)
+        }
+        if (currentPatches) {
+            this.applyPatches(node, currentPatches)
+        }
 
     }
     applyPatches(node, currentPatche) {
-    currentPatche.forEach((currentPatch) => {
-        switch (currentPatch.type) {
-            case NODE_REPLACE:
-                let newNode = Util.isString(currentPatch.node) ? document.createTextNode(currentPatch.node) : currentPatch.node.render()
-                node.parentNode.replaceChild(newNode, node)
-                break
-            case CHILD_RE_ORDER:
-                this.reorderChildren(node, currentPatch.moves)
-                break
-            case NODE_PROPS:
-                this.setProps(node, currentPatch.props)
-                break
-            case NODE_CONTENT:
-                if (node.textContent) {
-                    node.textContent = currentPatch.content
-                } else {
-                    node.nodeValue = currentPatch.content
-                }
-                break
-            default:
-                break
+        currentPatche.forEach((currentPatch) => {
+            switch (currentPatch.type) {
+                case NODE_REPLACE:
+                    let newNode = Util.isString(currentPatch.node) ? document.createTextNode(currentPatch.node) : currentPatch.node.render()
+                    node.parentNode.replaceChild(newNode, node)
+                    break
+                case CHILD_RE_ORDER:
+                    this.reorderChildren(node, currentPatch.moves)
+                    break
+                case NODE_PROPS:
+                    this.setProps(node, currentPatch.props)
+                    break
+                case NODE_CONTENT:
+                    if (node.textContent) {
+                        node.textContent = currentPatch.content
+                    } else {
+                        node.nodeValue = currentPatch.content
+                    }
+                    break
+                default:
+                    break
 
-        }
-    })}
-    reorderChildren (node, moves) {
-       let staticNodeList = Util.toArray(node.childNodes)
-       let nodeMaps = {}
-       staticNodeList.forEach((snode) => {
-          if (snode.nodeType === 1) {
-            let key = snode.getAttribute('key')
-            if (key) {
-                nodeMaps[key] = snode
             }
-          }
+        })
+    }
+    reorderChildren(node, moves) {
+        let staticNodeList = Util.toArray(node.childNodes)
+        let nodeMaps = {}
+        staticNodeList.forEach((snode) => {
+            if (snode.nodeType === 1) {
+                let key = snode.getAttribute('key')
+                if (key) {
+                    nodeMaps[key] = snode
+                }
+            }
         })
         moves.forEach((move) => {
-          let index = move.index
-          if (move.type === 0) {
-            if (staticNodeList[index] === node.childNodes[index]) {
-                node.removeChild(node.childNodes[index])
+            let index = move.index
+            if (move.type === 0) {
+                if (staticNodeList[index] === node.childNodes[index]) {
+                    node.removeChild(node.childNodes[index])
+                }
+                staticNodeList.splice(index, 1)
+            } else if (move.type === 1) {
+                let insertNode = nodeMaps[move.item.key] ?
+                    nodeMaps(move.item.key).cloneNode(true) :
+                    Util.isString(move.item) ? document.createTextNode(move.item) : move.item.render()
+                staticNodeList.splice(index, 0, insertNode)
+                node.insertBefore(insertNode, node.childNodes[index] || null)
             }
-            staticNodeList.splice(index, 1)
-          } else if (move.type === 1) {
-            let insertNode = nodeMaps[move.item.key] ?
-                nodeMaps(move.item.key).cloneNode(true) :
-                Util.isString(move.item) ? document.createTextNode(move.item) : move.item.render()
-            staticNodeList.splice(index, 0, insertNode)
-            node.insertBefore(insertNode, node.childNodes[index] || null)
-          }
         })
 
     }
     setProps(node, props) {
-      for (let key in props) {
-        if (props[key] === undefined) {
-            node.removeAttribute(key)
-        } else {
-            const value = props[key]
-            Util.setAttr(node, key, value)
+        for (let key in props) {
+            if (props[key] === undefined) {
+                node.removeAttribute(key)
+            } else {
+                const value = props[key]
+                Util.setAttr(node, key, value)
+            }
         }
-    }
 
     }
 }
@@ -276,12 +278,12 @@ class Util {
 
 
 class DiffList {
-   /**
-   * diff list 
-   * @param {*} oldList 
-   * @param {*} newList 
-   * @param {*} key 
-   */
+    /**
+     * diff list 
+     * @param {*} oldList 
+     * @param {*} newList 
+     * @param {*} key 
+     */
     constructor(oldList, newList) {
         let oldListKeyIndex = this.makeKeyIndex(oldList).keyIndex
         let newListKeyIndex = this.makeKeyIndex(newList).keyIndex
@@ -339,7 +341,7 @@ class DiffList {
             this.remove(k + newList.length)
         }
 
-        
+
     }
     makeKeyIndex(list) {
         let keyIndex = {}
@@ -455,7 +457,7 @@ function clone(obj) {
 }
 
 
-function h (tagName, props, children) {
+function h(tagName, props, children) {
     return new Element(tagName, props, children)
 }
 
@@ -471,8 +473,8 @@ function patch(node, patches) {
 /**
  * the map object use to save likily (key,value) data
  */
-class Map{
-    constructor(){
+class Map {
+    constructor() {
         this.length = 0;
         this.map = new Object();
     }
@@ -501,240 +503,244 @@ class Map{
 }
 
 
-class RV{
-    constructor(option){
-      const {el,data,dom} = option
-      let root = Util.isString(el) ? document.querySelector(el) : el
-      this.data = data
-      this.ve = this.getVirtualElement(this.applyTruthfulData(dom))
-      this.w = this.ve.render()
-      root.appendChild(this.w)
-      this.observeMap = new Map()
-      observe(this.data, this.observeMap, () => {
+class RV {
+    constructor(option) {
+        const {
+            el,
+            data,
+            dom
+        } = option
+        let root = Util.isString(el) ? document.querySelector(el) : el
+        this.data = data
+        this.ve = this.getVirtualElement(this.applyTruthfulData(dom))
+        this.w = this.ve.render()
+        root.appendChild(this.w)
+        this.observeMap = new Map()
+        observe(this.data, this.observeMap, () => {
+            this.updatedom(dom)
+        })
         this.updatedom(dom)
-      })
-      this.updatedom(dom)
 
     }
-    updatedom (dom) {
-      let nve = this.getVirtualElement(this.applyTruthfulData(dom))
-      window.nve = nve
-      window.ve = this.ve
-      patch(this.w, diff(this.ve, nve))
-         this.ve = nve
-      }
-    watch (key, callback) {
+    updatedom(dom) {
+        let nve = this.getVirtualElement(this.applyTruthfulData(dom))
+        window.nve = nve
+        window.ve = this.ve
+        patch(this.w, diff(this.ve, nve))
+        this.ve = nve
+    }
+    watch(key, callback) {
         this.observeMap.get(key).add(callback)
     }
-    getVirtualElement (dom) {
-      let children = []
-      for (let child in dom.children) {
-        let cc = dom.children[child]
-        if (cc instanceof Array) {
-            cc.forEach(c => {
-                let v = this.getVirtualElement(c)
+    getVirtualElement(dom) {
+        let children = []
+        for (let child in dom.children) {
+            let cc = dom.children[child]
+            if (cc instanceof Array) {
+                cc.forEach(c => {
+                    let v = this.getVirtualElement(c)
+                    children.push(v)
+                })
+            } else if (cc instanceof Object) {
+                let v = this.getVirtualElement(cc)
                 children.push(v)
-            })
-        } else if (cc instanceof Object) {
-            let v = this.getVirtualElement(cc)
-            children.push(v)
-        } else {
-            children.push(cc)
+            } else {
+                children.push(cc)
+            }
         }
-      }
 
-      return h(dom.tag, dom.props, children)
+        return h(dom.tag, dom.props, children)
     }
     applyTruthfulData(dom) {
-      if ("for" in dom.props || "for_for" in dom.props) {
-        let dataArray = []
-        let isForFor = false
-        let dataSingle
-        if (dom.props['for']) { //add for direction
-            if (Util.isForOrForFor(dom.props['for'])) {
-                if (dom.forData) {
-                    if (Util.isForIn(dom.props['for'])) {
-                        throw new Error("plase use _in direction")
+        if ("for" in dom.props || "for_for" in dom.props) {
+            let dataArray = []
+            let isForFor = false
+            let dataSingle
+            if (dom.props['for']) { //add for direction
+                if (Util.isForOrForFor(dom.props['for'])) {
+                    if (dom.forData) {
+                        if (Util.isForIn(dom.props['for'])) {
+                            throw new Error("plase use _in direction")
+                        }
+                        dataArray = dom.forData
+                        dataSingle = dom.props['for'].split(" _in")[0]
+                    } else {
+                        if (Util.isForForIn(dom.props['for'])) {
+                            throw new Error("plase use _in_ direction")
+                        }
+                        dataArray = this.data[dom.props['for'].split(" _in_ ")[1]]
+                        dataSingle = dom.props['for'].split(" _in_ ")[0]
                     }
-                    dataArray = dom.forData
-                    dataSingle = dom.props['for'].split(" _in")[0]
-                } else {
-                    if (Util.isForForIn(dom.props['for'])) {
+                }
+            } else if (dom.props['for_for']) { //add for_for direction
+                if (Util.isForOrForFor(dom.props['for_for'])) {
+                    if (Util.isForForIn(dom.props['for_for'])) {
                         throw new Error("plase use _in_ direction")
                     }
-                    dataArray = this.data[dom.props['for'].split(" _in_ ")[1]]
-                    dataSingle = dom.props['for'].split(" _in_ ")[0]
-                }
+                    isForFor = true
+                    dataArray = this.data[dom.props['for_for'].split(" _in_ ")[1]]
+                    dataSingle = dom.props['for_for'].split(" _in_ ")[0]
+                } else {}
+            } else {
+                throw new Error("the for direction use error")
             }
-        } else if (dom.props['for_for']) { //add for_for direction
-            if (Util.isForOrForFor(dom.props['for_for'])) {
-                if (Util.isForForIn(dom.props['for_for'])) {
-                    throw new Error("plase use _in_ direction")
+            let objs = []
+            dataArray.forEach(data => {
+                    let obj = {}
+                    obj.tag = dom.tag
+                    obj.children = []
+                    obj.props = {}
+                    for (let child in dom.children) {
+                        if (Util.isString(dom.children[child])) {
+                            if (RV.isPlaceHolder(dom.children[child])) {
+                                if (RV.getPlaceHolderValue(dom.children[child]).indexOf(dataSingle) == -1) {
+                                    obj.children[child] = this.data[RV.getPlaceHolderValue(dom.children[child])]
+                                } else {
+                                    obj.children[child] = data[RV.getPlaceHolderValue(dom.children[child]).split(".")[1]]
+                                }
+                            } else {
+                                obj.children[child] = dom.children[child]
+                            }
+                        } else {
+                            if (isForFor) {
+                                dom.children[child].forData = data
+                            }
+                            obj.children[child] = this.applyTruthfulData(dom.children[child])
+                        }
+                    }
+
+                    let props = Object.keys(dom.props)
+                    for (let prop in props) {
+                        let value = props[prop]
+                        if (value === "style") {
+                            let style = dom.props[value]
+                            if (style.indexOf(",") > -1) {
+                                let styles = style.split(",")
+                                obj.props[value] = this.handleArrayStyle(data, styles, dataSingle)
+                            } else {
+
+                                obj.props[value] = this.handleSingleStyle(data, style, dataSingle)
+                            }
+                        } else {
+                            if (RV.isPlaceHolder(dom.props[value])) {
+                                if (RV.getPlaceHolderValue(dom.props[value]).indexOf(dataSingle) == -1) {
+                                    obj.props[value] = this.data[RV.getPlaceHolderValue(dom.props[value])]
+                                } else {
+                                    obj.props[value] = data[RV.getPlaceHolderValue(dom.props[value]).split(".")[1]]
+
+                                }
+                            } else {
+                                obj.props[value] = dom.props[value]
+                            }
+                        }
+
+                    }
+                    objs.push(obj)
                 }
-                isForFor = true
-                dataArray = this.data[dom.props['for_for'].split(" _in_ ")[1]]
-                dataSingle = dom.props['for_for'].split(" _in_ ")[0]
-            } else {}
+
+            )
+            return objs
         } else {
-            throw new Error("the for direction use error")
-        }
-        let objs = []
-        dataArray.forEach(data => {
-                let obj = {}
-                obj.tag = dom.tag
-                obj.children = []
-                obj.props = {}
-                for (let child in dom.children) {
-                    if (Util.isString(dom.children[child])) {
-                        if (RV.isPlaceHolder(dom.children[child])) {
-                            if (RV.getPlaceHolderValue(dom.children[child]).indexOf(dataSingle) == -1) {
-                                obj.children[child] = this.data[RV.getPlaceHolderValue(dom.children[child])]
-                            } else {
-                                obj.children[child] = data[RV.getPlaceHolderValue(dom.children[child]).split(".")[1]]
-                            }
-                        } else {
-                            obj.children[child] = dom.children[child]
-                        }
+            let obj = {}
+            obj.tag = dom.tag
+            obj.children = []
+            obj.props = {}
+            for (let child in dom.children) {
+                if (Util.isString(dom.children[child])) {
+                    if (RV.isPlaceHolder(dom.children[child])) {
+                        obj.children[child] = this.data[RV.getPlaceHolderValue(dom.children[child])]
                     } else {
-                        if (isForFor) {
-                            dom.children[child].forData = data
-                        }
-                        obj.children[child] = this.applyTruthfulData(dom.children[child])
+                        obj.children[child] = dom.children[child]
                     }
+                } else {
+                    obj.children[child] = this.applyTruthfulData(dom.children[child])
+
                 }
+            }
 
-                let props = Object.keys(dom.props)
-                for (let prop in props) {
-                    let value = props[prop]
-                    if (value === "style") {
-                        let style = dom.props[value]
-                        if (style.indexOf(",") > -1) {
-                            let styles = style.split(",")
-                            obj.props[value] = this.handleArrayStyle(data, styles, dataSingle)
-                        } else {
-
-                            obj.props[value] = this.handleSingleStyle(data, style, dataSingle)
-                        }
+            let props = Object.keys(dom.props)
+            for (let prop in props) {
+                let value = props[prop]
+                if (value === "style") {
+                    let style = dom.props[value]
+                    if (style.indexOf(",") > -1) {
+                        let styles = style.split(",")
+                        obj.props[value] = this.handleArrayStyle(this.data, styles, undefined)
                     } else {
-                        if (RV.isPlaceHolder(dom.props[value])) {
-                            if (RV.getPlaceHolderValue(dom.props[value]).indexOf(dataSingle) == -1) {
-                                obj.props[value] = this.data[RV.getPlaceHolderValue(dom.props[value])]
-                            } else {
-                                obj.props[value] = data[RV.getPlaceHolderValue(dom.props[value]).split(".")[1]]
 
-                            }
-                        } else {
-                            obj.props[value] = dom.props[value]
-                        }
+                        obj.props[value] = this.handleSingleStyle(this.data, style, undefined)
+                    }
+                } else {
+                    if (RV.isPlaceHolder(dom.props[value])) {
+                        obj.props[value] = this.data[RV.getPlaceHolderValue(dom.props[value])]
+                    } else {
+                        obj.props[value] = dom.props[value]
                     }
 
                 }
-                objs.push(obj)
-            }
-
-        )
-        return objs
-    } else {
-        let obj = {}
-        obj.tag = dom.tag
-        obj.children = []
-        obj.props = {}
-        for (let child in dom.children) {
-            if (Util.isString(dom.children[child])) {
-                if (RV.isPlaceHolder(dom.children[child])) {
-                    obj.children[child] = this.data[RV.getPlaceHolderValue(dom.children[child])]
-                } else {
-                    obj.children[child] = dom.children[child]
-                }
-            } else {
-                obj.children[child] = this.applyTruthfulData(dom.children[child])
 
             }
+
+            return obj
         }
-
-        let props = Object.keys(dom.props)
-        for (let prop in props) {
-            let value = props[prop]
-            if (value === "style") {
-                let style = dom.props[value]
-                if (style.indexOf(",") > -1) {
-                    let styles = style.split(",")
-                    obj.props[value] = this.handleArrayStyle(this.data, styles, undefined)
+    }
+    handleSingleStyle(data, style, dataSingle) {
+        let newStyle = ''
+        if (dataSingle) {
+            if (RV.isPlaceHolder(style)) {
+                if (RV.getPlaceHolderValue(style).indexOf(dataSingle) != -1) {
+                    let key = RV.getPlaceHolderValue(style).split(".")[1]
+                    newStyle = data[key]
                 } else {
-
-                    obj.props[value] = this.handleSingleStyle(this.data, style, undefined)
+                    let styleKey = style.split(":")[0]
+                    let styleValue = style.split(":")[1]
+                    styleValue = data[RV.getPlaceHolderValue(styleValue)]
+                    newStyle = styleKey + ":" + styleValue
                 }
             } else {
-                if (RV.isPlaceHolder(dom.props[value])) {
-                    obj.props[value] = this.data[RV.getPlaceHolderValue(dom.props[value])]
-                } else {
-                    obj.props[value] = dom.props[value]
-                }
-
+                newStyle = style
             }
+        } else {
 
-        }
-    
-        return obj
-     }
-   }
-   handleSingleStyle (data, style, dataSingle) {
-    let newStyle = ''
-    if (dataSingle) {
-        if (RV.isPlaceHolder(style)) {
-            if (RV.getPlaceHolderValue(style).indexOf(dataSingle) != -1) {
-                let key = RV.getPlaceHolderValue(style).split(".")[1]
-                newStyle = data[key]
-            } else {
-                let styleKey = style.split(":")[0]
-                let styleValue = style.split(":")[1]
+            let styleKey = style.split(":")[0]
+            let styleValue = style.split(":")[1]
+            if (RV.isPlaceHolder(styleValue)) {
+
                 styleValue = data[RV.getPlaceHolderValue(styleValue)]
                 newStyle = styleKey + ":" + styleValue
-            }
-        } else {
-            newStyle = style
-        }
-    } else {
-       
-        let styleKey = style.split(":")[0]
-        let styleValue = style.split(":")[1]
-        if (RV.isPlaceHolder(styleValue)) {
 
-            styleValue = data[RV.getPlaceHolderValue(styleValue)]
-            newStyle = styleKey + ":" + styleValue
-          
-        } else {
-            newStyle = style
-           
+            } else {
+                newStyle = style
+
+            }
         }
-    }
         return newStyle
     }
-    handleArrayStyle (data, styles, dataSingle) {
-      let newStyleArray = ""
-      for (let style of styles) {
+    handleArrayStyle(data, styles, dataSingle) {
+        let newStyleArray = ""
+        for (let style of styles) {
 
-        let newStyle = this.handleSingleStyle(data, style, dataSingle)
-        newStyleArray += newStyle + ";"
+            let newStyle = this.handleSingleStyle(data, style, dataSingle)
+            newStyleArray += newStyle + ";"
+        }
+        return newStyleArray
+
     }
-    return newStyleArray
-
-}
-  static isPlaceHolder(content) {
-    if (content) {
-        if (content.startsWith("%#") && content.endsWith("#%")) {
-            return true
+    static isPlaceHolder(content) {
+        if (content) {
+            if (content.startsWith("%#") && content.endsWith("#%")) {
+                return true
+            } else {
+                return false
+            }
         } else {
             return false
         }
-    } else {
-        return false
     }
-  }
 
-  static getPlaceHolderValue (content) {
-    return content.slice(2, -2)
-  }
+    static getPlaceHolderValue(content) {
+        return content.slice(2, -2)
+    }
 
 }
 export default RV

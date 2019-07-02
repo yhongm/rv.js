@@ -604,6 +604,8 @@ class RV {
                         } else {
                             if (isForFor) {
                                 dom.children[child].forData = data
+                            } else {
+                                obj.children[child].dataSingle = data
                             }
                             obj.children[child] = this.applyTruthfulData(dom.children[child])
                         }

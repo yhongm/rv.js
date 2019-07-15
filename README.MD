@@ -53,47 +53,51 @@ npm install yhongm_rv.js 安装
 
 
 ```
-2. for指令:单层for指令嵌套
+2. for指令:
 ```
                             {
-                                tag: 'td',
-                                props: {
-                                    style: 'color:#000000;background-color:#C0D0E8;height:20px;width:11%;text-align:center;',
-                                    key: "%#v.id#%",
-                                    for: "v _in_ weekTitles"
-                                },
-                                children: ["%#v.value#%"]
-                            },
-```
-3. for-for指令:双层for指令嵌套
-```javascript 
-                    children: [{
-                        tag: 'tr',
+                        tag: 'td',
                         props: {
-                            style: 'cursor:hand',
-                            key: "%#week.id#%",
-                            for_for: 'week _in_ weeks'
+                            key: "%#v.id#%",
+                            onclick: 'clickDay(this)',
+                            style: '%#v.style#%',
+                            lable: '%#v.lable#%',
+                            onMouseover: 'mouseOver(this);',
+                            onMouseOut: 'mouseOut(this);',
+                            childDomData:"v",
+                            for: 'v _in_ week'
                         },
+                        
+                        children: [
+                            {
+                                tag: "p",
+                                props:
+                                {
+                                   key: "{%#v.id#%+'_content'}",
+                                   style:"margin-block-start: 0em;margin-block-end: 0em"
+                                },
+                                children: ["%#v.content#%"]
 
-                        children: [{
-                            tag: 'td',
-                            props: {
-                                key: "%#v.id#%",
-                                onclick: 'clickDay(this)',
-                                style: '%#v.style#%',
-                                lable: '%#v.lable#%',
-                                onMouseover: 'mouseOver(this);',
-                                onMouseOut: 'mouseOut(this);',
-                                for: 'v _in'
                             },
-                            children: ["%#v.content#%"]
-                        }, ]
-                    }, ]
+                            {
+                                tag: "p",
+                                props:
+                                {
+                                   key: "{%#v.id#%+'_lunarInfo'}",
+                                   time:"{new Date()}",
+                                   style:"margin-block-start: 0em;margin-block-end: 0em"
+                                },
+                                children: ["%#v.lunarInfo#%"]
+
+                            }
+                        ]
+                    },
 ```
-4. rv.watch(data,callback)观察data属性对象变化,变化后触发callback
-5. el挂载对象节点选择器
-6. data数据对象,虚拟dom中使用%##%访问data中数据
-7. dom为虚拟dom对象,tag为html标签名称,prop为html属性,children子节点
+
+3. rv.watch(data,callback)观察data属性对象变化,变化后触发callback
+4. el挂载对象节点选择器
+5. data数据对象,虚拟dom中使用%##%访问data中数据
+6. dom为虚拟dom对象,tag为html标签名称,prop为html属性,children子节点
 
 
 

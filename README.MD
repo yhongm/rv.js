@@ -100,5 +100,4 @@ npm install yhongm_rv.js 安装
 6. dom为虚拟dom对象,tag为html标签名称,prop为html属性,children子节点
 
 
-
 # [DEMO](https://github.com/yhongm/rvDemo)

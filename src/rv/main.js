@@ -2,13 +2,19 @@ import Util from "./util"
 import Element from "./element"
 import Patch from "./patch"
 import Diff from "./diff"
+import YhmParse from "./rvParse"
 class RV {
     constructor(option) {
         const {
             el,
             data,
-            dom
+            template
         } = option
+        let parse = new YhmParse()
+        parse.parseHtmlTemplate(template)
+
+        let dom = parse.getHtmlDom()
+
         let root = Util.isString(el) ? document.querySelector(el) : el
         this.data = data
         this.ve = this.getVirtualElement(this.applyTruthfulData(dom))
@@ -56,29 +62,29 @@ class RV {
             let isForFor = false
             let dataSingle
 
-            if (Util.isForIn) {
-                if("childDomDatakey" in dom){
-                    dataArray=dom.data
-                    dataSingle=dom.childDomDatakey
-                }else if("domDataKey" in dom){
-                    if(dom.props['for'].split(" _in_ ")[1]===dom.domDataKey){
-                        dataArray=dom.data
+            if (Util.isForIn(dom.props['for'])) {
+                if ("childDomDatakey" in dom) {
+                    dataArray = dom.data
+                    dataSingle = dom.childDomDatakey
+                } else if ("domDataKey" in dom) {
+                    if (dom.props['for'].split(" _in_ ")[1] === dom.domDataKey) {
+                        dataArray = dom.data
                     }
                     dataSingle = dom.props['for'].split(" _in_ ")[0]
 
                 }
-                else{
+                else {
                     dataArray = this.data[dom.props['for'].split(" _in_ ")[1]]
                     dataSingle = dom.props['for'].split(" _in_ ")[0]
                 }
-               
-            }else{
+
+            } else {
                 throw new Error("the for directive use error")
             }
             let objs = []
             dataArray.forEach(data => {
-             
-                let obj=this.vdom2rdom(dom,data,dataSingle,data)
+
+                let obj = this.vdom2rdom(dom, data, dataSingle, data)
 
                 objs.push(obj)
             }
@@ -94,10 +100,10 @@ class RV {
                 childDomDatakey = dom.childDomDatakey
             } else {
                 data = this.data
-                childDomDatakey=undefined
+                childDomDatakey = undefined
             }
-           
-            let obj=this.vdom2rdom(dom,data,childDomDatakey,this.data)
+
+            let obj = this.vdom2rdom(dom, data, childDomDatakey, this.data)
 
             return obj
         }
@@ -109,7 +115,7 @@ class RV {
      * @param {*} dataSingle 
      * @param {*} tdata 
      */
-    vdom2rdom(dom,data,dataSingle,tdata){
+    vdom2rdom(dom, data, dataSingle, tdata) {
         let obj = {}
         obj.tag = dom.tag
         obj.children = []
@@ -130,7 +136,7 @@ class RV {
             }
             else {
                 if (Util.isPlaceHolder(dom.props[value])) {
-                     if (!Util.isDotOperatorExpression(Util.getPlaceHolderValue(dom.props[value]))) {
+                    if (!Util.isDotOperatorExpression(Util.getPlaceHolderValue(dom.props[value]))) {
                         obj.props[value] = tdata[Util.getPlaceHolderValue(dom.props[value])]
                     } else {
                         obj.props[value] = data[Util.getPlaceHolderValue(dom.props[value]).split(".")[1]]
@@ -168,11 +174,11 @@ class RV {
                         dom.children[child].childDomDatakey = dom.props.childDomData
 
                         dom.children[child].data = data
-                    }else if("domData" in dom.props){
+                    } else if ("domData" in dom.props) {
                         dom.children[child].domDataKey = dom.props.domData
                         dom.children[child].data = data[child]
-                    } 
-                   
+                    }
+
                     dom.children[child].data = data
 
                 }
@@ -226,7 +232,7 @@ class RV {
         return newStyleArray
 
     }
-    
+
 
 }
 

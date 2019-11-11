@@ -45,16 +45,16 @@ window.onload = function () {
             el: "#app",
             //el对象挂载的节点s
             data: myData,
-            template: `<div key=1 style=color:%#pcolor#%,width:100px,height:100px onclick=clickDiv()>
-                         %#parent#%
-                         <p key=2 style=color:%#c1color#%,width:50px,height:50px onclick=clickP1()>
-                             %#child#%
+            template: `<div key="1" style="color:%#pcolor#%,width:100px,height:100px" onclick="clickDiv()">
+                         "%#parent#%"
+                         <p key="2" style="color:%#c1color#%,width:50px,height:50px" onclick="clickP1()">
+                             "%#child#%"
                          </p>
-                         <p key=3 style=color:%#c2color#%,width:50px,height:50px onclick=clickP2()>
-                            %#child2#%
+                         <p key="3" style="color:%#c2color#%,width:50px,height:50px" onclick="clickP2()">
+                            "%#child2#%"
                          </p>
-                         <div key="5" childDomData="v" for="v _in_ week"  domData="week">
-                            <p key="{%#v.id#%+'_content'}">"%#v.content#%"</p>
+                         <div key="4">
+                            <p key="{%#v.id#%+'_content'}" childDomData="v" for="v _in_ week"  domData="week">"%#v.content#%"</p>
                          </div>
                        </div>`
         })

@@ -37,16 +37,22 @@ class Map {
  * this class is parse html template to virtual dom tree
  * @author yhongm
  */
+/**
+ * this class is parse html template to virtual dom tree
+ * @author yhongm
+ */
 class YhmParse {
   constructor() {
     this.mIndex = 0
     this.mMap = new Map()
     this.mPropRe = /([^=\s]+)(\s*=\s*((\"([^"]*)\")|(\'([^']*)\')|[^>\s]+))?/gm
     this.mHandler = {
-      startELement: function (tagName, attr, content, that) {
+      startELement: function (tagName, prop, content, that) {
         that.mIndex += 1
-        var obj = { tag: tagName, props: attr, children: [], index: that.mIndex, content: content, isClose: false }
+        var obj = { tag: tagName, props: prop, children: [], index: that.mIndex, content: content, isClose: false }
+     
         if (content.length > 0) {
+          
           obj.children.push(content.trim())
         }
         that.mMap.put(that.mIndex, obj)
@@ -91,7 +97,7 @@ class YhmParse {
         if (html.indexOf('<', index) > -1 && html.indexOf('<', index) > startTagClose) {
           console.log(`html[index]:${html[index]}`)
           // let contentEndIndex = html.indexOf('</', (index + 1))
-          content = html.substring(index, html.indexOf('<', index))
+          content = html.substring(index, html.indexOf('<', index)).trim()
         }
         _parseStartTag(html.substring(startTagOpen, startTagClose + 1), content, this)
         html = html.substring(index)
@@ -109,26 +115,28 @@ class YhmParse {
       var prop = {}
       if (html.indexOf(' ') > -1) {
         var props = html.substring(html.indexOf(' ') + 1, html.indexOf('>'))
-        console.log("props:" + props)
-
         var propsResult = props.match(that.mPropRe)
         for (let i = 0; i < propsResult.length; i++) {
-          console.log(`propsResult:${propsResult}`)
+         
           var pr = propsResult[i]
-          console.log(`pr:${pr}`)
-          prop[pr.split("=")[0]] = pr.split("=")[1]
+         
+
+          prop[pr.split("=")[0]] = pr.split("=")[1].match(/(?<=").*?(?=")/)[0]
         }
-        console.log("prop:" + JSON.stringify(prop))
+       
       }
 
-      console.log(`startTag:${tagName} ,attr:${prop},content:${content}`)
+     
       if (that.mHandler) {
+        if (/(?<=").*?(?=")/.test(content)) {
+          content = content.match(/(?<=").*?(?=")/)[0]
+        }
         that.mHandler.startELement(tagName, prop, content, that)
       }
 
     }
     function _parseEndTag(html, that) {
-      console.log(`parseEndTag=${html}`)
+     
       if (that.mHandler) {
         that.mHandler.endElement(that)
       }

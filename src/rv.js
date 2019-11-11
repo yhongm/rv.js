@@ -623,8 +623,9 @@ class YhmParse {
             startELement: function (tagName, prop, content, that) {
                 that.mIndex += 1
                 var obj = { tag: tagName, props: prop, children: [], index: that.mIndex, content: content, isClose: false }
-                console.log("obj:" + JSON.stringify(obj))
+              
                 if (content.length > 0) {
+                
                     obj.children.push(content.trim())
                 }
                 that.mMap.put(that.mIndex, obj)
@@ -643,7 +644,6 @@ class YhmParse {
 
     }
     parseHtmlTemplate(html) {
-        console.log("parseHtmlTemplate:" + html)
         let startTime = new Date() / 1000
         var index = 0
         while (html) {
@@ -667,9 +667,8 @@ class YhmParse {
                 index = startTagClose + 1
                 var content = ""
                 if (html.indexOf('<', index) > -1 && html.indexOf('<', index) > startTagClose) {
-                    console.log(`html[index]:${html[index]}`)
                     // let contentEndIndex = html.indexOf('</', (index + 1))
-                    content = html.substring(index, html.indexOf('<', index))
+                    content = html.substring(index, html.indexOf('<', index)).trim()
                 }
                 _parseStartTag(html.substring(startTagOpen, startTagClose + 1), content, this)
                 html = html.substring(index)
@@ -687,26 +686,24 @@ class YhmParse {
             var prop = {}
             if (html.indexOf(' ') > -1) {
                 var props = html.substring(html.indexOf(' ') + 1, html.indexOf('>'))
-                console.log("props:" + props)
 
                 var propsResult = props.match(that.mPropRe)
                 for (let i = 0; i < propsResult.length; i++) {
-                    console.log(`propsResult:${propsResult}`)
                     var pr = propsResult[i]
-                    console.log(`pr:${pr}`)
-                    prop[pr.split("=")[0]] = pr.split("=")[1]
+                    
+                    prop[pr.split("=")[0]] = pr.split("=")[1].match(/(?<=").*?(?=")/)[0]
                 }
-                console.log("prop:" + JSON.stringify(prop))
             }
 
-            console.log(`startTag:${tagName} ,attr:${prop},content:${content}`)
             if (that.mHandler) {
+                if(/(?<=").*?(?=")/.test(content)){
+                    content=content.match(/(?<=").*?(?=")/)[0]
+                }
                 that.mHandler.startELement(tagName, prop, content, that)
             }
 
         }
         function _parseEndTag(html, that) {
-            console.log(`parseEndTag=${html}`)
             if (that.mHandler) {
                 that.mHandler.endElement(that)
             }
@@ -730,11 +727,9 @@ class RV {
             template
         } = option
         let parse = new YhmParse()
-        console.log("template:" + template)
         parse.parseHtmlTemplate(template)
 
         let dom = parse.getHtmlDom()
-        console.log("dom:" + JSON.stringify(dom))
         let root = Util.isString(el) ? document.querySelector(el) : el
         this.data = data
         this.ve = this.getVirtualElement(this.applyTruthfulData(dom))
@@ -794,7 +789,7 @@ class RV {
                 }
                 else {
                     dataArray = this.data[dom.props['for'].split(" _in_ ")[1]]
-                    console.log("dataArray:" + JSON.stringify(dataArray))
+                  
                     dataSingle = dom.props['for'].split(" _in_ ")[0]
                 }
 
@@ -802,7 +797,7 @@ class RV {
                 throw new Error("the for directive use error")
             }
             let objs = []
-            console.log("dataArray:" + dataArray.length)
+          
             dataArray.forEach(data => {
 
                 let obj = this.vdom2rdom(dom, data, dataSingle, data)

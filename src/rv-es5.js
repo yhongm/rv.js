@@ -777,17 +777,17 @@
                 newStyle = style
             }
         } else {
-            console.log("handle single else")
+
             var styleKey = style.split(":")[0]
             var styleValue = style.split(":")[1]
             if (RV.isPlaceHolder(styleValue)) {
 
                 styleValue = data[RV.getPlaceHolderValue(styleValue)]
                 newStyle = styleKey + ":" + styleValue
-                console.log("newStyle:" + newStyle)
+
             } else {
                 newStyle = style
-                console.log("oldStyle:")
+
             }
         }
         return newStyle
@@ -800,7 +800,6 @@
         for (let style of styles) {
 
             var newStyle = this.handleSingleStyle(data, style, dataSingle)
-            console.log(`array.style:${style},newstyle:${newStyle}`)
             newStyleArray += newStyle + ";"
         }
         return newStyleArray
@@ -866,7 +865,7 @@
                 index = startTagClose + 1
                 var content = ""
                 if (html.indexOf('<', index) > -1 && html.indexOf('<', index) > startTagClose) {
-                    console.log(`html[index]:${html[index]}`)
+
                     // let contentEndIndex = html.indexOf('</', (index + 1))
                     content = html.substring(index, html.indexOf('<', index))
                 }
@@ -886,26 +885,29 @@
             var prop = {}
             if (html.indexOf(' ') > -1) {
                 var props = html.substring(html.indexOf(' ') + 1, html.indexOf('>'))
-                console.log("props:" + props)
+
 
                 var propsResult = props.match(that.mPropRe)
                 for (let i = 0; i < propsResult.length; i++) {
-                    console.log(`propsResult:${propsResult}`)
+
                     var pr = propsResult[i]
-                    console.log(`pr:${pr}`)
-                    prop[pr.split("=")[0]] = pr.split("=")[1]
+
+                    prop[pr.split("=")[0]] = pr.split("=")[1].match(/(?<=").*?(?=")/)[0]
                 }
-                console.log("prop:" + JSON.stringify(prop))
+
             }
 
-            console.log(`startTag:${tagName} ,attr:${prop},content:${content}`)
+
             if (that.mHandler) {
+                if(/(?<=").*?(?=")/.test(content)){
+                    content=content.match(/(?<=").*?(?=")/)[0]
+                }
                 that.mHandler.startELement(tagName, prop, content, that)
             }
 
         }
         function _parseEndTag(html, that) {
-            console.log(`parseEndTag=${html}`)
+
             if (that.mHandler) {
                 that.mHandler.endElement(that)
             }

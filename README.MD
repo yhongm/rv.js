@@ -1,4 +1,4 @@
-# rv.js 一个响应式虚拟dom，数据驱动视图更新
+# rv.js 一个响应式组件化虚拟dom，数据驱动视图更新
 
 
 ## 无任何依赖
@@ -17,27 +17,44 @@ npm install yhongm_rv.js 安装
 ```javascript
    
     let myData = {
-      parent: "parent",
-      child: "child",
-      pcolor: "red",
-      c1color: "blue",
-      c2color: "green",
-      child2: "child2"
-    }
+    parent: "parent",
+    child: "child",
+    pcolor: "red",
+    c1color: "blue",
+    c2color: "green",
+    child2: "child2",
+    week: [
+        {
+            id: 11,
+            content: "111"
+        },
+        {
+            id: 22,
+            content: "222"
+        },
+        {
+            id: 33,
+            content: "333"
+        },
+    ]
+   }
     window.data = myData //控制台修改data数据，视图自动刷新内容
        var rv = new RV( //创建对象
         {
             el: "#app",
             //el对象挂载的节点s
             data: myData,
-            template: `<div key=1 style=color:%#pcolor#%,width:100px,height:100px onclick=clickDiv()>
-                         %#parent#%
-                         <p key=2 style=color:%#c1color#%,width:50px,height:50px onclick=clickP1()>
-                             %#child#%
+             template: `<div key="1" style="color:%#pcolor#%,width:100px,height:100px" onclick="clickDiv()">
+                         "%#parent#%"
+                         <p key="2" style="color:%#c1color#%,width:50px,height:50px" onclick="clickP1()">
+                             "%#child#%"
                          </p>
-                         <p key=3 style=color:%#c2color#%,width:50px,height:50px onclick=clickP2()>
-                            %#child2#%
+                         <p key="3" style="color:%#c2color#%,width:50px,height:50px" onclick="clickP2()">
+                            "%#child2#%"
                          </p>
+                         <div key="4">
+                            <p key="{%#v.id#%+'_content'}" childDomData="v" for="v _in_ week"  domData="week">"%#v.content#%"</p>
+                         </div>
                        </div>`
         })
 
@@ -60,46 +77,7 @@ npm install yhongm_rv.js 安装
 
 
 ```
-2. for指令:
-```
-                            {
-                        tag: 'td',
-                        props: {
-                            key: "%#v.id#%",
-                            onclick: 'clickDay(this)',
-                            style: '%#v.style#%',
-                            lable: '%#v.lable#%',
-                            onMouseover: 'mouseOver(this);',
-                            onMouseOut: 'mouseOut(this);',
-                            childDomData:"v",
-                            for: 'v _in_ week'
-                        },
-                        
-                        children: [
-                            {
-                                tag: "p",
-                                props:
-                                {
-                                   key: "{%#v.id#%+'_content'}",
-                                   style:"margin-block-start: 0em;margin-block-end: 0em"
-                                },
-                                children: ["%#v.content#%"]
 
-                            },
-                            {
-                                tag: "p",
-                                props:
-                                {
-                                   key: "{%#v.id#%+'_lunarInfo'}",
-                                   time:"{new Date()}",
-                                   style:"margin-block-start: 0em;margin-block-end: 0em"
-                                },
-                                children: ["%#v.lunarInfo#%"]
-
-                            }
-                        ]
-                    },
-```
 
 3. rv.watch(data,callback)观察data属性对象变化,变化后触发callback
 4. el挂载对象节点选择器

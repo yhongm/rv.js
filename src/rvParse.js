@@ -140,3 +140,4 @@ YhmParse.prototype.parseHtmlTemplate = function (html) {
 
 }
 
+export default YhmParse

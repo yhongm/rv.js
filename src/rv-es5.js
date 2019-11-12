@@ -448,6 +448,9 @@
         Object.keys(obj).forEach(key => {
             let internalValue = obj[key]
             var observable = new Observable()
+            if (internalValue instanceof Object) {
+                observe(internalValue, observeMap, callback)
+            }
             observeMap.put(key, observable)
             Object.defineProperty(obj, key, {
                 get() {
@@ -899,8 +902,8 @@
 
 
             if (that.mHandler) {
-                if(/(?<=").*?(?=")/.test(content)){
-                    content=content.match(/(?<=").*?(?=")/)[0]
+                if (/(?<=").*?(?=")/.test(content)) {
+                    content = content.match(/(?<=").*?(?=")/)[0]
                 }
                 that.mHandler.startELement(tagName, prop, content, that)
             }

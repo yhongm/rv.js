@@ -242,6 +242,9 @@ function observe(obj, observeMap, callback) {
     Object.keys(obj).forEach(key => {
         let internalValue = obj[key]
         let observable = new Observable()
+        if (internalValue instanceof Object) {
+            observe(internalValue, observeMap, callback)
+        }
         observeMap.put(key, observable)
         Object.defineProperty(obj, key, {
             get() {

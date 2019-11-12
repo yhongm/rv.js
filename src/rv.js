@@ -495,6 +495,9 @@ function observe(obj, observeMap, callback) {
     Object.keys(obj).forEach(key => {
         let internalValue = obj[key]
         let observable = new Observable()
+        if (internalValue instanceof Object) {
+            observe(internalValue, observeMap, callback)
+        }
         observeMap.put(key, observable)
         Object.defineProperty(obj, key, {
             get() {
@@ -623,9 +626,9 @@ class YhmParse {
             startELement: function (tagName, prop, content, that) {
                 that.mIndex += 1
                 var obj = { tag: tagName, props: prop, children: [], index: that.mIndex, content: content, isClose: false }
-              
+
                 if (content.length > 0) {
-                
+
                     obj.children.push(content.trim())
                 }
                 that.mMap.put(that.mIndex, obj)
@@ -690,14 +693,14 @@ class YhmParse {
                 var propsResult = props.match(that.mPropRe)
                 for (let i = 0; i < propsResult.length; i++) {
                     var pr = propsResult[i]
-                    
+
                     prop[pr.split("=")[0]] = pr.split("=")[1].match(/(?<=").*?(?=")/)[0]
                 }
             }
 
             if (that.mHandler) {
-                if(/(?<=").*?(?=")/.test(content)){
-                    content=content.match(/(?<=").*?(?=")/)[0]
+                if (/(?<=").*?(?=")/.test(content)) {
+                    content = content.match(/(?<=").*?(?=")/)[0]
                 }
                 that.mHandler.startELement(tagName, prop, content, that)
             }
@@ -789,7 +792,7 @@ class RV {
                 }
                 else {
                     dataArray = this.data[dom.props['for'].split(" _in_ ")[1]]
-                  
+
                     dataSingle = dom.props['for'].split(" _in_ ")[0]
                 }
 
@@ -797,7 +800,7 @@ class RV {
                 throw new Error("the for directive use error")
             }
             let objs = []
-          
+
             dataArray.forEach(data => {
 
                 let obj = this.vdom2rdom(dom, data, dataSingle, data)

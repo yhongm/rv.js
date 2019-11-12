@@ -568,25 +568,30 @@
 
 
     function RV(option) {
-        const {
-            el,
-            data,
-            template
-        } = option
-        let parse = new YhmParse()
-        parse.parseHtmlTemplate(template)
+        try {
+            const {
+                el,
+                data,
+                template
+            } = option
+            let parse = new YhmParse()
+            parse.parseHtmlTemplate(template.trim())
 
-        let dom = parse.getHtmlDom()
-        var root = Util.isString(el) ? document.querySelector(el) : el
-        this.data = data
-        this.ve = this.getVirtualElement(this.applyTruthfulData(dom))
-        this.w = this.ve.render()
-        root.appendChild(this.w)
-        this.observeMap = new Map()
-        observe(this.data, this.observeMap, () => {
+            let dom = parse.getHtmlDom()
+            var root = Util.isString(el) ? document.querySelector(el) : el
+            this.data = data
+            this.ve = this.getVirtualElement(this.applyTruthfulData(dom))
+            this.w = this.ve.render()
+            root.appendChild(this.w)
+            this.observeMap = new Map()
+            observe(this.data, this.observeMap, () => {
+                this.updatedom(dom)
+            })
             this.updatedom(dom)
-        })
-        this.updatedom(dom)
+        } catch (e) {
+            console.error(`rv e:${e}`)
+        }
+
     }
     RV.prototype.updatedom = function (dom) {
         let nve = this.getVirtualElement(this.applyTruthfulData(dom))

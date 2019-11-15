@@ -22,6 +22,8 @@ let myData = {
     c1color: "blue",
     c2color: "green",
     child2: "child2",
+    time: 10000,
+    componentColor: "red",
     week: [
         {
             id: 11,
@@ -38,8 +40,47 @@ let myData = {
     ]
 }
 window.data = myData
+window.RV = RV
 window.onload = function () {
-    this.console.log("onload")
+
+    var con = RV.component({
+        name: "MyComponent",
+        template: `
+            <div class="aaa" key="aaa"><p key="bbb" style="color:%#pcolor#%">"%#pcontent#%"</p><div>
+        `,
+        props: {
+            time: "1000",
+            pcontent: "a custom component"
+        },
+        data: {
+            pcontent: "a custom component",
+            pcolor: "yellow"
+
+        },
+        run() {
+
+            let colors = ['red', 'green', 'blue', 'yellow', 'gray', 'white', 'black']
+
+            setInterval(() => {
+                this.data.pcontent = this.props.pcontent
+                this.data.pcolor = colors[getRandomInt(6)]
+
+
+            }, this.props.time)
+            function getRandomInt(max) {
+                return Math.floor(Math.random() * Math.floor(max));
+            }
+
+        },
+        watch: {
+            pcolor() {
+                console.log(`pcolorChange,change:`)
+
+            }
+        }
+
+
+    })
     rv = new RV( //创建对象
         {
             el: "#app",
@@ -56,8 +97,11 @@ window.onload = function () {
                          <div key="4">
                             <p key="{%#v.id#%+'_content'}" childDomData="v" for="v _in_ week"  domData="week">"%#v.content#%"</p>
                          </div>
+                         <MyComponent pcontent="ssss" color="%#componentColor#%" time="2000" key="888"></MyComponent>
                        </div>`
         })
+    rv.use(con)
+    rv.run()
     rv.watch("parent", () => {
         alert("parent,change")
     }) //rv.watch("key",callback) 观察data数据对象对应key的数值变化,变化触发callback
@@ -67,6 +111,7 @@ window.onload = function () {
     rv.watch("child2", () => {
         alert("child2,change")
     })
+    window.rv = rv
 
 
 

@@ -517,16 +517,18 @@ function observe(obj, observeMap, callback) {
 }
 
 
+class Observable {
+    constructor() {
+        this.updateFunctions = new Set()
+    }
+    add(observableUpdate) {
+        this.updateFunctions.add(observableUpdate)
+    }
+    invoke() {
+        this.updateFunctions.forEach(fun => fun())
+    }
+}
 
-function Observable() {
-    this.updateFunctions = new Set()
-}
-Observable.prototype.add = function (observableUpdate) {
-    this.updateFunctions.add(observableUpdate)
-}
-Observable.prototype.invoke = function () {
-    this.updateFunctions.forEach(fun => fun())
-}
 
 
 /**
@@ -605,6 +607,11 @@ class Map {
     hasKey(key) {
         return (key in this.map)
     }
+    forEach(callback) {
+        Object.keys(this.map).forEach(mapKey => {
+            callback(this.map[mapKey])
+        })
+    }
     size() {
         return this.length;
     }
@@ -619,19 +626,32 @@ class Map {
  */
 class YhmParse {
     constructor() {
+        this.componetMap = new Map()
         this.mIndex = 0
         this.mMap = new Map()
         this.mPropRe = /([^=\s]+)(\s*=\s*((\"([^"]*)\")|(\'([^']*)\')|[^>\s]+))?/gm
         this.mHandler = {
             startELement: function (tagName, prop, content, that) {
                 that.mIndex += 1
-                var obj = { tag: tagName, props: prop, children: [], index: that.mIndex, content: content, isClose: false }
+                if (that.componetMap.hasKey(tagName)) {
+                    //已经有当前组件的记录，将当前组件插入dom中
+                    console.log("con,prop:" + JSON.stringify(that.componetMap.get(tagName).getProp()))
+                    console.log("con,dom:" + JSON.stringify(that.componetMap.get(tagName).getDom()))
+                    console.log(`tagName:${tagName} ,prop:${JSON.stringify(prop)}`)
 
-                if (content.length > 0) {
+                    that.componetMap.get(tagName).apply(prop)
+                    that.mMap.put(that.mIndex, that.componetMap.get(tagName).getDom())
 
-                    obj.children.push(content.trim())
+                } else {
+                    var obj = { tag: tagName, props: prop, children: [], index: that.mIndex, content: content, isClose: false }
+
+                    if (content.length > 0) {
+
+                        obj.children.push(content.trim())
+                    }
+                    that.mMap.put(that.mIndex, obj)
                 }
-                that.mMap.put(that.mIndex, obj)
+
             },
             endElement: function (that) {
                 that.mMap.get(that.mIndex).isClose = true
@@ -645,6 +665,14 @@ class YhmParse {
 
         }
 
+    }
+    /**
+     * 用于解析自定义组件，按名字索引组件
+     * @param {*} rvComponent 
+     */
+    useCustomComponent(rvComponent) {
+
+        this.componetMap.put(rvComponent.getName(), rvComponent)
     }
     parseHtmlTemplate(html) {
         let startTime = new Date() / 1000
@@ -721,45 +749,60 @@ class YhmParse {
     }
 
 }
+class RvComponent {
+    constructor(componentParam) {
+        let { dom, props, name, data, run, watch } = componentParam
+        this.dom = dom
+        this.rdom = this.rdom
+        this.props = props
+        this.name = name
+        this.data = data
+        this.componentRun = run
+        this.rvDomUtil = new RVDomUtil(data)
+        this.observeMap = new Map()
+        this.watchObj = watch
+        this.applyTruthFulData()
+    }
+    applyTruthFulData() {
+        console.log(`before dom:${JSON.stringify(this.rdom)}`)
+        this.rdom = this.rvDomUtil.applyTruthfulData(this.dom)
+        console.log(`after dom:${JSON.stringify(this.rdom)}`)
+    }
+    run() {
+        this.componentRun.call(this)
+    }
+    getName() {
+        return this.name
+    }
+    apply(props) {
 
-class RV {
-    constructor(option) {
-        try {
-            const {
-                el,
-                data,
-                template
-            } = option
-            let parse = new YhmParse()
-            parse.parseHtmlTemplate(template.trim())
+        for (let prop of Object.keys(this.props)) {
 
-            let dom = parse.getHtmlDom()
-            let root = Util.isString(el) ? document.querySelector(el) : el
-            this.data = data
-            this.ve = this.getVirtualElement(this.applyTruthfulData(dom))
-            this.w = this.ve.render()
-            root.appendChild(this.w)
-            this.observeMap = new Map()
-            observe(this.data, this.observeMap, () => {
-                this.updatedom(dom)
-            })
-            this.updatedom(dom)
-        } catch (e) {
-            console.error(`rv e:${e}`)
+            if (props[prop]) {
+                this.props[prop] = props[prop]
+            }
+
         }
 
+    }
 
+    getDom() {
+        return this.rdom
     }
-    updatedom(dom) {
-        let nve = this.getVirtualElement(this.applyTruthfulData(dom))
-        window.nve = nve
-        window.ve = this.ve
-        patch(this.w, diff(this.ve, nve))
-        this.ve = nve
+    getProp() {
+        return this.props
     }
-    watch(key, callback) {
-        this.observeMap.get(key).add(callback)
+
+}
+/**
+ * this class include a set of common function for handle virtual DOM
+ * @author yhongm
+ */
+class RVDomUtil {
+    constructor(data) {
+        this.data = data
     }
+
     getVirtualElement(dom) {
         let children = []
         for (let child in dom.children) {
@@ -796,7 +839,7 @@ class RV {
 
                 }
                 else {
-                    dataArray = this.data[dom.props['for'].split(" _in_ ")[1]]
+                    dataArray = data[dom.props['for'].split(" _in_ ")[1]]
 
                     dataSingle = dom.props['for'].split(" _in_ ")[0]
                 }
@@ -827,7 +870,7 @@ class RV {
                 childDomDatakey = undefined
             }
 
-            let obj = this.vdom2rdom(dom, data, childDomDatakey, this.data)
+            let obj = this.vdom2rdom(dom, data, childDomDatakey, data)
 
             return obj
         }
@@ -935,7 +978,6 @@ class RV {
             let styleKey = style.split(":")[0]
             let styleValue = style.split(":")[1]
             if (Util.isPlaceHolder(styleValue)) {
-
                 styleValue = data[Util.getPlaceHolderValue(styleValue)]
                 newStyle = styleKey + ":" + styleValue
 
@@ -956,7 +998,102 @@ class RV {
         return newStyleArray
 
     }
+}
 
+class RV {
+    constructor(option) {
+        const {
+            el,
+            data,
+            template
+        } = option
+        this.el = el
+        this.data = data
+        this.template = template
+        this.observeMap = new Map()
+        this.parse = new YhmParse()
+        this.rvDomUtil = new RVDomUtil(this.data)
+
+
+    }
+    use(rvComponentObj) {
+        this.parse.useCustomComponent(rvComponentObj)
+    }
+    /**
+     * run rv
+     */
+    run() {
+        let root = Util.isString(this.el) ? document.querySelector(this.el) : this.el
+        let dom = this._getDomTree()
+
+        // this.ve = this.getVirtualElement(this.applyTruthfulData(dom))
+        let rvThat = this
+        this.parse.componetMap.forEach(function (componet) {
+
+
+            observe(componet.data, componet.observeMap, () => {
+
+                dom = rvThat._getDomTree()
+                rvThat._updatedom(dom)
+            })
+            Object.keys(componet.watchObj).forEach((watchFun) => {
+
+                if ((componet.observeMap.hasKey(watchFun))) {
+                    componet.observeMap.get(watchFun).add(() => {
+                        componet.watchObj[watchFun]()
+                        componet.applyTruthFulData()
+                    })
+                }
+            })
+            componet.run()
+
+        })
+
+        this.ve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(dom))
+        this.w = this.ve.render()
+        root.appendChild(this.w)
+
+        observe(this.data, this.observeMap, () => {
+            this._updatedom(dom)
+        })
+        this._updatedom(dom)
+    }
+    _getDomTree() {
+        try {
+            this.parse.parseHtmlTemplate(this.template.trim())
+
+        } catch (e) {
+            console.error(`rv parse e:${e}`)
+        }
+        return this.parse.getHtmlDom()
+    }
+    _updatedom(dom) {
+        let nve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(dom))
+        window.nve = nve
+        window.ve = this.ve
+        patch(this.w, diff(this.ve, nve))
+        this.ve = nve
+    }
+    watch(key, callback) {
+        if (this.observeMap.hasKey(key)) {
+            this.observeMap.get(key).add(callback)
+        }
+
+    }
+    /**
+     * this static function use to declaration a RV component
+     * @param {*} option 
+     */
+    static component(option) {
+
+        const { name, template, props, data } = option
+        let parse = new YhmParse()
+        parse.parseHtmlTemplate(template.trim())
+
+        let dom = parse.getHtmlDom()
+
+        return new RvComponent({ dom: dom, props: props, name: name, data: data, run: option.run, watch: option.watch })
+    }
 
 }
 

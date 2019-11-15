@@ -1,16 +1,21 @@
-# rv.js 一个响应式组件化虚拟dom，数据驱动视图更新
+# rv.js 一个响应式、声明式组件化虚拟dom，数据驱动视图更新
 
 
 ## 无任何依赖
 ## 虚拟dom
 ## 数据驱动
+## 组件化
+## HTML语法声明组件
 
 
 
 ## 使用方法:
 npm install yhongm_rv.js 安装  
+一. 基本使用:
 
-"%# #%" 占位符,数据占位符
+0.符号说明
+"%# #%"    数据占位符。html模板中的数据占位符最终会渲染成data中对应的真实数据
+"{   }"    函数运行符。html模板中的函数运行符最终会渲染成函数返回的真实数据
 
 1. demo及使用说明
 
@@ -77,11 +82,102 @@ npm install yhongm_rv.js 安装
 
 
 ```
-
-
 2. rv.watch(data,callback)观察data属性对象变化,变化后触发callback
 3. el挂载对象节点选择器
 4. data数据对象,虚拟dom中使用%##%访问data中数据
+
+
+二. 声明组件以及使用组件:
+0.参数说明
+```
+RV.component用于声明组件的方法,
+组件对象传参name 为组件名字
+组件对象传参template 为组件html声明模板
+组件对象传参props 为组件属性,目的为暴漏给父控件用于设置组件相应参数
+组件对象传参data 为组件data
+组件对象传参run 为组件方法，用于运行组件相关js代码
+组件对象传参watch为组件对象，用于观察组件data数据变化
+```
+
+1.声明组件:
+通过RV.component声明组件
+
+```javascript
+    var con = RV.component({
+        name: "MyComponent",
+        template: `
+            <div class="aaa" key="aaa"><p key="bbb" style="color:%#pcolor#%">"%#pcontent#%"</p><>
+        `,
+        props: {
+            time: "1000",
+            pcontent: "a custom component"
+        },
+        data: {
+            pcontent: "a custom component",
+            pcolor: "yellow"
+
+        },
+        run() {
+
+            let colors = ['red', 'green', 'blue', 'yellow', 'gray', 'white', 'black']
+
+            setInterval(() => {
+                this.data.pcontent = this.props.pcontent
+                this.data.pcolor = colors[getRandomInt(6)]
+
+
+            }, this.props.time)
+            function getRandomInt(max) {
+                return Math.floor(Math.random() * Math.floor(max));
+            }
+
+        },
+        watch: {
+            pcolor() {
+                console.log(`pcolorChange,change:`)
+
+            }
+        }
+
+
+    })
+```
+
+2. 使用组件:
+通过rv.use注册自定义组件到当前RV对象中,在RV template中使用注册过的组件名字声明组件。
+```javascript
+    
+     
+     rv = new RV( //创建对象
+        {
+            el: "#app",
+            //el对象挂载的节点s
+            data: myData,
+            template: `<div key="1" style="color:%#pcolor#%,width:100px,height:100px" onclick="clickDiv()">
+                         "%#parent#%"
+                         <p key="2" style="color:%#c1color#%,width:50px,height:50px" onclick="clickP1()">
+                             "%#child#%"
+                         </p>
+                         <p key="3" style="color:%#c2color#%,width:50px,height:50px" onclick="clickP2()">
+                            "%#child2#%"
+                         </p>
+                         <div key="4">
+                            <p key="{%#v.id#%+'_content'}" childDomData="v" for="v _in_ week"  domData="week">"%#v.content#%"</p>
+                         </div>
+                         <MyComponent pcontent="ssss" time="2000" key="888"></MyComponent>
+                         <!--使用自定义组件 -->>
+                       </div>`
+        })
+    rv.use(con) //调用rv对象的use方法自定义组件
+  
+
+
+
+```
+
+
+
+
 
 
 

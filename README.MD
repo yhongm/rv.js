@@ -179,7 +179,7 @@ RV.component用于声明组件的方法,
                          <!--使用自定义组件 -->>
                        </div>`
         })
-    rv.use(con) //调用rv对象的use方法自定义组件
+    rv.use(con) //调用rv对象的use方法注册自定义组件
   
 
 

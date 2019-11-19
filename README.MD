@@ -37,6 +37,11 @@ npm install yhongm_rv.js
     c1color: "blue",
     c2color: "green",
     child2: "child2",
+    time: 10000,
+    pkey: "dddd",
+    componentColor: "red",//用于自定义组件
+    componentCotent: "componentCotent 888",//用于自定义组件
+    componentValue: "componentValue 888",//用于自定义组件
     week: [
         {
             id: 11,
@@ -51,14 +56,14 @@ npm install yhongm_rv.js
             content: "333"
         },
     ]
-   }
+    }
     window.data = myData //控制台修改data数据，视图自动刷新内容
        var rv = new RV( //创建对象
         {
             el: "#app",
-            //el对象挂载的节点s
-            data: myData,
-             template: `<div key="1" style="color:%#pcolor#%,width:100px,height:100px" onclick="clickDiv()">
+            //el对象挂载的节点
+            data: myData,//数据对象，用于驱动视图更新，数据变化，视图自动更新
+            template: `<div key="1" style="color:%#pcolor#%,width:100px,height:100px" onclick="clickDiv()">
                          "%#parent#%"
                          <p key="2" style="color:%#c1color#%,width:50px,height:50px" onclick="clickP1()">
                              "%#child#%"
@@ -69,6 +74,7 @@ npm install yhongm_rv.js
                          <div key="4">
                             <p key="{%#v.id#%+'_content'}" childDomData="v" for="v _in_ week"  domData="week">"%#v.content#%"</p>
                          </div>
+                         <MyComponent content="%#componentCotent#%"  time="{Math.floor(new Date()/1000)+'_ttt'}" value="%#componentValue#%" key="888"></MyComponent>
                        </div>`
         })
 
@@ -114,30 +120,36 @@ RV.component用于声明组件的方法,
 通过RV.component声明组件
 
 ```javascript
-    var con = RV.component({
-        name: "MyComponent",
+  var con = RV.component({ //定义自定义RV组件
+        name: "MyComponent",//定义RV组件名字
         template: `
-            <div class="aaa" key="aaa"><p key="bbb" style="color:%#pcolor#%">"%#pcontent#%"</p><>
-        `,
-        props: {
+            <div class="aaa" key="aaa"><p key="bbb" style="color:%#pcolor#%" time="%#time#%" componentValue="%#pvalue#%">"%#pcontent#%"</p><div>
+        `,//定义RV组件,HTML语法声明组件模板
+        props: {//定义RV组件属性,用于外部设值组件属性
             time: "1000",
-            pcontent: "a custom component"
+            content: "a custom component",
+            value: "componentValue"
         },
-        data: {
+        data: {//定义RV组件data,data数据变化，自动更新模板内容
             pcontent: "a custom component",
-            pcolor: "yellow"
+            pcolor: "yellow",
+            time: 10000,
+            pvalue: "cvalue"
 
         },
-        run() {
+        run() {//定义自定义RV组件运行代码,用于运行RV组件相关JS代码,RV组件启动时启动此方法
+
 
             let colors = ['red', 'green', 'blue', 'yellow', 'gray', 'white', 'black']
 
             setInterval(() => {
-                this.data.pcontent = this.props.pcontent
+                this.data.pcontent = this.props.content
+                this.data.time = this.props.time
+                this.data.pvalue = this.props.value
                 this.data.pcolor = colors[getRandomInt(6)]
 
 
-            }, this.props.time)
+            }, 1000)
             function getRandomInt(max) {
                 return Math.floor(Math.random() * Math.floor(max));
             }
@@ -175,10 +187,11 @@ RV.component用于声明组件的方法,
                          <div key="4">
                             <p key="{%#v.id#%+'_content'}" childDomData="v" for="v _in_ week"  domData="week">"%#v.content#%"</p>
                          </div>
-                         <MyComponent pcontent="ssss" time="2000" key="888"></MyComponent>
-                         <!--使用自定义组件 -->>
+                         <MyComponent content="%#componentCotent#%"  time="{Math.floor(new Date()/1000)+'_ttt'}" value="%#componentValue#%" key="888"></MyComponent>
                        </div>`
+                       // MyComponent为自定义RV组件名字，定义组件时name值.content,value,time为定义组件时属性,定义组件时props值
         })
+
     rv.use(con) //调用rv对象的use方法注册自定义组件
   
 

@@ -635,10 +635,6 @@ class YhmParse {
                 that.mIndex += 1
                 if (that.componetMap.hasKey(tagName)) {
                     //已经有当前组件的记录，将当前组件插入dom中
-                    console.log("con,prop:" + JSON.stringify(that.componetMap.get(tagName).getProp()))
-                    console.log("con,dom:" + JSON.stringify(that.componetMap.get(tagName).getDom()))
-                    console.log(`tagName:${tagName} ,prop:${JSON.stringify(prop)}`)
-
                     that.componetMap.get(tagName).apply(prop)
                     that.mMap.put(that.mIndex, that.componetMap.get(tagName).getDom())
 
@@ -707,7 +703,7 @@ class YhmParse {
             }
         }
         let endTime = new Date() / 1000
-        console.log(`total parse time:${endTime - startTime}`)
+        // console.log(`total parse time:${endTime - startTime}`)
 
 
 
@@ -762,11 +758,10 @@ class RvComponent {
         this.observeMap = new Map()
         this.watchObj = watch
         this.applyTruthFulData()
+
     }
     applyTruthFulData() {
-        console.log(`before dom:${JSON.stringify(this.rdom)}`)
         this.rdom = this.rvDomUtil.applyTruthfulData(this.dom)
-        console.log(`after dom:${JSON.stringify(this.rdom)}`)
     }
     run() {
         this.componentRun.call(this)
@@ -784,6 +779,19 @@ class RvComponent {
 
         }
 
+
+    }
+    childContent(dom, props) {
+        for (children of dom.children) {
+            if (Util.isString(children)) {
+                if (Util.isPlaceHolder(children)) {
+                    value = props[Util.getPlaceHolderValue(children)]
+
+                }
+            } else {
+                this.childContent(children)
+            }
+        }
     }
 
     getDom() {
@@ -820,7 +828,7 @@ class RVDomUtil {
             }
         }
 
-        return h(dom.tag, dom.props, children)
+        return new Element(dom.tag, dom.props, children)
     }
     applyTruthfulData(dom) {
         if ("for" in dom.props) {
@@ -1029,7 +1037,6 @@ class RV {
         // this.ve = this.getVirtualElement(this.applyTruthfulData(dom))
         let rvThat = this
         this.parse.componetMap.forEach(function (componet) {
-
 
             observe(componet.data, componet.observeMap, () => {
 

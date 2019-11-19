@@ -1,61 +1,33 @@
+import Map from "./map"
 
-/**
-     * the map object use to save likily (key,value) data
-     */
-class Map {
-  constructor() {
-    this.length = 0;
-    this.map = new Object();
-  }
-  put(key, value) {
-    if (!(key in this.map)) {
-      this.length++;
-    }
-    this.map[key] = value;
-  }
-  get(key) {
-    return (key in this.map) ? this.map[key] : null;
-  }
-  remove(key) {
-    if ((key in this.map)) {
-      delete this.map[key]
-      this.length--;
-    }
-  }
-  hasKey(key) {
-    return (key in this.map)
-  }
-  size() {
-    return this.length;
-  }
-  clear() {
-    length = 0;
-    this.map = new Object();
-  }
-}
-/**
- * this class is parse html template to virtual dom tree
- * @author yhongm
- */
 /**
  * this class is parse html template to virtual dom tree
  * @author yhongm
  */
 class YhmParse {
   constructor() {
+    this.componetMap = new Map()
     this.mIndex = 0
     this.mMap = new Map()
     this.mPropRe = /([^=\s]+)(\s*=\s*((\"([^"]*)\")|(\'([^']*)\')|[^>\s]+))?/gm
     this.mHandler = {
       startELement: function (tagName, prop, content, that) {
         that.mIndex += 1
-        var obj = { tag: tagName, props: prop, children: [], index: that.mIndex, content: content, isClose: false }
-     
-        if (content.length > 0) {
-          
-          obj.children.push(content.trim())
+        if (that.componetMap.hasKey(tagName)) {
+          //已经有当前组件的记录，将当前组件插入dom中
+          that.componetMap.get(tagName).apply(prop)
+          that.mMap.put(that.mIndex, that.componetMap.get(tagName).getDom())
+
+        } else {
+          var obj = { tag: tagName, props: prop, children: [], index: that.mIndex, content: content, isClose: false }
+
+          if (content.length > 0) {
+
+            obj.children.push(content.trim())
+          }
+          that.mMap.put(that.mIndex, obj)
         }
-        that.mMap.put(that.mIndex, obj)
+
       },
       endElement: function (that) {
         that.mMap.get(that.mIndex).isClose = true
@@ -70,8 +42,15 @@ class YhmParse {
     }
 
   }
+  /**
+   * 用于解析自定义组件，按名字索引组件
+   * @param {*} rvComponent 
+   */
+  useCustomComponent(rvComponent) {
+
+    this.componetMap.put(rvComponent.getName(), rvComponent)
+  }
   parseHtmlTemplate(html) {
-    console.log("parseHtmlTemplate:" + html)
     let startTime = new Date() / 1000
     var index = 0
     while (html) {
@@ -95,7 +74,6 @@ class YhmParse {
         index = startTagClose + 1
         var content = ""
         if (html.indexOf('<', index) > -1 && html.indexOf('<', index) > startTagClose) {
-          console.log(`html[index]:${html[index]}`)
           // let contentEndIndex = html.indexOf('</', (index + 1))
           content = html.substring(index, html.indexOf('<', index)).trim()
         }
@@ -105,7 +83,7 @@ class YhmParse {
       }
     }
     let endTime = new Date() / 1000
-    console.log(`total parse time:${endTime - startTime}`)
+    // console.log(`total parse time:${endTime - startTime}`)
 
 
 
@@ -115,18 +93,15 @@ class YhmParse {
       var prop = {}
       if (html.indexOf(' ') > -1) {
         var props = html.substring(html.indexOf(' ') + 1, html.indexOf('>'))
+
         var propsResult = props.match(that.mPropRe)
         for (let i = 0; i < propsResult.length; i++) {
-         
           var pr = propsResult[i]
-         
 
           prop[pr.split("=")[0]] = pr.split("=")[1].match(/(?<=").*?(?=")/)[0]
         }
-       
       }
 
-     
       if (that.mHandler) {
         if (/(?<=").*?(?=")/.test(content)) {
           content = content.match(/(?<=").*?(?=")/)[0]
@@ -136,7 +111,6 @@ class YhmParse {
 
     }
     function _parseEndTag(html, that) {
-     
       if (that.mHandler) {
         that.mHandler.endElement(that)
       }

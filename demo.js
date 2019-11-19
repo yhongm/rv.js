@@ -1,20 +1,10 @@
-import RV from './src/rv.js'
-
 // import RV from './src/rv/main'
+import RV from './src/rv'
+
 let rv
 
 
-window.clickDiv = function () {
-    rv.data.parent = `click Div time:${new Date() / 1000}` //data变化，视图自动更新
-}
 
-window.clickP1 = function () {
-    rv.data.child = `click p1 time:${new Date() / 1000}` //data变化,视图自动更新
-}
-
-window.clickP2 = function () {
-    rv.data.child2 = `click p2 time:${new Date() / 1000}` //data变化,视图自动更新
-}
 let myData = {
     parent: "parent",
     child: "child",
@@ -23,7 +13,10 @@ let myData = {
     c2color: "green",
     child2: "child2",
     time: 10000,
-    componentColor: "red",
+    pkey: "dddd",
+    componentColor: "red",//用于自定义组件
+    componentCotent: "componentCotent 888",//用于自定义组件
+    componentValue: "componentValue 888",//用于自定义组件
     week: [
         {
             id: 11,
@@ -39,34 +32,40 @@ let myData = {
         },
     ]
 }
-window.data = myData
+window.data = myData //控制台修改data数据，视图自动刷新内容
 window.RV = RV
 window.onload = function () {
 
-    var con = RV.component({
-        name: "MyComponent",
+    var con = RV.component({ //定义自定义RV组件
+        name: "MyComponent",//定义RV组件名字
         template: `
-            <div class="aaa" key="aaa"><p key="bbb" style="color:%#pcolor#%">"%#pcontent#%"</p><div>
-        `,
-        props: {
+            <div class="aaa" key="aaa"><p key="bbb" style="color:%#pcolor#%" time="%#time#%" componentValue="%#pvalue#%">"%#pcontent#%"</p><div>
+        `,//定义RV组件,HTML语法声明组件模板
+        props: {//定义RV组件属性,用于外部设值组件属性
             time: "1000",
-            pcontent: "a custom component"
+            content: "a custom component",
+            value: "componentValue"
         },
-        data: {
+        data: {//定义RV组件data,data数据变化，自动更新模板内容
             pcontent: "a custom component",
-            pcolor: "yellow"
+            pcolor: "yellow",
+            time: 10000,
+            pvalue: "cvalue"
 
         },
-        run() {
+        run() {//定义自定义RV组件运行代码,用于运行RV组件相关JS代码,RV组件启动时启动此方法
+
 
             let colors = ['red', 'green', 'blue', 'yellow', 'gray', 'white', 'black']
 
             setInterval(() => {
-                this.data.pcontent = this.props.pcontent
+                this.data.pcontent = this.props.content
+                this.data.time = this.props.time
+                this.data.pvalue = this.props.value
                 this.data.pcolor = colors[getRandomInt(6)]
 
 
-            }, this.props.time)
+            }, 1000)
             function getRandomInt(max) {
                 return Math.floor(Math.random() * Math.floor(max));
             }
@@ -85,7 +84,7 @@ window.onload = function () {
         {
             el: "#app",
             //el对象挂载的节点s
-            data: myData,
+            data: myData,//数据对象，用于驱动视图更新，数据变化，视图自动更新
             template: `<div key="1" style="color:%#pcolor#%,width:100px,height:100px" onclick="clickDiv()">
                          "%#parent#%"
                          <p key="2" style="color:%#c1color#%,width:50px,height:50px" onclick="clickP1()">
@@ -97,11 +96,11 @@ window.onload = function () {
                          <div key="4">
                             <p key="{%#v.id#%+'_content'}" childDomData="v" for="v _in_ week"  domData="week">"%#v.content#%"</p>
                          </div>
-                         <MyComponent pcontent="ssss" color="%#componentColor#%" time="2000" key="888"></MyComponent>
+                         <MyComponent content="%#componentCotent#%"  time="{Math.floor(new Date()/1000)+'_ttt'}" value="%#componentValue#%" key="888"></MyComponent>
                        </div>`
         })
-    rv.use(con)
-    rv.run()
+    rv.use(con) //注册自定义RV组件
+    rv.run()//启动
     rv.watch("parent", () => {
         alert("parent,change")
     }) //rv.watch("key",callback) 观察data数据对象对应key的数值变化,变化触发callback
@@ -111,6 +110,17 @@ window.onload = function () {
     rv.watch("child2", () => {
         alert("child2,change")
     })
+    window.clickDiv = function () {
+        rv.data.parent = `click Div time:${new Date() / 1000}` //data变化，视图自动更新
+    }
+
+    window.clickP1 = function () {
+        rv.data.child = `click p1 time:${new Date() / 1000}` //data变化,视图自动更新
+    }
+
+    window.clickP2 = function () {
+        rv.data.child2 = `click p2 time:${new Date() / 1000}` //data变化,视图自动更新
+    }
     window.rv = rv
 
 

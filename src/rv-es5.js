@@ -574,6 +574,8 @@
                 data,
                 template
             } = option
+
+            throw new Error("the version deprecated")
             let parse = new YhmParse()
             parse.parseHtmlTemplate(template.trim())
 
@@ -930,3 +932,6 @@
 
 
 })(window)
+/**
+ * deprecated
+ */

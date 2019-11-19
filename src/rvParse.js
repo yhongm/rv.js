@@ -35,7 +35,10 @@ Map.prototype = {
     this.map = new Object();
   }
 }
-
+/**
+ * this class is parse html template to virtual dom tree
+ * @author yhongm
+ */
 function YhmParse() {
   this.mIndex = 0
   this.mMap = new Map()

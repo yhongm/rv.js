@@ -22,8 +22,9 @@ npm install yhongm_rv.js
 
 0.  符号说明:
 ```
-"%# #%"    数据占位符。html模板中的数据占位符最终会渲染成data中对应的真实数据
-"{   }"    函数运行符。html模板中的函数运行符最终会渲染成函数返回的真实数据
+"%# #%"                    数据占位符。html模板中的数据占位符最终会渲染成data中对应的真实数据
+"{   }"                    函数运行符。html模板中的函数运行符最终会渲染成函数返回的真实数据
+"for="value _in_ values"   for _in_ 循环指令。html模板中遍历数据渲染页面
 ```
 
 1. demo及使用说明
@@ -39,9 +40,9 @@ npm install yhongm_rv.js
     child2: "child2",
     time: 10000,
     pkey: "dddd",
-    componentColor: "red",//用于自定义组件
-    componentCotent: "componentCotent 888",//用于自定义组件
-    componentValue: "componentValue 888",//用于自定义组件
+    componentColor: "red",//用于自定义组件的数据
+    componentCotent: "componentCotent 888",//用于自定义组件的数据
+    componentValue: "componentValue 888",//用于自定义组件的数据组件
     week: [
         {
             id: 11,
@@ -97,9 +98,30 @@ npm install yhongm_rv.js
 
 
 ```
-2. rv.watch(data,callback)观察data属性对象变化,变化后触发callback
-3. el挂载对象节点选择器
-4. data数据对象,虚拟dom中使用%##%访问data中数据
+2.  for="value _in _ values" 指令在RV模板中的demo使用:
+
+
+
+```html
+<!--
+    
+domData       :    domData      将数据对应到当前dom
+childDomData  :    childDomData 将数据传递到子dom
+
+-->
+
+                <tbody cellspacing="0" cellpadding="0" id="calendar" style="text-decoration: none;width: 170;background-color: #C0D0E8;font-size: 9pt;border: 0px dotted #1C6FA5;"  align="center" border="1" key="tbody">
+                  <tr style="cursor:hand" key="%#week.id#%" for="week _in_ weeks" domData="week">
+                      <td  key="%#v.id#%" onclick="clickDay(this)" style="%#v.style#%" lable="%#v.lable#%" onMouseover="mouseOver(this)" onMouseOut="mouseOut(this)" childDomData="v" for="v _in_ week">
+                          <p key="{%#v.id#%+'_content'}" style="margin-block-start: 0em;margin-block-end: 0em">"%#v.content#%"</p>
+                          <p key="{%#v.id#%+'_lunarInfo'}" style="margin-block-start: 0em;margin-block-end: 0em" time="{new Date()}">"%#v.lunarInfo#%"</p>
+                      </td>
+                  </tr>
+                </tbody>    
+```
+3. rv.watch(data,callback)观察data属性对象变化,变化后触发callback
+4. el挂载对象节点选择器
+5. data数据对象,虚拟dom中使用%##%访问data中数据
 
 
 二. 声明组件以及使用组件:

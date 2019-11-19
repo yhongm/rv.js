@@ -124,8 +124,4 @@ window.onload = function () {
     window.rv = rv
 
 
-
-
-
-
 }

@@ -46,7 +46,7 @@ class RVDomUtil {
 
                 }
                 else {
-                    dataArray = data[dom.props['for'].split(" _in_ ")[1]]
+                    dataArray = this.data[dom.props['for'].split(" _in_ ")[1]]
 
                     dataSingle = dom.props['for'].split(" _in_ ")[0]
                 }

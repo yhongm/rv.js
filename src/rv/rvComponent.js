@@ -2,8 +2,9 @@ import RVDomUtil from "./rvDomUtil"
 import Map from "./map"
 class RvComponent {
     constructor(componentParam) {
-        let { dom, props, name, data, run, watch } = componentParam
+        let { dom, style, props, name, data, run, watch } = componentParam
         this.dom = dom
+        this.style = style
         this.rdom = this.rdom
         this.props = props
         this.name = name
@@ -11,10 +12,21 @@ class RvComponent {
         this.componentRun = run
         this.rvDomUtil = new RVDomUtil(data)
         this.observeMap = new Map()
-        console.log(`observeMap:${JSON.stringify(this.observeMap)}`)
         this.watchObj = watch
+        this.addStyle2Head(this.style)
         this.applyTruthFulData()
 
+    }
+    addStyle2Head(styleString) {
+        var style = document.createElement("style");
+        style.type = 'text/css';
+        try {
+            style.appendChild(document.createTextNode(styleString));
+        } catch (error) {
+            console.error(`component style,${error}`)
+            style.stylesheet.cssText = styleString;
+        }
+        document.getElementsByTagName("head")[0].appendChild(style);
     }
     applyTruthFulData() {
         this.rdom = this.rvDomUtil.applyTruthfulData(this.dom)

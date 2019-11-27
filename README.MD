@@ -98,7 +98,7 @@ npm install yhongm_rv.js
 
 
 ```
-2.  for="value _in _ values" 指令在RV模板中的demo使用:
+2.  for="value _in _ values" 指令在RV模板中的demo使用以及说明:
 
 
 
@@ -130,12 +130,13 @@ childDomData  :    childDomData 将数据传递到子dom
 0. 参数说明:
 ```
 RV.component用于声明组件的方法,
-组件对象传参name 为组件名字
-组件对象传参template 为组件html声明模板
-组件对象传参props 为组件属性,目的为暴漏给父控件用于设置组件相应参数
-组件对象传参data 为组件data
-组件对象传参run 为组件方法，用于运行组件相关js代码
-组件对象传参watch为组件对象，用于观察组件data数据变化
+组件对象传参name 为RV组件名字
+组件对象传参template 为RV组件html声明模板
+组件对象传参style 为RV组件声明css样式
+组件对象传参props 为RV组件属性,目的为暴漏给父控件用于设置组件相应参数
+组件对象传参data 为RV组件data
+组件对象传参run 为RV组件方法，用于运行组件相关js代码
+组件对象传参watch为RV组件对象，用于观察组件data数据变化
 ```
 
 1.声明组件:
@@ -147,6 +148,15 @@ RV.component用于声明组件的方法,
         template: `
             <div class="aaa" key="aaa"><p key="bbb" style="color:%#pcolor#%" time="%#time#%" componentValue="%#pvalue#%">"%#pcontent#%"</p><div>
         `,//定义RV组件,HTML语法声明组件模板
+        style: `
+        .aaa {
+            background-color: red
+        }
+        .bbb {
+            width: 500px;
+            height:200px;
+        }
+        `,//定义RV组件样式表,css语法声明组件样式
         props: {//定义RV组件属性,用于外部设值组件属性
             time: "1000",
             content: "a custom component",

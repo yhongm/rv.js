@@ -90,13 +90,13 @@ class RV {
      */
     static component(option) {
 
-        const { name, template, props, data } = option
+        const { name, template, style, props, data } = option
         let parse = new YhmParse()
         parse.parseHtmlTemplate(template.trim())
 
         let dom = parse.getHtmlDom()
 
-        return new RvComponent({ dom: dom, props: props, name: name, data: data, run: option.run, watch: option.watch })
+        return new RvComponent({ dom: dom, style: style, props: props, name: name, data: data, run: option.run, watch: option.watch })
     }
 
 

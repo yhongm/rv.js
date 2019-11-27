@@ -747,8 +747,9 @@ class YhmParse {
 }
 class RvComponent {
     constructor(componentParam) {
-        let { dom, props, name, data, run, watch } = componentParam
+        let { dom, style, props, name, data, run, watch } = componentParam
         this.dom = dom
+        this.style = style
         this.rdom = this.rdom
         this.props = props
         this.name = name
@@ -757,8 +758,20 @@ class RvComponent {
         this.rvDomUtil = new RVDomUtil(data)
         this.observeMap = new Map()
         this.watchObj = watch
+        this.addStyle2Head(this.style)
         this.applyTruthFulData()
 
+    }
+    addStyle2Head(styleString) {
+        var style = document.createElement("style");
+        style.type = 'text/css';
+        try {
+            style.appendChild(document.createTextNode(styleString));
+        } catch (error) {
+            console.error(`component style,${error}`)
+            style.stylesheet.cssText = styleString;
+        }
+        document.getElementsByTagName("head")[0].appendChild(style);
     }
     applyTruthFulData() {
         this.rdom = this.rvDomUtil.applyTruthfulData(this.dom)
@@ -1093,13 +1106,13 @@ class RV {
      */
     static component(option) {
 
-        const { name, template, props, data } = option
+        const { name, template, style, props, data } = option
         let parse = new YhmParse()
         parse.parseHtmlTemplate(template.trim())
 
         let dom = parse.getHtmlDom()
 
-        return new RvComponent({ dom: dom, props: props, name: name, data: data, run: option.run, watch: option.watch })
+        return new RvComponent({ dom: dom, style: style, props: props, name: name, data: data, run: option.run, watch: option.watch })
     }
 
 }

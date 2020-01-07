@@ -248,8 +248,20 @@ class Util {
         }
         return array
     }
-    static isRvJsProp(prop){
-       return ["domData", "childDomData", "for"].includes(prop)
+    static loopGet(obj) {
+        Object.keys(obj).forEach((key) => {
+            if (obj[key] instanceof Array) {
+                obj[key].forEach((childObj) => {
+                    this.loopGet(childObj)
+                })
+            } else {
+                obj[key]
+            }
+        })
+
+    }
+    static isRvJsProp(prop) {
+        return ["domData", "childDomData", "for"].includes(prop)
     }
     static isForIn(direction) {
         return /^\w* _in_ \w*$/.test(direction)
@@ -663,6 +675,7 @@ class YhmParse {
                 if (that.componetMap.hasKey(tagName)) {
                     //已经有当前组件的记录，将当前组件插入dom中
                     that.componetMap.get(tagName).apply(prop)
+                    that.componetMap.get(tagName).applyTruthFulData()
                     that.mMap.put(that.mIndex, that.componetMap.get(tagName).getDom())
 
                 } else {
@@ -787,8 +800,6 @@ class RvComponent {
         this.observeMap = new Map()
         this.watchObj = watch
         Util.addStyle2Head(this.style)
-        this.applyTruthFulData()
-
     }
 
     applyTruthFulData() {
@@ -1089,7 +1100,6 @@ class RV {
                 if ((componet.observeMap.hasKey(watchFun))) {
                     componet.observeMap.get(watchFun).add(() => {
                         componet.watchObj[watchFun]()
-                        componet.applyTruthFulData()
                     })
                 }
             })

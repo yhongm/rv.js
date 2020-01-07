@@ -43,12 +43,12 @@ class RV {
                 dom = rvThat._getDomTree()
                 rvThat._updatedom(dom)
             })
+            Util.loopGet(componet.data)
             Object.keys(componet.watchObj).forEach((watchFun) => {
 
                 if ((componet.observeMap.hasKey(watchFun))) {
                     componet.observeMap.get(watchFun).add(() => {
                         componet.watchObj[watchFun]()
-                        componet.applyTruthFulData()
                     })
                 }
             })

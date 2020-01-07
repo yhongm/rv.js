@@ -16,8 +16,6 @@ class RvComponent {
         this.observeMap = new Map()
         this.watchObj = watch
         Util.addStyle2Head(this.style)
-        this.applyTruthFulData()
-
     }
 
     applyTruthFulData() {

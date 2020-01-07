@@ -13,6 +13,18 @@ class Util {
         }
         return array
     }
+    static loopGet(obj) {
+        Object.keys(obj).forEach((key) => {
+            if (obj[key] instanceof Array) {
+                obj[key].forEach((childObj) => {
+                    this.loopGet(childObj)
+                })
+            } else {
+                obj[key]
+            }
+        })
+
+    }
     static isRvJsProp(prop) {
         return ["domData", "childDomData", "for"].includes(prop)
     }

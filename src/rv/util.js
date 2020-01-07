@@ -13,6 +13,9 @@ class Util {
         }
         return array
     }
+    static isRvJsProp(prop) {
+        return ["domData", "childDomData", "for"].includes(prop)
+    }
     static isForIn(direction) {
         return /^\w* _in_ \w*$/.test(direction)
     }
@@ -60,6 +63,27 @@ class Util {
         }
     }
 
+    static addStyle2Head(styleString) {
+
+        var style = document.getElementsByTagName("style")[0]
+        if (style) {
+            //style tag exists
+            try {
+                style.appendChild(document.createTextNode(styleString));
+            } catch (error) {
+                console.error(`component style,${error}`)
+                style.stylesheet.cssText = styleString;
+
+            }
+        } else {
+            //style tag isn't exits
+            style = document.createElement("style");
+            style.type = 'text/css';
+            var head = document.getElementsByTagName("head")[0]
+            head.appendChild(style);
+        }
+
+    }
 
     static setAttr(node, key, value) {
         switch (key) {

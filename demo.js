@@ -82,6 +82,9 @@ window.onload = function () {
             }
 
         },
+        domChange() {
+
+        },
         watch: {
             pcolor() {
                 console.log(`pcolorChange,change:`)
@@ -96,6 +99,7 @@ window.onload = function () {
             el: "#app",
             //el对象挂载的节点s
             data: myData,//数据对象，用于驱动视图更新，数据变化，视图自动更新
+            style: ``,
             template: `<div key="1" style="color:%#pcolor#%,width:100px,height:100px" onclick="clickDiv()">
                          "%#parent#%"
                          <p key="2" style="color:%#c1color#%,width:50px,height:50px" onclick="clickP1()">
@@ -111,7 +115,9 @@ window.onload = function () {
                        </div>`
         })
     rv.use(con) //注册自定义RV组件
-    rv.run()//启动
+    rv.run((rv) => {
+
+    })//启动
     rv.watch("parent", () => {
         alert("parent,change")
     }) //rv.watch("key",callback) 观察data数据对象对应key的数值变化,变化触发callback

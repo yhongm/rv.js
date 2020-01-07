@@ -152,12 +152,20 @@ class RVDomUtil {
                         dom.children[child].domDataKey = dom.props.domData
                         dom.children[child].data = data[child]
                     }
+                    // else{
+                    //     dom.children[child].data = data
+                    // }
 
-                    dom.children[child].data = data
+
 
                 }
 
-                obj.children[child] = this.applyTruthfulData(dom.children[child])
+                if (dom.children[child].component) {
+                    obj.children[child] = dom.children[child]
+                } else {
+                    obj.children[child] = this.applyTruthfulData(dom.children[child])
+                }
+
 
             }
         }

@@ -11,10 +11,12 @@ class RV {
         const {
             el,
             data,
+            style,
             template
         } = option
         this.el = el
         this.data = data
+        this.style = style
         this.template = template
         this.observeMap = new Map()
         this.parse = new YhmParse()
@@ -28,8 +30,9 @@ class RV {
     /**
      * run rv
      */
-    run() {
+    run(funCallback) {
         let root = Util.isString(this.el) ? document.querySelector(this.el) : this.el
+        Util.addStyle2Head(this.style)
         let dom = this._getDomTree()
 
         let rvThat = this
@@ -61,6 +64,7 @@ class RV {
             this._updatedom(dom)
         })
         this._updatedom(dom)
+        funCallback(this)
     }
     _getDomTree() {
         try {
@@ -76,6 +80,9 @@ class RV {
         window.nve = nve
         window.ve = this.ve
         patch(this.w, diff(this.ve, nve))
+        this.parse.componetMap.forEach((component) => {
+            component.domChange()
+        })
         this.ve = nve
     }
     watch(key, callback) {
@@ -96,7 +103,7 @@ class RV {
 
         let dom = parse.getHtmlDom()
 
-        return new RvComponent({ dom: dom, style: style, props: props, name: name, data: data, run: option.run, watch: option.watch })
+        return new RvComponent({ dom: dom, style: style, props: props, name: name, data: data, run: option.run, domChange: option.domChange, watch: option.watch })
     }
 
 

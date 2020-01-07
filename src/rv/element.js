@@ -33,7 +33,9 @@ class Element {
         const el = document.createElement(this.tag)
         const props = this.props
         for (const propName in props) {
-            Util.setAttr(el, propName, props[propName])
+            if (!Util.isRvJsProp(propName)) {
+                Util.setAttr(el, propName, props[propName])
+            }
         }
         this.children.forEach(child => {
             const childEl = (child instanceof Element) ? child.render() : document.createTextNode(child)

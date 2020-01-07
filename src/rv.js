@@ -39,7 +39,11 @@ class Element {
         const el = document.createElement(this.tag)
         const props = this.props
         for (const propName in props) {
-            Util.setAttr(el, propName, props[propName])
+
+            if (!Util.isRvJsProp(propName)) {
+                Util.setAttr(el, propName, props[propName])
+            }
+
         }
         this.children.forEach(child => {
             const childEl = (child instanceof Element) ? child.render() : document.createTextNode(child)
@@ -244,6 +248,9 @@ class Util {
         }
         return array
     }
+    static isRvJsProp(prop){
+       return ["domData", "childDomData", "for"].includes(prop)
+    }
     static isForIn(direction) {
         return /^\w* _in_ \w*$/.test(direction)
     }
@@ -290,7 +297,27 @@ class Util {
             return false
         }
     }
+    static addStyle2Head(styleString) {
 
+        var style = document.getElementsByTagName("style")[0]
+        if (style) {
+            //style tag exists
+            try {
+                style.appendChild(document.createTextNode(styleString));
+            } catch (error) {
+                console.error(`component style,${error}`)
+                style.stylesheet.cssText = styleString;
+
+            }
+        } else {
+            //style tag isn't exits
+            style = document.createElement("style");
+            style.type = 'text/css';
+            var head = document.getElementsByTagName("head")[0]
+            head.appendChild(style);
+        }
+
+    }
 
     static setAttr(node, key, value) {
         switch (key) {
@@ -747,7 +774,7 @@ class YhmParse {
 }
 class RvComponent {
     constructor(componentParam) {
-        let { dom, style, props, name, data, run, watch } = componentParam
+        let { dom, style, props, name, data, run, domChange, watch } = componentParam
         this.dom = dom
         this.style = style
         this.rdom = this.rdom
@@ -755,29 +782,25 @@ class RvComponent {
         this.name = name
         this.data = data
         this.componentRun = run
+        this.componentDomChange = domChange
         this.rvDomUtil = new RVDomUtil(data)
         this.observeMap = new Map()
         this.watchObj = watch
-        this.addStyle2Head(this.style)
+        Util.addStyle2Head(this.style)
         this.applyTruthFulData()
 
     }
-    addStyle2Head(styleString) {
-        var style = document.createElement("style");
-        style.type = 'text/css';
-        try {
-            style.appendChild(document.createTextNode(styleString));
-        } catch (error) {
-            console.error(`component style,${error}`)
-            style.stylesheet.cssText = styleString;
-        }
-        document.getElementsByTagName("head")[0].appendChild(style);
-    }
+
     applyTruthFulData() {
         this.rdom = this.rvDomUtil.applyTruthfulData(this.dom)
+        Object.defineProperty(this.rdom, "component", { value: true })
+
     }
     run() {
         this.componentRun.call(this)
+    }
+    domChange() {
+        this.componentDomChange.call(this)
     }
     getName() {
         return this.name
@@ -966,12 +989,14 @@ class RVDomUtil {
                         dom.children[child].domDataKey = dom.props.domData
                         dom.children[child].data = data[child]
                     }
-
-                    dom.children[child].data = data
-
+                    //dom.children[child].data = data
                 }
 
-                obj.children[child] = this.applyTruthfulData(dom.children[child])
+                if (dom.children[child].component) {
+                    obj.children[child] = dom.children[child]
+                } else {
+                    obj.children[child] = this.applyTruthfulData(dom.children[child])
+                }
 
             }
         }
@@ -1026,10 +1051,12 @@ class RV {
         const {
             el,
             data,
+            style,
             template
         } = option
         this.el = el
         this.data = data
+        this.style = style
         this.template = template
         this.observeMap = new Map()
         this.parse = new YhmParse()
@@ -1043,8 +1070,9 @@ class RV {
     /**
      * run rv
      */
-    run() {
+    run(funCallback) {
         let root = Util.isString(this.el) ? document.querySelector(this.el) : this.el
+        Util.addStyle2Head(this.style)
         let dom = this._getDomTree()
 
         // this.ve = this.getVirtualElement(this.applyTruthfulData(dom))
@@ -1077,6 +1105,7 @@ class RV {
             this._updatedom(dom)
         })
         this._updatedom(dom)
+        funCallback(this)
     }
     _getDomTree() {
         try {
@@ -1092,6 +1121,9 @@ class RV {
         window.nve = nve
         window.ve = this.ve
         patch(this.w, diff(this.ve, nve))
+        this.parse.componetMap.forEach((component) => {
+            component.domChange()
+        })
         this.ve = nve
     }
     watch(key, callback) {
@@ -1112,7 +1144,7 @@ class RV {
 
         let dom = parse.getHtmlDom()
 
-        return new RvComponent({ dom: dom, style: style, props: props, name: name, data: data, run: option.run, watch: option.watch })
+        return new RvComponent({ dom: dom, style: style, props: props, name: name, data: data, run: option.run, domChange: option.domChange, watch: option.watch })
     }
 
 }

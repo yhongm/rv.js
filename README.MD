@@ -91,7 +91,7 @@ rv.watch("child", () => {
 rv.watch("child2", () => {
   alert("child2,change");
 });
-rv.run(callback);
+rv.run(callback); //callback 运行时候执行的函数
 function clickDiv() {
   rv.data.parent = `click Div time:${new Date() / 1000}`; //点击更新data，视图自动更新
 }

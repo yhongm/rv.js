@@ -34,9 +34,25 @@ class Element {
         const props = this.props
         for (const propName in props) {
             if (!Util.isRvJsProp(propName)) {
-                Util.setAttr(el, propName, props[propName])
+                if (Util.isRvEvent(propName)) {
+                    var evantName=propName.slice(3)
+                    if(evantName=="click"){
+                        
+                        el.onclick=(e)=>{
+                            Object.defineProperty(e,"element",{value:el})
+                            Util.defineRvInnerGlobalValue(Util.getMethodHashId(`${props[propName]}`),e,true)
+                             eval(`${Util.invokeGlobalFunName(Util.generateHashMNameByMName(props[propName]))}()`)
+                        }
+
+                    }
+
+                } else {
+                    Util.setAttr(el, propName, props[propName])
+                }
+
             }
         }
+            
         this.children.forEach(child => {
             const childEl = (child instanceof Element) ? child.render() : document.createTextNode(child)
             el.appendChild(childEl)

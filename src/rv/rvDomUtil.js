@@ -47,28 +47,39 @@ class RVDomUtil {
                 }
                 else {
                     dataArray = this.data[dom.props['for'].split(" _in_ ")[1]]
-
                     dataSingle = dom.props['for'].split(" _in_ ")[0]
                 }
 
             } else {
                 throw new Error("the for directive use error")
             }
+
             let objs = []
-
-            dataArray.forEach(data => {
-
-                let obj = this.vdom2rdom(dom, data, dataSingle, data)
-
-                objs.push(obj)
+          
+            if (dataArray) {
+                
+                dataArray.forEach((data) => {
+                    
+                    let obj = this.vdom2rdom(dom, data, dataSingle, data)
+                    if(obj.props.hasOwnProperty("for")){
+                        // warning, goto there,tell me the DOM used 'for' directive ,we need to  delete 'for' props 
+                        //警告,运行到此处已经说明处理过for指令。删除for指令,避免不同组件通过此for指令寻找不属于他的真实数据,会引发异常
+                        //todo props childDomData ,domData
+                        delete obj.props.for
+                     }
+                     
+                    objs.push(obj)
+                })
             }
 
-            )
-            return objs
+           
+            let vDomObj = { isFor: true, rdom: objs }
+            return vDomObj
         } else {
 
             let data
             let childDomDatakey
+          
             if ("data" in dom) {
                 data = dom.data
                 childDomDatakey = dom.childDomDatakey
@@ -76,10 +87,10 @@ class RVDomUtil {
                 data = this.data
                 childDomDatakey = undefined
             }
-
+            
             let obj = this.vdom2rdom(dom, data, childDomDatakey, data)
-
-            return obj
+            let vDomObj = { isFor: false, rdom: obj }
+            return vDomObj
         }
     }
     /**
@@ -143,30 +154,27 @@ class RVDomUtil {
                 }
 
             } else {
+             
                 if (dom.children[child] instanceof Object) {
                     if ("childDomData" in dom.props) {
+                       
                         dom.children[child].childDomDatakey = dom.props.childDomData
-
                         dom.children[child].data = data
                     } else if ("domData" in dom.props) {
+                     
                         dom.children[child].domDataKey = dom.props.domData
                         dom.children[child].data = data[child]
                     }
-                    // else{
-                    //     dom.children[child].data = data
-                    // }
-
-
 
                 }
-
-                if (dom.children[child].component) {
-                    obj.children[child] = dom.children[child]
-                } else {
-                    obj.children[child] = this.applyTruthfulData(dom.children[child])
-                }
-
-
+              
+                var domObj = this.applyTruthfulData(dom.children[child])
+                    if (domObj.isFor) {
+                        obj.children = domObj.rdom
+                       
+                    } else {
+                        obj.children[child] = domObj.rdom
+                    }
             }
         }
         return obj

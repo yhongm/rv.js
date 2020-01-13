@@ -27,6 +27,19 @@ class RV {
     use(rvComponentObj) {
         this.parse.useCustomComponent(rvComponentObj)
     }
+    methods(methodObj){
+        this.methods=methodObj
+        this._defineMethod()
+    }
+    _defineMethod() {
+        for (let method of Object.keys(this.methods)) {
+            var that = this
+            this.methods[method]=this.methods[method].bind(this) //修改method中this指向
+            Util.defineRvInnerGlobalValue(`${Util.generateHashMNameByMName(method)}`, function () {
+                that.methods[method].call(that, Util.getRvInnerGlobalValue(Util.getMethodHashId(method)))
+            })
+        }
+    }
     /**
      * run rv
      */
@@ -56,7 +69,7 @@ class RV {
 
         })
 
-        this.ve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(dom))
+        this.ve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(dom).rdom)
         this.w = this.ve.render()
         root.appendChild(this.w)
 
@@ -76,7 +89,7 @@ class RV {
         return this.parse.getHtmlDom()
     }
     _updatedom(dom) {
-        let nve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(dom))
+        let nve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(dom).rdom)
         window.nve = nve
         window.ve = this.ve
         patch(this.w, diff(this.ve, nve))
@@ -100,10 +113,8 @@ class RV {
         const { name, template, style, props, data } = option
         let parse = new YhmParse()
         parse.parseHtmlTemplate(template.trim())
-
         let dom = parse.getHtmlDom()
-
-        return new RvComponent({ dom: dom, style: style, props: props, name: name, data: data, run: option.run, domChange: option.domChange, watch: option.watch })
+        return new RvComponent({ dom: dom, style: style, props: props, name: name, data: data,methods:option.methods, run: option.run, domChange: option.domChange, watch: option.watch })
     }
 
 

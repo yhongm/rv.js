@@ -15,6 +15,7 @@ class YhmParse {
         that.mIndex += 1
         if (that.componetMap.hasKey(tagName)) {
           //已经有当前组件的记录，将当前组件插入dom中
+                  
           that.componetMap.get(tagName).apply(prop)
           that.componetMap.get(tagName).applyTruthFulData()
           that.mMap.put(that.mIndex, that.componetMap.get(tagName).getDom())

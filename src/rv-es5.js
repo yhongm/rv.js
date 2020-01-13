@@ -1,3 +1,8 @@
+
+/**
+ * deprecated
+ * @author yhongm
+ */
 (function (ROOT) {
     var NODE_REPLACE = 0 //node replace 
     var CHILD_RE_ORDER = 1 //child node re order
@@ -575,7 +580,7 @@
                 template
             } = option
 
-            throw new Error("the version deprecated")
+            throw new Error("the version deprecated ,please use import RV from 'yhongm_rv.js'")
             let parse = new YhmParse()
             parse.parseHtmlTemplate(template.trim())
 

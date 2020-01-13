@@ -1,5 +1,8 @@
 
-
+/**
+ * deprecated
+ * @author yhongm
+ */
 
 const NODE_REPLACE = 0 //node replace 
 const CHILD_RE_ORDER = 1 //child node re order
@@ -1065,6 +1068,7 @@ class RV {
             style,
             template
         } = option
+        throw new Error("the version deprecated ,please use import RV from 'yhongm_rv.js'")
         this.el = el
         this.data = data
         this.style = style

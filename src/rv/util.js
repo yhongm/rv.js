@@ -28,6 +28,49 @@ class Util {
     static isRvJsProp(prop) {
         return ["domData", "childDomData", "for"].includes(prop)
     }
+    static isRvEvent(direction) {
+
+        return /^rv-\w*$/.test(direction)
+    }
+    static defineRvInnerGlobalValue(key,value,isCanWrite){
+        if(!window.hasOwnProperty("_______js_yhongm_rv____")){
+            Object.defineProperty(window,"_______js_yhongm_rv____",{value:{}})
+        }
+        Object.defineProperty(window["_______js_yhongm_rv____"],key,{value:value,writable:isCanWrite})
+    }
+    static getRvInnerGlobalValue(key){
+        if(!key){
+            return undefined
+        }
+       return window["_______js_yhongm_rv____"][`${key}`]
+    }
+    static invokeGlobalFunName(name){
+        return `window._______js_yhongm_rv____.${name}`
+    }
+    static createRvEvent(eventName) {
+        var event = document.createEvent("Event");
+        event.initEvent(eventName, false, true);
+        return event
+    }
+    /**
+     * generate hash method name by method name
+     * by yhongm
+     */
+    static generateHashMNameByMName(method){
+        return `${Util.getMethodHashId(method)}_${method}`
+    }
+    static getMethodHashId(name) {
+        return `_rv_${Util.getHashCode(name)}`
+    }
+    static getHashCode(str) {
+        str = str.toLowerCase();
+        var hash = 1234567890, i, ch;
+        for (i = str.length - 1; i >= 0; i--) {
+            ch = str.charCodeAt(i);
+            hash ^= ((hash << 5) + ch + (hash >> 2));
+        }
+        return (hash & 0x7FFFFFFF);
+    }
     static isForIn(direction) {
         return /^\w* _in_ \w*$/.test(direction)
     }

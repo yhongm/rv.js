@@ -26,7 +26,9 @@ npm install yhongm_rv.js
 ```
 "%# #%"                    数据占位符。html模板中的数据占位符最终会渲染成data中对应的真实数据
 "{   }"                    函数运行符。html模板中的函数运行符最终会渲染成函数返回的真实数据
-"for="value _in_ values"   for _in_ 循环指令。html模板中遍历数据渲染页面
+"for="value _in_ values"   for _in_ 循环指令。html模板中遍历数据渲染页面.
+childDomData               将父dom中data传到子dom中.使子dom可以访问数据
+domData                    将data传递到此dom
 ```
 
 1. demo 及使用说明
@@ -91,6 +93,16 @@ rv.watch("child", () => {
 rv.watch("child2", () => {
   alert("child2,change");
 });
+rv.methods({
+  //为rv对象添加函数，函数中this指向本rv对象
+  test1(){
+    this.methods.test2()//调用test2()函数
+  }
+  test2(){
+    this.data // 访问data数据
+    
+  }
+})
 rv.run(callback); //callback 运行时候执行的函数
 function clickDiv() {
   rv.data.parent = `click Div time:${new Date() / 1000}`; //点击更新data，视图自动更新
@@ -159,6 +171,8 @@ childDomData  :    childDomData 将数据传递到子dom
 3. rv.watch(data,callback)观察 data 属性对象变化,变化后触发 callback
 4. el 挂载对象节点选择器
 5. data 数据对象,虚拟 dom 中使用%##%访问 data 中数据
+6. rv.methods({}) ,为rv对象添加函数，函数中this指向此rv对象，可以访问此rv对象数据，调用此rv对象函数
+7. rv.run(callback)  ,启动rv,callback为运行执行的函数
 
 二. 声明组件以及使用组件:
 
@@ -171,9 +185,11 @@ RV.component用于声明组件的方法,
 组件对象传参style 为RV组件声明css样式
 组件对象传参props 为RV组件属性,目的为暴漏给父控件用于设置组件相应参数
 组件对象传参data 为RV组件data
+组件对象传参methods，为RV组件method对象，在对象中创建方法以及回调。其中方法中的this指向此组件
 组件对象传参run 为RV组件方法，用于运行组件相关js代码
 组件对象传参domChange为RV组件方法，dom变化时触发此代码，用于运行dom相关代码
 组件对象传参watch为RV组件对象，用于观察组件data数据变化
+组件对象函数内调用this.$sendEvent({name,value}) 发送事件到其他组件 ,name为事件名称,value为事件值。可以将此组件状态或属性值发送到其他组件。其他组件通过在组件methods中声明(组件名+事件名+'event')函数监听次事件(比如RvSelectIDEvent(newId),其中RvSelect为组件名,ID为事件名,newId为事件的新值)。
 ```
 
 1.声明组件:
@@ -206,7 +222,17 @@ RV.component用于声明组件的方法,
             pvalue: "cvalue"
 
         },
+        methods:{
+          test1(){
+            //其中this指向此组件
+            this.methods.test2()
+          }
+          test2(){
+
+          }
+        }
         run() {//定义自定义RV组件运行代码,用于运行RV组件相关JS代码,RV组件启动时启动此方法
+        
 
 
             let colors = ['red', 'green', 'blue', 'yellow', 'gray', 'white', 'black']
@@ -216,8 +242,19 @@ RV.component用于声明组件的方法,
                 this.data.time = this.props.time
                 this.data.pvalue = this.props.value
                 this.data.pcolor = colors[getRandomInt(6)]
+               
+                /*将此组件的color值变化发送到其他组件
+                其他组件在method中声明组件名+事件值+'event'方法接收此变化
+                methods{
+                  MyComponentColorEvent(value){
+                    //此方法在组件调用this.$sendEvent({name:"Color",value:this.data.pcolor})时触发
+                  }
 
+                }
+                */
+                this.$sendEvent({name:"Color",value:this.data.pcolor}) 
 
+                
             }, 1000)
             function getRandomInt(max) {
                 return Math.floor(Math.random() * Math.floor(max));
@@ -262,7 +299,18 @@ rv = new RV({
                        </div>`,
   // MyComponent为自定义RV组件名字，定义组件时name值.content,value,time为定义组件时属性,定义组件时props值
 });
+rv.methods({
+  MyComponentColorEvent(color){
+    //组件MyComponent调用this.$sendEvent({name:"Color",value:this.data.pcolor}) 会触发此函数，color为新值
+    //this指向本组件,通过this可以访问本组件
+    this.methods.fun1()
+  }
+  fun1(){
 
+  },
+  
+
+})
 rv.use(con); //调用rv对象的use方法注册自定义组件
 ```
 

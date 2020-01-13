@@ -35,7 +35,7 @@ let myData = {
 window.data = myData //控制台修改data数据，视图自动刷新内容
 window.RV = RV
 window.onload = function () {
-
+    this.console.log("onload")
     var con = RV.component({ //定义自定义RV组件
         name: "MyComponent",//定义RV组件名字
         template: `
@@ -116,6 +116,7 @@ window.onload = function () {
         })
     rv.use(con) //注册自定义RV组件
     rv.run((rv) => {
+        console.log("rv,run:")
 
     })//启动
     rv.watch("parent", () => {

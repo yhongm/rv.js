@@ -22,32 +22,34 @@ class RvComponent {
     _defineMethod() {
         for (let method of Object.keys(this.methods)) {
             var that = this
-            this.methods[method]=that.methods[method].bind(this) //将this对象传递到method对象中
+            this.methods[method] = that.methods[method].bind(this) //the method this point to  this rv component object
             Util.defineRvInnerGlobalValue(`${Util.generateHashMNameByMName(method)}`, function () {
                 that.methods[method].call(that, Util.getRvInnerGlobalValue(Util.getMethodHashId(method)))
             })
         }
-        Object.defineProperty(this,"$sendEvent",{value:function(event){
-            /**
-             * this function use to send event to other component
-             * *params name   this is event name
-             * *params value  this is event value
-             * call $sendEvent(name,value) send event
-             * 
-             * in other component use 'componentName'+'eventName'+'Event' constitute functionName receive this event
-             */
-            const {name,value}=event
-            Util.defineRvInnerGlobalValue(Util.getMethodHashId(`${this.getName()}${name}Event`),value,true)    
-            eval(`${Util.invokeGlobalFunName(Util.generateHashMNameByMName(`${this.getName()}${name}Event`))}()`)
-        }})
+        Object.defineProperty(this, "$sendEvent", {
+            value: function (event) {
+                /**
+                 * this function use to send event to other component
+                 * *params name   this is event name
+                 * *params value  this is event value
+                 * call $sendEvent(name,value) send event
+                 * 
+                 * in other component use 'componentName'+'eventName'+'Event' constitute functionName receive this event
+                 */
+                const { name, value } = event
+                Util.defineRvInnerGlobalValue(Util.getMethodHashId(`${this.getName()}${name}Event`), value, true)
+                eval(`${Util.invokeGlobalFunName(Util.generateHashMNameByMName(`${this.getName()}${name}Event`))}()`)
+            }
+        })
 
     }
-    
+
     applyTruthFulData() {
-        this.rdom = this.rvDomUtil.applyTruthfulData(this.dom).rdom 
+        this.rdom = this.rvDomUtil.applyTruthfulData(this.dom).rdom
         // Object.defineProperty(this.rdom, "component", { value: true })
     }
-    
+
     run() {
         this.componentRun.call(this)
     }
@@ -58,7 +60,7 @@ class RvComponent {
         return this.name
     }
     apply(props) {
-         for (let prop of Object.keys(this.props)) { 
+        for (let prop of Object.keys(this.props)) {
             if (props[prop]) {
                 this.props[prop] = props[prop]
             }

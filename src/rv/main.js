@@ -27,14 +27,14 @@ class RV {
     use(rvComponentObj) {
         this.parse.useCustomComponent(rvComponentObj)
     }
-    methods(methodObj){
-        this.methods=methodObj
+    methods(methodObj) {
+        this.methods = methodObj
         this._defineMethod()
     }
     _defineMethod() {
         for (let method of Object.keys(this.methods)) {
             var that = this
-            this.methods[method]=this.methods[method].bind(this) //修改method中this指向
+            this.methods[method] = this.methods[method].bind(this) //the method this point to  this rv object
             Util.defineRvInnerGlobalValue(`${Util.generateHashMNameByMName(method)}`, function () {
                 that.methods[method].call(that, Util.getRvInnerGlobalValue(Util.getMethodHashId(method)))
             })
@@ -114,7 +114,7 @@ class RV {
         let parse = new YhmParse()
         parse.parseHtmlTemplate(template.trim())
         let dom = parse.getHtmlDom()
-        return new RvComponent({ dom: dom, style: style, props: props, name: name, data: data,methods:option.methods, run: option.run, domChange: option.domChange, watch: option.watch })
+        return new RvComponent({ dom: dom, style: style, props: props, name: name, data: data, methods: option.methods, run: option.run, domChange: option.domChange, watch: option.watch })
     }
 
 

@@ -25,10 +25,11 @@ npm install yhongm_rv.js
 
 ```
 "%# #%"                    数据占位符。html模板中的数据占位符最终会渲染成data中对应的真实数据
-"{   }"                    函数运行符。html模板中的函数运行符最终会渲染成函数返回的真实数据
+"{   }"                    函数运行符。html模板中的函数运行符最终会将JavaScript函数返回的真实数据渲染到dom中。("{}"中可以使用"%##%"数据占位符,"{}"最终会将JavaScript函数返回值和数据占位符在data中的对应真实数据拼接成字符串后渲染到dom,比如"{%#id#%+'_icon'}",加如id对应在data中为1，那么渲染到dom中为"1_icon"。假如"{}"中不包含%##%,那么直接将JavaScript函数运行结果渲染到dom) 
 "for="value _in_ values"   for _in_ 循环指令。html模板中遍历数据渲染页面.
-childDomData               将父dom中data传到子dom中.使子dom可以访问数据
-domData                    将data传递到此dom
+childDomData               将父dom中data传到子dom中.使子dom可以访问data 。用于单层for 指令
+domData                     将父dom中data传递到当前dom中.用于双层for指令,第二层for指令访问data
+data="this"                将父dom中data传递到当前dom中.
 ```
 
 1. demo 及使用说明

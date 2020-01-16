@@ -204,13 +204,10 @@ class Util {
                 let placeHolder = expression.slice(startIndex, endIndex)
                 let realValue
                 if (placeHolder.indexOf(".") > 0) {
-                    if (Util.getPlaceHolderValue(placeHolder).split(".")[0] === dataKey) {
+                    if (Util.getPlaceHolderValue(placeHolder).split(".")[0] === dataKey||!dataKey) {
                         let placeHolderValue = data[Util.getPlaceHolderValue(placeHolder).split(".")[1]]
                         realValue = Util.isNumber(placeHolderValue) ? placeHolderValue : `"${placeHolderValue}"`//通过placeHolder取真实的值
-
                     }
-
-
                 } else {
                     realValue = data[Util.getPlaceHolderValue(placeHolder)]//通过placeHolder取真实的值
                 }

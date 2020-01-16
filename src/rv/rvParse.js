@@ -15,7 +15,7 @@ class YhmParse {
         that.mIndex += 1
         if (that.componetMap.hasKey(tagName)) {
           //已经有当前组件的记录，将当前组件插入dom中
-                  
+
           that.componetMap.get(tagName).apply(prop)
           that.componetMap.get(tagName).applyTruthFulData()
           that.mMap.put(that.mIndex, that.componetMap.get(tagName).getDom())
@@ -76,10 +76,16 @@ class YhmParse {
         index = startTagClose + 1
         var content = ""
         if (html.indexOf('<', index) > -1 && html.indexOf('<', index) > startTagClose) {
-          // let contentEndIndex = html.indexOf('</', (index + 1))
           content = html.substring(index, html.indexOf('<', index)).trim()
         }
         _parseStartTag(html.substring(startTagOpen, startTagClose + 1), content, this)
+        if (html.substring(startTagClose - 1, startTagClose + 1) === "/>") {
+          //single label to the parse end tag  
+          _parseEndTag(html.substring(startTagOpen, startTagClose + 1), this)
+        }
+        
+
+
         html = html.substring(index)
         continue
       }
@@ -94,19 +100,25 @@ class YhmParse {
       var tagName = html.substring(html.indexOf('<') + 1, startTagEndIndex)
       var prop = {}
       if (html.indexOf(' ') > -1) {
-        var props = html.substring(html.indexOf(' ') + 1, html.indexOf('>'))
+        var props = html.substring(html.indexOf(' ') + 1, html.indexOf('/>') == -1 ? html.indexOf('>') : html.indexOf('/>'))
 
         var propsResult = props.match(that.mPropRe)
         for (let i = 0; i < propsResult.length; i++) {
           var pr = propsResult[i]
-
-          prop[pr.split("=")[0]] = pr.split("=")[1].match(/(?<=").*?(?=")/)[0]
+          //prop[pr.split("=")[0]] = pr.split("=")[1].match(/(?<=").*?(?=")/)?pr.split("=")[1].match(/(?<=").*?(?=")/)[0]:pr.split("=")[1]
+          //IE and FF browser unsupport regExp ?<=
+          
+          prop[pr.split("=")[0]] = /\".*?\"/.test(pr.split("=")[1])?pr.split("=")[1].slice(1,-1):pr.split("=")[1]
+          
         }
       }
 
       if (that.mHandler) {
-        if (/(?<=").*?(?=")/.test(content)) {
-          content = content.match(/(?<=").*?(?=")/)[0]
+        // if (/(?<=").*?(?=")/.test(content)) {
+        //   content = content.match(/(?<=").*?(?=")/)[0]
+        // }
+        if(/\".*?\"/.test(content)){
+           content=content.slice(1,-1)
         }
         that.mHandler.startELement(tagName, prop, content, that)
       }

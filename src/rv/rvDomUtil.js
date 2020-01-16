@@ -41,9 +41,10 @@ class RVDomUtil {
                 } else if ("domDataKey" in dom) {
                     if (dom.props['for'].split(" _in_ ")[1] === dom.domDataKey) {
                         dataArray = dom.data
+                        dataSingle = dom.props['for'].split(" _in_ ")[0]
+                    } else {
+                        throw new Error("domData key error")
                     }
-                    dataSingle = dom.props['for'].split(" _in_ ")[0]
-
                 }
                 else {
                     dataArray = this.data[dom.props['for'].split(" _in_ ")[1]]
@@ -148,6 +149,8 @@ class RVDomUtil {
                         obj.children[child] = data[Util.getPlaceHolderValue(dom.children[child]).split(".")[1]]
                     }
 
+                } else if (Util.isOperatorExpression(dom.children[child])) {
+                    obj.children[child] = Util.getOperatorExpression(dom.children[child], data, dataSingle)
                 }
                 else {
                     obj.children[child] = dom.children[child]
@@ -164,6 +167,11 @@ class RVDomUtil {
 
                         dom.children[child].domDataKey = dom.props.domData
                         dom.children[child].data = data[child]
+                    } else if ("data" in dom.props) {
+                        
+                        if (dom.props.data == "this") {
+                            dom.children[child].data = data
+                        }
                     }
 
                 }

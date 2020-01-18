@@ -1,12 +1,12 @@
-# rv.js 一个响应式、声明式组件化虚拟 dom，数据驱动视图更新
+# rv.js 一个 JavaScript 框架
 
 ## 无任何依赖
 
 ## 虚拟 dom
 
-## 数据驱动
+## 数据驱动视图更新
 
-## 组件化
+## 声明式组件化
 
 ## HTML 语法声明组件
 
@@ -25,11 +25,16 @@ npm install yhongm_rv.js
 
 ```
 "%# #%"                    数据占位符。html模板中的数据占位符最终会渲染成data中对应的真实数据
-"{   }"                    函数运行符。html模板中的函数运行符最终会将JavaScript函数返回的真实数据渲染到dom中。("{}"中可以使用"%##%"数据占位符,"{}"最终会将JavaScript函数返回值和数据占位符在data中的对应真实数据拼接成字符串后渲染到dom,比如"{%#id#%+'_icon'}",加如id对应在data中为1，那么渲染到dom中为"1_icon"。假如"{}"中不包含%##%,那么直接将JavaScript函数运行结果渲染到dom) 
+
+"{   }"                    函数运行符。html模板中的函数运行符最终会将JavaScript函数返回的真实数据渲染到dom中。("{}"中可以使用"%##%"数据占位符,"{}"最终会将JavaScript函数返回值和数据占位符在data中的对应真实数据拼接成字符串后渲染到dom,比如"
+{%#id#%+'_icon'}",假如id对应在data中为1，那么渲染到dom中为"1_icon"。假如"{}"中不包含%##%,那么直接将JavaScript函数运行结果渲染到dom)
+
 "for="value _in_ values"   for _in_ 循环指令。html模板中遍历数据渲染页面.
-childDomData               将父dom中data传到子dom中.使子dom可以访问data 。用于单层for 指令
-domData                     将父dom中data传递到当前dom中.用于双层for指令,第二层for指令访问data
-data="this"                将父dom中data传递到当前dom中.
+
+"childDomData"                将当前dom中data传到子dom中("适用于当前dom为父dom通过for指令渲染，但当前dom不通过for指令渲染子dom,仅仅将当前dom中data传递到子dom中")
+"domData"                     将父dom中data传递到当前dom中("适用于当前dom为父dom通过for指令渲染，当前dom通过for指令渲染子dom,需要将父dom中对应当前dom的Array data传递到当前dom,以便当前dom可以通过for指令渲染子dom")
+
+data="parent"               接收父dom中data传递到当前dom中.
 ```
 
 1. demo 及使用说明
@@ -101,7 +106,7 @@ rv.methods({
   }
   test2(){
     this.data // 访问data数据
-    
+
   }
 })
 rv.run(callback); //callback 运行时候执行的函数
@@ -119,13 +124,6 @@ function clickP2() {
 2.  for="value _in _ values" 指令在 RV 模板中的 demo 使用以及说明:
 
 ```html
-<!--
-    
-domData       :    domData      将数据对应到当前dom
-childDomData  :    childDomData 将数据传递到子dom
-
--->
-
 <tbody
   cellspacing="0"
   cellpadding="0"
@@ -172,8 +170,8 @@ childDomData  :    childDomData 将数据传递到子dom
 3. rv.watch(data,callback)观察 data 属性对象变化,变化后触发 callback
 4. el 挂载对象节点选择器
 5. data 数据对象,虚拟 dom 中使用%##%访问 data 中数据
-6. rv.methods({}) ,为rv对象添加函数，函数中this指向此rv对象，可以访问此rv对象数据，调用此rv对象函数
-7. rv.run(callback)  ,启动rv,callback为运行执行的函数
+6. rv.methods({}) ,为 rv 对象添加函数，函数中 this 指向此 rv 对象，可以访问此 rv 对象数据，调用此 rv 对象函数
+7. rv.run(callback) ,启动 rv,callback 为运行执行的函数
 
 二. 声明组件以及使用组件:
 
@@ -191,10 +189,12 @@ RV.component用于声明组件的方法,
 组件对象传参domChange为RV组件方法，dom变化时触发此代码，用于运行dom相关代码
 组件对象传参watch为RV组件对象，用于观察组件data数据变化
 组件对象函数内调用this.$sendEvent({name,value}) 发送事件到其他组件 ,name为事件名称,value为事件值。可以将此组件状态或属性值发送到其他组件。其他组件通过在组件methods中声明(组件名+事件名+'event')函数监听次事件(比如RvSelectIDEvent(newId),其中RvSelect为组件名,ID为事件名,newId为事件的新值)。
+
 ```
 
 1.声明组件:
 通过 RV.component 声明组件
+任何组件都可以通过 use()方法注册已经使用好的 rv 组件
 
 ```javascript
   var con = RV.component({ //定义自定义RV组件
@@ -233,7 +233,7 @@ RV.component用于声明组件的方法,
           }
         }
         run() {//定义自定义RV组件运行代码,用于运行RV组件相关JS代码,RV组件启动时启动此方法
-        
+
 
 
             let colors = ['red', 'green', 'blue', 'yellow', 'gray', 'white', 'black']
@@ -243,7 +243,7 @@ RV.component用于声明组件的方法,
                 this.data.time = this.props.time
                 this.data.pvalue = this.props.value
                 this.data.pcolor = colors[getRandomInt(6)]
-               
+
                 /*将此组件的color值变化发送到其他组件
                 其他组件在method中声明组件名+事件值+'event'方法接收此变化
                 methods{
@@ -253,9 +253,9 @@ RV.component用于声明组件的方法,
 
                 }
                 */
-                this.$sendEvent({name:"Color",value:this.data.pcolor}) 
+                this.$sendEvent({name:"Color",value:this.data.pcolor})
 
-                
+
             }, 1000)
             function getRandomInt(max) {
                 return Math.floor(Math.random() * Math.floor(max));
@@ -278,6 +278,7 @@ RV.component用于声明组件的方法,
 
 2. 使用组件:
    通过 rv.use 注册自定义组件到当前 RV 对象中,在 RV template 中使用注册过的组件名字声明组件。
+   组件可以使用 use 方法注册其他 rv 组件到当前组件中。
 
 ```javascript
 rv = new RV({
@@ -309,7 +310,7 @@ rv.methods({
   fun1(){
 
   },
-  
+
 
 })
 rv.use(con); //调用rv对象的use方法注册自定义组件

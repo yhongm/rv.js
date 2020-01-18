@@ -112,8 +112,8 @@ class RVDomUtil {
             if (value === "style") {
                 let style = dom.props[value]
 
-                if (style.indexOf(",") > -1) {
-                    let styles = style.split(",")
+                if (style.indexOf(";") > -1) {
+                    let styles = style.split(";")
                     obj.props[value] = this.handleArrayStyle(data, styles, dataSingle)
                 } else {
 
@@ -169,7 +169,7 @@ class RVDomUtil {
                         dom.children[child].data = data[child]
                     } else if ("data" in dom.props) {
                         
-                        if (dom.props.data == "this") {
+                        if (dom.props.data == "parent") {
                             dom.children[child].data = data
                         }
                     }

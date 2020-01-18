@@ -1,10 +1,13 @@
 import RVDomUtil from "./rvDomUtil"
 import Util from "./util"
+import YhmParse from "./rvParse"
 import Map from "./map"
 class RvComponent {
     constructor(componentParam) {
-        let { dom, style, props, name, data, methods, run, domChange, watch } = componentParam
-        this.dom = dom
+        let { template, style, props, name, data, methods, run, domChange, watch } = componentParam
+        this.template=template
+        this.parse = new YhmParse()
+        this.dom = this._getDomTree()
         this.style = style
         this.rdom = this.rdom
         this.props = props
@@ -18,6 +21,10 @@ class RvComponent {
         this.watchObj = watch
         Util.addStyle2Head(this.style)
         this._defineMethod()
+    }
+    use(rvComponentObj){
+        this.parse.useCustomComponent(rvComponentObj)
+
     }
     _defineMethod() {
         for (let method of Object.keys(this.methods)) {
@@ -44,8 +51,19 @@ class RvComponent {
         })
 
     }
+    _getDomTree() {
+        try {
+            this.parse.parseHtmlTemplate(this.template.trim())
 
-    applyTruthFulData() {
+        } catch (e) {
+            console.error(`rv component parse e:${e}`)
+        }
+        return this.parse.getHtmlDom()
+    }
+    generateDom(){
+        this.dom=this._getDomTree()
+    }
+    applyTruthFulData() {    
         this.rdom = this.rvDomUtil.applyTruthfulData(this.dom).rdom
         // Object.defineProperty(this.rdom, "component", { value: true })
     }

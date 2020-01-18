@@ -48,13 +48,45 @@ class RV {
         Util.addStyle2Head(this.style)
         let dom = this._getDomTree()
 
-        let rvThat = this
-        this.parse.componetMap.forEach(function (componet) {
+        let rvThis = this
+        // this.parse.componetMap.forEach(function (componet) {
 
+        //     observe(componet.data, componet.observeMap, () => {
+
+        //         dom = rvThis._getDomTree()
+        //         rvThis._updatedom(dom)
+        //     })
+        //     Util.loopGet(componet.data)
+        //     Object.keys(componet.watchObj).forEach((watchFun) => {
+
+        //         if ((componet.observeMap.hasKey(watchFun))) {
+        //             componet.observeMap.get(watchFun).add(() => {
+        //                 componet.watchObj[watchFun]()
+        //             })
+        //         }
+        //     })
+        //     componet.run()
+
+        // })
+       
+        this._handleMultiComponet(this.parse,rvThis)
+        this.ve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(dom).rdom)
+        this.w = this.ve.render()
+        root.appendChild(this.w)
+
+        observe(this.data, this.observeMap, () => {
+            this._updatedom(this._getDomTree())
+        })
+        this._updatedom(dom)
+        funCallback(this)
+    }
+    _handleMultiComponet(parse,rvThis){
+        parse.componetMap.forEach(function (componet) {
+            if(componet.parse.componetMap&&componet.parse.componetMap.length>0){
+                rvThis._handleMultiComponet(componet.parse,rvThis)
+            }
             observe(componet.data, componet.observeMap, () => {
-
-                dom = rvThat._getDomTree()
-                rvThat._updatedom(dom)
+                rvThis._updatedom(rvThis._getDomTree())
             })
             Util.loopGet(componet.data)
             Object.keys(componet.watchObj).forEach((watchFun) => {
@@ -68,16 +100,6 @@ class RV {
             componet.run()
 
         })
-
-        this.ve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(dom).rdom)
-        this.w = this.ve.render()
-        root.appendChild(this.w)
-
-        observe(this.data, this.observeMap, () => {
-            this._updatedom(dom)
-        })
-        this._updatedom(dom)
-        funCallback(this)
     }
     _getDomTree() {
         try {
@@ -111,10 +133,8 @@ class RV {
     static component(option) {
 
         const { name, template, style, props, data } = option
-        let parse = new YhmParse()
-        parse.parseHtmlTemplate(template.trim())
-        let dom = parse.getHtmlDom()
-        return new RvComponent({ dom: dom, style: style, props: props, name: name, data: data, methods: option.methods, run: option.run, domChange: option.domChange, watch: option.watch })
+        
+        return new RvComponent({ template: template, style: style, props: props, name: name, data: data, methods: option.methods, run: option.run, domChange: option.domChange, watch: option.watch })
     }
 
 
@@ -137,7 +157,7 @@ function observe(obj, observeMap, callback) {
             },
             set(newVal) {
                 const changed = internalValue !== newVal
-                internalValue = newVal
+                internalValue = newVal               
                 if (changed) {
                     observable.invoke()
                 }

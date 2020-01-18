@@ -194,7 +194,7 @@ RV.component用于声明组件的方法,
 
 1.声明组件:
 通过 RV.component 声明组件
-任何组件都可以通过 use()方法注册已经使用好的 rv 组件
+任何组件都可以通过 use()方法注册已经声明好的的 rv 组件
 
 ```javascript
   var con = RV.component({ //定义自定义RV组件

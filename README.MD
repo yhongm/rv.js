@@ -31,10 +31,12 @@ npm install yhongm_rv.js
 
 "for="value _in_ values"   for _in_ 循环指令。html模板中遍历数据渲染页面.
 
-"childDomData"                将当前dom中data传到子dom中("适用于当前dom为父dom通过for指令渲染，但当前dom不通过for指令渲染子dom,仅仅将当前dom中data传递到子dom中")
+"childDomData"                将当前dom中data传到子dom中("适用于当前dom为父dom通过for指令渲染，但当前dom不通过for指令渲染子dom,仅仅将当前dom中data传递到子dom中。 childDomData="$this" 当前dom为非for指令渲染的子dom时候使用,因为当前dom子dom无法访问for指令对应的Array data,所以将当前dom data直接传递给子dom.childDomData="$this"传递的data,子dom中使用对应数据，不需要使用.访问对应数据")
+
 "domData"                     将父dom中data传递到当前dom中("适用于当前dom为父dom通过for指令渲染，当前dom通过for指令渲染子dom,需要将父dom中对应当前dom的Array data传递到当前dom,以便当前dom可以通过for指令渲染子dom")
 
-data="parent"               接收父dom中data传递到当前dom中.
+rv-event="eventName"    用于监听事件(包括Window 事件属性,Form 事件,Keyboard 事件,Mouse 事件等等)。eventName为在当前RV对象methods中声明的函数。事件参数会通过参数传递到eventName函数中。
+rv-watch="value"         用于观察input标签value值，value值变化会自动更新data中对应value
 ```
 
 1. demo 及使用说明

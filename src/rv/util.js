@@ -26,7 +26,7 @@ class Util {
 
     }
     static isRvJsProp(prop) {
-        return ["domData", "childDomData", "for"].includes(prop)
+        return ["domData", "childDomData", "for","data"].includes(prop)
     }
     static isRvEvent(direction) {
 

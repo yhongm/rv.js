@@ -35,15 +35,23 @@ class Element {
         for (const propName in props) {
             if (!Util.isRvJsProp(propName)) {
                 if (Util.isRvEvent(propName)) {
-                    var evantName=propName.slice(3)
-                    if(evantName=="click"){
-                        
-                        el.onclick=(e)=>{
-                            Object.defineProperty(e,"element",{value:el})
-                            Util.defineRvInnerGlobalValue(Util.getMethodHashId(`${props[propName]}`),e,true)
-                             eval(`${Util.invokeGlobalFunName(Util.generateHashMNameByMName(props[propName]))}()`)
+                    var evantName = propName.slice(3)
+                    if (evantName=="watch") {
+                        //this prop use to watch element value change in real time and auto to modify data
+                        if(el instanceof HTMLInputElement){
+                            el.addEventListener("input",(e)=>{
+                                Util.defineRvInnerGlobalValue(Util.getMethodHashId(`${props[propName]}value`), el.value, true)
+                                eval(`${Util.invokeGlobalFunName(Util.generateHashMNameByMName(`${props[propName]}change`))}()`)
+                            })
+                        }else{
+                            console.log("RV warning:the rv-watch only use in input label")
                         }
-
+                    } else {
+                        el.addEventListener(evantName, (e) => {
+                            Object.defineProperty(e, "element", { value: el })
+                            Util.defineRvInnerGlobalValue(Util.getMethodHashId(`${props[propName]}`), e, true)
+                            eval(`${Util.invokeGlobalFunName(Util.generateHashMNameByMName(props[propName]))}()`)
+                        })
                     }
 
                 } else {
@@ -52,7 +60,7 @@ class Element {
 
             }
         }
-            
+
         this.children.forEach(child => {
             const childEl = (child instanceof Element) ? child.render() : document.createTextNode(child)
             el.appendChild(childEl)

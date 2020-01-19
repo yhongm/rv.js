@@ -30,8 +30,14 @@ class RvComponent {
         for (let method of Object.keys(this.methods)) {
             var that = this
             this.methods[method] = that.methods[method].bind(this) //the method this point to  this rv component object
-            Util.defineRvInnerGlobalValue(`${Util.generateHashMNameByMName(method)}`, function () {
+            Util.defineRvInnerGlobalValue(`${Util.generateHashMNameByMName(method)}`,  ()=>{
                 that.methods[method].call(that, Util.getRvInnerGlobalValue(Util.getMethodHashId(method)))
+            })
+        }
+        for (let data of Object.keys(this.data)){
+            //define RV inner function to auto modify  data value
+            Util.defineRvInnerGlobalValue(`${Util.generateHashMNameByMName(`${data}change`)}`,  ()=> {
+                this.data[data]=Util.getRvInnerGlobalValue(Util.getMethodHashId(`${data}value`))
             })
         }
         Object.defineProperty(this, "$sendEvent", {

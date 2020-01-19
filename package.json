@@ -1,6 +1,6 @@
 {
   "name": "yhongm_rv.js",
-  "version": "1.6.5",
+  "version": "1.6.6",
   "description": "a javascript Framework",
   "main": "src/rv/main.js",
   "scripts": {

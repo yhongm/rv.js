@@ -160,20 +160,18 @@ class RVDomUtil {
 
                 if (dom.children[child] instanceof Object) {
                     if ("childDomData" in dom.props) {
-                        if(dom.props.childDomData=="$this"){
-                            if (dom.props.data == "parent") {
-                                dom.children[child].data = data
-                            }
-                        }else{
+                        if (dom.props.childDomData == "$this") {
+                            dom.children[child].data = data
+                        } else {
                             dom.children[child].childDomDatakey = dom.props.childDomData
                             dom.children[child].data = data
                         }
-                       
+
                     } else if ("domData" in dom.props) {
                         dom.children[child].domDataKey = dom.props.domData
                         dom.children[child].data = data[child]
-                    } 
-                   
+                    }
+
                 }
 
                 var domObj = this.applyTruthfulData(dom.children[child])

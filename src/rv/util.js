@@ -72,7 +72,7 @@ class Util {
         return (hash & 0x7FFFFFFF);
     }
     static isForIn(direction) {
-        return /^\w* _in_ \w*$/.test(direction)
+        return /^\w* _in_ [\w\.]*$/.test(direction)
     }
     static isForForIn(direction) {
         return /^\w* _in*$/.test(direction)
@@ -177,6 +177,9 @@ class Util {
     static getPlaceHolderValue(content) {
         return content.slice(2, -2)
     }
+    static getNotUndefinedContent(content){
+        return content===undefined?"":content
+    }
     /**
      * 是否为表达式
      * @param {String} content 
@@ -194,7 +197,7 @@ class Util {
         }
         return false
     }
-    static getOperatorExpression(content, data, dataKey) {
+    static getOperatorExpression(content, data, dataKey,context) {
         if (Util.isString(content)) {
 
             var expression = content.slice(content.indexOf("{") + 1, content.indexOf("}"))
@@ -202,16 +205,25 @@ class Util {
             let endIndex = expression.indexOf("#%") + 2
             if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
                 let placeHolder = expression.slice(startIndex, endIndex)
+                var placeHolderValue=Util.getPlaceHolderValue(placeHolder)
                 let realValue
-                if (placeHolder.indexOf(".") > 0) {
-                    if (Util.getPlaceHolderValue(placeHolder).split(".")[0] === dataKey||!dataKey) {
-                        let placeHolderValue = data[Util.getPlaceHolderValue(placeHolder).split(".")[1]]
-                        realValue = Util.isNumber(placeHolderValue) ? placeHolderValue : `"${placeHolderValue}"`//通过placeHolder取真实的值
-                    }
-                } else {
-                    realValue = data[Util.getPlaceHolderValue(placeHolder)]//通过placeHolder取真实的值
-                }
+                if (Util.isDotOperatorExpression(placeHolderValue)) {
+                   
+                    var placeHolderValueKey=placeHolderValue.split(".")[0]
+                    var placeHolderValueValue=placeHolderValue.split(".")[1]
 
+                    let placeHolderVValue=data[placeHolderValueValue]
+                    if(placeHolderValueKey in context.data){
+                        placeHolderVValue=data[placeHolderValueKey][placeHolderValueValue]
+                    }else{
+                        if (placeHolderValueKey === dataKey && !dataKey) {
+                            placeHolderVValue = data[placeHolderValueValue]
+                        }
+                    }
+                    realValue = Util.isNumber(placeHolderVValue) ? placeHolderVValue : `"${placeHolderVValue}"`//get real value by PlaceHolder
+                } else {
+                    realValue = data[Util.getPlaceHolderValue(placeHolder)]//get real value by PlaceHolder 
+                }
                 expression = expression.replace(placeHolder, realValue)
 
             }

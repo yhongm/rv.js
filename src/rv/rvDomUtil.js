@@ -7,7 +7,8 @@ import Element from "./element"
  */
 class RVDomUtil {
     constructor(data) {
-        this.data = data
+        this.Context={} //this Context use to save global info 
+        this.Context.data=data
     }
 
     getVirtualElement(dom) {
@@ -47,7 +48,21 @@ class RVDomUtil {
                     }
                 }
                 else {
-                    dataArray = this.data[dom.props['for'].split(" _in_ ")[1]]
+                    let forExpressRight =dom.props['for'].split(" _in_ ")[1]
+                    console.log(`forExpressRight:${forExpressRight}`)
+                    if(Util.isDotOperatorExpression(forExpressRight)){
+                       console.log(`111,forExpressRight:${forExpressRight}`)
+                       let forERKey=forExpressRight.split(".")[0]
+                       let forERValue=forExpressRight.split(".")[1]
+                       console.log(`forERKey${forERKey} ,forERValue:${forERValue}`)
+                       if(forERKey in this.Context.data){
+                           dataArray=this.Context.data[forERKey][forERValue]
+                       }else{
+                        throw new Error("the for directive use error,the Dot Operator Express only in global context data" )
+                       }  
+                    }else{
+                       dataArray=this.Context.data[forExpressRight]
+                    }
                     dataSingle = dom.props['for'].split(" _in_ ")[0]
                 }
 
@@ -58,10 +73,8 @@ class RVDomUtil {
             let objs = []
 
             if (dataArray) {
-
                 dataArray.forEach((data) => {
-
-                    let obj = this.vdom2rdom(dom, data, dataSingle, data)
+                    let obj = this.vdom2rdom(dom, data, dataSingle)
                     if (obj.props.hasOwnProperty("for")) {
                         // warning, goto there,tell me the DOM used 'for' directive ,we need to  delete 'for' props 
                         //警告,运行到此处已经说明处理过for指令。删除for指令,避免不同组件通过此for指令寻找不属于他的真实数据,会引发异常
@@ -85,11 +98,11 @@ class RVDomUtil {
                 data = dom.data
                 childDomDatakey = dom.childDomDatakey
             } else {
-                data = this.data
+                data = this.Context.data
                 childDomDatakey = undefined
             }
 
-            let obj = this.vdom2rdom(dom, data, childDomDatakey, data)
+            let obj = this.vdom2rdom(dom, data, childDomDatakey)
             let vDomObj = { isFor: false, rdom: obj }
             return vDomObj
         }
@@ -101,7 +114,7 @@ class RVDomUtil {
      * @param {*} dataSingle 
      * @param {*} tdata 
      */
-    vdom2rdom(dom, data, dataSingle, tdata) {
+    vdom2rdom(dom, data, dataSingle) {
         let obj = {}
         obj.tag = dom.tag
         obj.children = []
@@ -122,14 +135,21 @@ class RVDomUtil {
             }
             else {
                 if (Util.isPlaceHolder(dom.props[value])) {
-                    if (!Util.isDotOperatorExpression(Util.getPlaceHolderValue(dom.props[value]))) {
-                        obj.props[value] = tdata[Util.getPlaceHolderValue(dom.props[value])]
+                    var propValue=Util.getPlaceHolderValue(dom.props[value])
+                    if (!Util.isDotOperatorExpression(propValue)) {
+                        obj.props[value] = data[propValue]
                     } else {
-                        obj.props[value] = data[Util.getPlaceHolderValue(dom.props[value]).split(".")[1]]
+                      
+                        var propKey=propValue.split(".")[0]
+                        var propValue=propValue.split(".")[1]
+                        if (propKey in this.Context.data){
+                            obj.props[value]=this.Context.data[propKey][propValue]
+                        }else{
+                            obj.props[value] = data[propValue]
+                        }
                     }
                 } else if (Util.isOperatorExpression(dom.props[value])) {
-
-                    obj.props[value] = Util.getOperatorExpression(dom.props[value], data, dataSingle)
+                    obj.props[value] = Util.getOperatorExpression(dom.props[value], data, dataSingle,this.Context)
                 }
                 else {
                     obj.props[value] = dom.props[value]
@@ -142,18 +162,26 @@ class RVDomUtil {
         for (let child in dom.children) {
             if (Util.isString(dom.children[child])) {
                 if (Util.isPlaceHolder(dom.children[child])) {
-                    if (Util.getPlaceHolderValue(dom.children[child]).indexOf(dataSingle) == -1) {
-                        obj.children[child] = tdata[Util.getPlaceHolderValue(dom.children[child])]
-
+                    var childValue=Util.getPlaceHolderValue(dom.children[child])
+                    if (!Util.isDotOperatorExpression(childValue)) {
+                       obj.children[child] = Util.getNotUndefinedContent(data[childValue])
                     } else {
-                        obj.children[child] = data[Util.getPlaceHolderValue(dom.children[child]).split(".")[1]]
+                        var childValueKey=childValue.split(".")[0]
+                        var childValueValue=childValue.split(".")[1]
+                        if(childValueKey in this.Context.data){
+                            obj.children[child] =Util.getNotUndefinedContent(this.Context.data[childValueKey][childValueValue])
+                        }else{
+                           
+                            obj.children[child]=Util.getNotUndefinedContent(data[childValueValue])
+                        
+                        }
                     }
 
                 } else if (Util.isOperatorExpression(dom.children[child])) {
-                    obj.children[child] = Util.getOperatorExpression(dom.children[child], data, dataSingle)
+                    obj.children[child] = Util.getNotUndefinedContent(Util.getOperatorExpression(dom.children[child], data, dataSingle,this.Context))
                 }
                 else {
-                    obj.children[child] = dom.children[child]
+                    obj.children[child] = Util.getNotUndefinedContent(dom.children[child])
                 }
 
             } else {

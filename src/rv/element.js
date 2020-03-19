@@ -36,14 +36,14 @@ class Element {
             if (!Util.isRvJsProp(propName)) {
                 if (Util.isRvEvent(propName)) {
                     var evantName = propName.slice(3)
-                    if (evantName=="watch") {
+                    if (evantName == "watch") {
                         //this prop use to watch element value change in real time and auto to modify data
-                        if(el instanceof HTMLInputElement){
-                            el.addEventListener("input",(e)=>{
+                        if (el instanceof HTMLInputElement) {
+                            el.addEventListener("input", (e) => {
                                 Util.defineRvInnerGlobalValue(Util.getMethodHashId(`${props[propName]}value`), el.value, true)
                                 eval(`${Util.invokeGlobalFunName(Util.generateHashMNameByMName(`${props[propName]}change`))}()`)
                             })
-                        }else{
+                        } else {
                             console.log("RV warning:the rv-watch only use in input label")
                         }
                     } else {

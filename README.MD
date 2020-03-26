@@ -1,4 +1,4 @@
-# rv.js 一个 JavaScript 框架
+# yrv.js 一个 JavaScript 框架
 
 ## 无任何依赖
 
@@ -15,7 +15,7 @@
 安装:
 
 ```
-npm install yhongm_rv.js
+npm i yrv.js
 
 ```
 

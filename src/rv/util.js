@@ -26,25 +26,25 @@ class Util {
 
     }
     static isRvJsProp(prop) {
-        return ["domData", "childDomData", "for","data"].includes(prop)
+        return ["domData", "childDomData", "for", "data"].includes(prop)
     }
     static isRvEvent(direction) {
 
         return /^rv-\w*$/.test(direction)
     }
-    static defineRvInnerGlobalValue(key,value,isCanWrite){
-        if(!window.hasOwnProperty("_______js_yhongm_rv____")){
-            Object.defineProperty(window,"_______js_yhongm_rv____",{value:{}})
+    static defineRvInnerGlobalValue(key, value, isCanWrite) {
+        if (!window.hasOwnProperty("_______js_yhongm_rv____")) {
+            Object.defineProperty(window, "_______js_yhongm_rv____", { value: {} })
         }
-        Object.defineProperty(window["_______js_yhongm_rv____"],key,{value:value,writable:isCanWrite})
+        Object.defineProperty(window["_______js_yhongm_rv____"], key, { value: value, writable: isCanWrite })
     }
-    static getRvInnerGlobalValue(key){
-        if(!key){
+    static getRvInnerGlobalValue(key) {
+        if (!key) {
             return undefined
         }
-       return window["_______js_yhongm_rv____"][`${key}`]
+        return window["_______js_yhongm_rv____"][`${key}`]
     }
-    static invokeGlobalFunName(name){
+    static invokeGlobalFunName(name) {
         return `window._______js_yhongm_rv____.${name}`
     }
     static createRvEvent(eventName) {
@@ -57,13 +57,14 @@ class Util {
      * by yhongm
      */
     static generateHashMNameByMName(method){
-        return `${Util.getMethodHashId(method)}_${method}`
+        // return `${Util.getMethodHashId(method)}_${method}`
+        return `_m${Util.getMethodHashId(method)}`
     }
     static getMethodHashId(name) {
         return `_rv_${Util.getHashCode(name)}`
     }
     static getHashCode(str) {
-        str = str.toLowerCase();
+        // str = str.toLowerCase();
         var hash = 1234567890, i, ch;
         for (i = str.length - 1; i >= 0; i--) {
             ch = str.charCodeAt(i);
@@ -90,9 +91,9 @@ class Util {
         }
 
         if (typeof (value) === 'string') {
-            //正整数
+            //positive int 
             var reNumber = /^\d+$/
-            //负整数
+            //negative int 
             var reNeNumber = /^-\d+$/
             //正实数
             var reRealNumber1 = /^[1-9]\d*[.]\d+$/  //非零开头
@@ -177,8 +178,8 @@ class Util {
     static getPlaceHolderValue(content) {
         return content.slice(2, -2)
     }
-    static getNotUndefinedContent(content){
-        return content===undefined?"":content
+    static getNotUndefinedContent(content) {
+        return content === undefined ? "" : content
     }
     /**
      * 是否为表达式
@@ -197,7 +198,7 @@ class Util {
         }
         return false
     }
-    static getOperatorExpression(content, data, dataKey,context) {
+    static getOperatorExpression(content, data, dataKey, context) {
         if (Util.isString(content)) {
 
             var expression = content.slice(content.indexOf("{") + 1, content.indexOf("}"))
@@ -205,17 +206,17 @@ class Util {
             let endIndex = expression.indexOf("#%") + 2
             if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
                 let placeHolder = expression.slice(startIndex, endIndex)
-                var placeHolderValue=Util.getPlaceHolderValue(placeHolder)
+                var placeHolderValue = Util.getPlaceHolderValue(placeHolder)
                 let realValue
                 if (Util.isDotOperatorExpression(placeHolderValue)) {
-                   
-                    var placeHolderValueKey=placeHolderValue.split(".")[0]
-                    var placeHolderValueValue=placeHolderValue.split(".")[1]
 
-                    let placeHolderVValue=data[placeHolderValueValue]
-                    if(placeHolderValueKey in context.data){
-                        placeHolderVValue=data[placeHolderValueKey][placeHolderValueValue]
-                    }else{
+                    var placeHolderValueKey = placeHolderValue.split(".")[0]
+                    var placeHolderValueValue = placeHolderValue.split(".")[1]
+
+                    let placeHolderVValue = data[placeHolderValueValue]
+                    if (placeHolderValueKey in context.data) {
+                        placeHolderVValue = data[placeHolderValueKey][placeHolderValueValue]
+                    } else {
                         if (placeHolderValueKey === dataKey && !dataKey) {
                             placeHolderVValue = data[placeHolderValueValue]
                         }

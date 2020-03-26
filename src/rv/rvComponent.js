@@ -6,7 +6,7 @@ class RvComponent {
     constructor(componentParam) {
         let { template, style, props, name, data, methods, run, domChange, watch } = componentParam
         this.template=template
-        this.parse = new YhmParse()
+        this.parse = new YhmParse(name)
         this.dom = this._getDomTree()
         this.style = style
         this.rdom = this.rdom
@@ -30,14 +30,15 @@ class RvComponent {
         for (let method of Object.keys(this.methods)) {
             var that = this
             this.methods[method] = that.methods[method].bind(this) //the method this point to  this rv component object
-            Util.defineRvInnerGlobalValue(`${Util.generateHashMNameByMName(method)}`,  ()=>{
-                that.methods[method].call(that, Util.getRvInnerGlobalValue(Util.getMethodHashId(method)))
+            
+            Util.defineRvInnerGlobalValue(Util.generateHashMNameByMName(`${this.name}_${method}`),  ()=>{
+                that.methods[method].call(that, Util.getRvInnerGlobalValue(Util.getMethodHashId(`${this.name}_${method}`)))
             })
         }
         for (let data of Object.keys(this.data)){
             //define RV inner function to auto modify  data value
-            Util.defineRvInnerGlobalValue(`${Util.generateHashMNameByMName(`${data}change`)}`,  ()=> {
-                this.data[data]=Util.getRvInnerGlobalValue(Util.getMethodHashId(`${data}value`))
+            Util.defineRvInnerGlobalValue(Util.generateHashMNameByMName(`${this.name}_${data}change`),  ()=> {
+                this.data[data]=Util.getRvInnerGlobalValue(Util.getMethodHashId(`${this.name}_${data}value`))
             })
         }
         Object.defineProperty(this, "$sendEvent", {
@@ -50,9 +51,9 @@ class RvComponent {
                  * 
                  * in other component use 'componentName'+'eventName'+'Event' constitute functionName receive this event
                  */
-                const { name, value } = event
-                Util.defineRvInnerGlobalValue(Util.getMethodHashId(`${this.getName()}${name}Event`), value, true)
-                eval(`${Util.invokeGlobalFunName(Util.generateHashMNameByMName(`${this.getName()}${name}Event`))}()`)
+                const { name, value ,componentName} = event
+                Util.defineRvInnerGlobalValue(Util.getMethodHashId(`${componentName}_${this.name}${name}Event`), value, true)
+                eval(`${Util.invokeGlobalFunName(Util.generateHashMNameByMName(`${componentName}_${this.name}${name}Event`))}()`)
             }
         })
 
@@ -62,7 +63,7 @@ class RvComponent {
             this.parse.parseHtmlTemplate(this.template.trim())
 
         } catch (e) {
-            console.error(`rv component parse e:${e}`)
+            console.error(`rv component ${this.getName()} parse e:${e}`)
         }
         return this.parse.getHtmlDom()
     }

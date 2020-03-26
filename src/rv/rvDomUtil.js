@@ -28,7 +28,7 @@ class RVDomUtil {
             }
         }
 
-        return new Element(dom.tag, dom.props, children)
+        return new Element(dom.tag, dom.props, children,dom.belong)
     }
     applyTruthfulData(dom) {
         if ("for" in dom.props) {
@@ -49,12 +49,9 @@ class RVDomUtil {
                 }
                 else {
                     let forExpressRight =dom.props['for'].split(" _in_ ")[1]
-                    console.log(`forExpressRight:${forExpressRight}`)
                     if(Util.isDotOperatorExpression(forExpressRight)){
-                       console.log(`111,forExpressRight:${forExpressRight}`)
                        let forERKey=forExpressRight.split(".")[0]
                        let forERValue=forExpressRight.split(".")[1]
-                       console.log(`forERKey${forERKey} ,forERValue:${forERValue}`)
                        if(forERKey in this.Context.data){
                            dataArray=this.Context.data[forERKey][forERValue]
                        }else{
@@ -119,6 +116,7 @@ class RVDomUtil {
         obj.tag = dom.tag
         obj.children = []
         obj.props = {}
+        obj.belong=dom.belong
         let props = Object.keys(dom.props)
         for (let prop in props) {
             let value = props[prop]

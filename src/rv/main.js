@@ -19,7 +19,8 @@ class RV {
         this.style = style
         this.template = template
         this.observeMap = new Map()
-        this.parse = new YhmParse()
+        this.name="main"
+        this.parse = new YhmParse(this.name)
         this.rvDomUtil = new RVDomUtil(this.data)
 
 
@@ -35,8 +36,9 @@ class RV {
         for (let method of Object.keys(this.methods)) {
             var that = this
             this.methods[method] = this.methods[method].bind(this) //the method this point to  this rv object
-            Util.defineRvInnerGlobalValue(`${Util.generateHashMNameByMName(method)}`, function () {
-                that.methods[method].call(that, Util.getRvInnerGlobalValue(Util.getMethodHashId(method)))
+            console.log(`method:${method} ,value:${Util.getMethodHashId(`${this.name}_${method}`)}`)
+            Util.defineRvInnerGlobalValue(Util.generateHashMNameByMName(`${this.name}_${method}`), function () {
+                that.methods[method].call(that, Util.getRvInnerGlobalValue(Util.getMethodHashId(`${that.name}_${method}`)))
             })
         }
     }
@@ -49,25 +51,6 @@ class RV {
         let dom = this._getDomTree()
 
         let rvThis = this
-        // this.parse.componetMap.forEach(function (componet) {
-
-        //     observe(componet.data, componet.observeMap, () => {
-
-        //         dom = rvThis._getDomTree()
-        //         rvThis._updatedom(dom)
-        //     })
-        //     Util.loopGet(componet.data)
-        //     Object.keys(componet.watchObj).forEach((watchFun) => {
-
-        //         if ((componet.observeMap.hasKey(watchFun))) {
-        //             componet.observeMap.get(watchFun).add(() => {
-        //                 componet.watchObj[watchFun]()
-        //             })
-        //         }
-        //     })
-        //     componet.run()
-
-        // })
        
         this._handleMultiComponet(this.parse,rvThis)
         this.ve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(dom).rdom)

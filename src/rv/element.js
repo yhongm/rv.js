@@ -6,16 +6,17 @@ class Element {
      * @param {*} props  the prop (key，style..)
      * @param {*} children child data
      */
-    constructor(tag, props, children) {
+    constructor(tag, props, children,belong) {
         if (!(this instanceof Element)) {
             return new Element(tagName, props, children)
         }
         this.tag = tag
+        this.belong=belong
         this.props = props || {}
         this.children = children || []
         this.key = props ? props.key : undefined
         if (!this.key) {
-            throw new Error(`${tag} ... html tag the key is undefined`)
+            throw new Error(`${tag} ... html tag in component ${this.belong} the key is undefined`)
         }
         let count = 0;
         this.children.forEach(child => {
@@ -40,8 +41,8 @@ class Element {
                         //this prop use to watch element value change in real time and auto to modify data
                         if (el instanceof HTMLInputElement) {
                             el.addEventListener("input", (e) => {
-                                Util.defineRvInnerGlobalValue(Util.getMethodHashId(`${props[propName]}value`), el.value, true)
-                                eval(`${Util.invokeGlobalFunName(Util.generateHashMNameByMName(`${props[propName]}change`))}()`)
+                                Util.defineRvInnerGlobalValue(Util.getMethodHashId(`${this.belong}_${props[propName]}value`), el.value, true)
+                                eval(`${Util.invokeGlobalFunName(Util.generateHashMNameByMName(`${this.belong}_${props[propName]}change`))}()`)
                             })
                         } else {
                             console.log("RV warning:the rv-watch only use in input label")
@@ -49,8 +50,9 @@ class Element {
                     } else {
                         el.addEventListener(evantName, (e) => {
                             Object.defineProperty(e, "element", { value: el })
-                            Util.defineRvInnerGlobalValue(Util.getMethodHashId(`${props[propName]}`), e, true)
-                            eval(`${Util.invokeGlobalFunName(Util.generateHashMNameByMName(props[propName]))}()`)
+                            Util.defineRvInnerGlobalValue(Util.getMethodHashId(`${this.belong}_${props[propName]}`), e, true)
+                            console.log("click,",Util.generateHashMNameByMName(`${this.belong}_${props[propName]}`))
+                            eval(`${Util.invokeGlobalFunName(Util.generateHashMNameByMName(`${this.belong}_${props[propName]}`))}()`)
                         })
                     }
 

@@ -190,7 +190,7 @@ RV.component用于声明组件的方法,
 组件对象传参run 为RV组件方法，用于运行组件相关js代码
 组件对象传参domChange为RV组件方法，dom变化时触发此代码，用于运行dom相关代码
 组件对象传参watch为RV组件对象，用于观察组件data数据变化
-组件对象函数内调用this.$sendEvent({name,value}) 发送事件到其他组件 ,name为事件名称,value为事件值。可以将此组件状态或属性值发送到其他组件。其他组件通过在组件methods中声明(组件名+事件名+'event')函数监听次事件(比如RvSelectIDEvent(newId),其中RvSelect为组件名,ID为事件名,newId为事件的新值)。
+组件对象函数内调用this.$sendEvent({name,value,componentName}) 发送事件到其他组件 ,name为事件名称,value为事件值,componentName为要发送到的组件名。可以将此组件状态或属性值发送到其他组件。其他组件通过在组件methods中声明(组件名+事件名+'event')函数监听次事件(比如RvSelectIDEvent(newId),其中RvSelect为组件名,ID为事件名,newId为事件的新值)。
 
 ```
 

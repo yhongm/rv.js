@@ -5,9 +5,10 @@ import Map from "./map"
  * @author yhongm
  */
 class YhmParse {
-  constructor() {
+  constructor(componetName) {
     this.componetMap = new Map()
     this.mIndex = 0
+    this.componetName=componetName
     this.mMap = new Map()
     this.mPropRe = /([^=\s]+)(\s*=\s*((\"([^"]*)\")|(\'([^']*)\')|[^>\s]+))?/gm
     this.mHandler = {
@@ -21,7 +22,7 @@ class YhmParse {
           that.mMap.put(that.mIndex, that.componetMap.get(tagName).getDom())
 
         } else {
-          var obj = { tag: tagName, props: prop, children: [], index: that.mIndex, content: content, isClose: false }
+          var obj = { tag: tagName, props: prop, children: [], index: that.mIndex, content: content, isClose: false ,belong:that.componetName}
 
           if (content.length > 0) {
 

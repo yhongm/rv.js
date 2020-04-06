@@ -1,29 +1,52 @@
-import Map from "./map"
+import Map from "yrv.js/src/rv/map"
+import Util from "yrv.js/src/rv/util"
 
 /**
  * this class is parse html template to virtual dom tree
  * @author yhongm
  */
 class YhmParse {
-  constructor(componetName) {
-    this.componetMap = new Map()
+  constructor(context) {
     this.mIndex = 0
-    this.componetName=componetName
-    this.mMap = new Map()
+    this.context=context
+    this.componentMap = new Map(this.context.componentName+"YhmParseComponentMap")
+    this.mMap = new Map(this.context.componentName+"HtmlDomMap")
+    
     this.mPropRe = /([^=\s]+)(\s*=\s*((\"([^"]*)\")|(\'([^']*)\')|[^>\s]+))?/gm
     this.mHandler = {
       startELement: function (tagName, prop, content, that) {
         that.mIndex += 1
-        if (that.componetMap.hasKey(tagName)) {
-          //已经有当前组件的记录，将当前组件插入dom中
-          that.componetMap.get(tagName).generateDom()
-          that.componetMap.get(tagName).apply(prop)
-          that.componetMap.get(tagName).applyTruthFulData()
-          that.mMap.put(that.mIndex, that.componetMap.get(tagName).getDom())
+
+        if (that.componentMap.hasKey(tagName) ||tagName==="routerview") {
+          //if the tag is have  registered component
+          if (that.context.componentName === "main" && tagName === "routerview") {
+            //if in main page and the current tag is 'routeview' , so get component insert DOM TREE by the route 
+            let needRenderComponent=that.context.route.getNeedRenderComponent()
+            needRenderComponent.paramObj=that.context.route.getNeedRenderComponentParam()
+            needRenderComponent._rv_ev_domChange()
+            needRenderComponent.applyTruthFulData()
+            
+            that.mMap.put(that.mIndex, needRenderComponent.getDom())
+          } else {
+            //this registered component insert dom tree
+            let component =that.componentMap.get(tagName)
+            Object.keys(component.props).forEach(componentProp=>{
+                let propValue=prop[componentProp]
+                if(Util.isPlaceHolder(propValue)){
+                   propValue= that.context.componentData[Util.getPlaceHolderValue(propValue)]
+                }
+                component.props[componentProp]=propValue
+            })
+            component._rv_ev_domChange()
+            component.applyTruthFulData()
+            that.mMap.put(that.mIndex, that.componentMap.get(tagName).getDom())
+
+          }
+
 
         } else {
-          var obj = { tag: tagName, props: prop, children: [], index: that.mIndex, content: content, isClose: false ,belong:that.componetName}
-
+          var obj = { tag: tagName, props: prop, children: [], index: that.mIndex, content: content, isClose: false, belong: that.context.componentName }
+          
           if (content.length > 0) {
 
             obj.children.push(content.trim())
@@ -35,7 +58,27 @@ class YhmParse {
       endElement: function (that) {
         that.mMap.get(that.mIndex).isClose = true
         if (that.mMap.hasKey((that.mIndex - 1))) {
-          that.mMap.get(that.mIndex - 1).children.push(that.mMap.get(that.mIndex))
+          if(that.mMap.get(that.mIndex).props.hasOwnProperty("slot")){
+            let slotPosition=that.mMap.get(that.mIndex).props.slot
+            let slotIndex=-1
+            if (slotPosition=="default"){
+                slotIndex=that.mMap.get(that.mIndex - 1).children.findIndex((child)=>{
+                return child.tag==="slot"
+              })
+              
+            }else{
+                slotIndex=that.mMap.get(that.mIndex - 1).children.findIndex((child)=>{
+                return child.tag==="slot"&&child.props.name===slotPosition
+              })
+            }
+            if(slotIndex>-1){
+              that.mMap.get(that.mIndex - 1).children[slotIndex]=that.mMap.get(that.mIndex)
+            }
+           
+          }else{
+            that.mMap.get(that.mIndex - 1).children.push(that.mMap.get(that.mIndex))
+          }
+         
           that.mMap.remove(that.mIndex)
         }
         that.mIndex -= 1
@@ -50,8 +93,7 @@ class YhmParse {
    * @param {*} rvComponent 
    */
   useCustomComponent(rvComponent) {
-
-    this.componetMap.put(rvComponent.getName(), rvComponent)
+    this.componentMap.put(rvComponent.getName(), rvComponent)
   }
   parseHtmlTemplate(html) {
     let startTime = new Date() / 1000
@@ -84,7 +126,7 @@ class YhmParse {
           //single label to the parse end tag  
           _parseEndTag(html.substring(startTagOpen, startTagClose + 1), this)
         }
-        
+
 
 
         html = html.substring(index)
@@ -108,9 +150,9 @@ class YhmParse {
           var pr = propsResult[i]
           //prop[pr.split("=")[0]] = pr.split("=")[1].match(/(?<=").*?(?=")/)?pr.split("=")[1].match(/(?<=").*?(?=")/)[0]:pr.split("=")[1]
           //IE and FF browser unsupport regExp ?<=
-          
-          prop[pr.split("=")[0]] = /\".*?\"/.test(pr.split("=")[1])?pr.split("=")[1].slice(1,-1):pr.split("=")[1]
-          
+
+          prop[pr.split("=")[0]] = /\".*?\"/.test(pr.split("=")[1]) ? pr.split("=")[1].slice(1, -1) : pr.split("=")[1]
+
         }
       }
 
@@ -118,8 +160,8 @@ class YhmParse {
         // if (/(?<=").*?(?=")/.test(content)) {
         //   content = content.match(/(?<=").*?(?=")/)[0]
         // }
-        if(/\".*?\"/.test(content)){
-           content=content.slice(1,-1)
+        if (/\".*?\"/.test(content)) {
+          content = content.slice(1, -1)
         }
         that.mHandler.startELement(tagName, prop, content, that)
       }

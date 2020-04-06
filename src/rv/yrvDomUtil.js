@@ -6,10 +6,12 @@ import Element from "./element"
  * @author yhongm
  */
 class RVDomUtil {
-    constructor(data) {
+    constructor(context) {
+        const { componentName, componentData,route } = context
         this.Context={} //this Context use to save global info 
-        this.Context.data=data
-    }
+        this.Context.data=componentData
+        this.Context.componentName=componentName
+   }
 
     getVirtualElement(dom) {
         let children = []
@@ -127,7 +129,6 @@ class RVDomUtil {
                     let styles = style.split(";")
                     obj.props[value] = this.handleArrayStyle(data, styles, dataSingle)
                 } else {
-
                     obj.props[value] = this.handleSingleStyle(data, style, dataSingle)
                 }
             }
@@ -213,13 +214,14 @@ class RVDomUtil {
 
     }
     handleSingleStyle(data, style, dataSingle) {
+        
         let newStyle = ''
         if (dataSingle) {
             if (Util.isPlaceHolder(style)) {
                 if (Util.getPlaceHolderValue(style).indexOf(dataSingle) != -1) {
                     let key = Util.getPlaceHolderValue(style).split(".")[1]
                     newStyle = data[key]
-                } else {
+               } else {
                     let styleKey = style.split(":")[0]
                     let styleValue = style.split(":")[1]
                     styleValue = data[Util.getPlaceHolderValue(styleValue)]
@@ -234,11 +236,10 @@ class RVDomUtil {
             let styleValue = style.split(":")[1]
             if (Util.isPlaceHolder(styleValue)) {
                 styleValue = data[Util.getPlaceHolderValue(styleValue)]
+                
                 newStyle = styleKey + ":" + styleValue
-
             } else {
                 newStyle = style
-
             }
         }
         return newStyle

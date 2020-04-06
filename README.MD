@@ -174,6 +174,26 @@ function clickP2() {
 5. data 数据对象,虚拟 dom 中使用%##%访问 data 中数据
 6. rv.methods({}) ,为 rv 对象添加函数，函数中 this 指向此 rv 对象，可以访问此 rv 对象数据，调用此 rv 对象函数
 7. rv.run(callback) ,启动 rv,callback 为运行执行的函数
+8. rv.route(routerConfig) .rv添加组件路由
+9. 组件路由配置例子：
+```javascript
+var routerConfig=[
+   
+    {   path:"login",  //path对应组件路径
+        component:login,//component对应组件
+        param:"",
+        ismain:true
+    },
+    {
+        path:"index",
+        component:manager,
+        param:"",
+        ismain:false
+    },
+]
+export default routerConfig
+
+```
 
 二. 声明组件以及使用组件:
 
@@ -188,9 +208,12 @@ RV.component用于声明组件的方法,
 组件对象传参data 为RV组件data
 组件对象传参methods，为RV组件method对象，在对象中创建方法以及回调。其中方法中的this指向此组件
 组件对象传参run 为RV组件方法，用于运行组件相关js代码
-组件对象传参domChange为RV组件方法，dom变化时触发此代码，用于运行dom相关代码
+组件对象传参onDomChange为RV组件方法，dom变化时触发
+组件对象传参onMount为RV组件方法，组件挂载时触发
 组件对象传参watch为RV组件对象，用于观察组件data数据变化
 组件对象函数内调用this.$sendEvent({name,value,componentName}) 发送事件到其他组件 ,name为事件名称,value为事件值,componentName为要发送到的组件名。可以将此组件状态或属性值发送到其他组件。其他组件通过在组件methods中声明(组件名+事件名+'event')函数监听次事件(比如RvSelectIDEvent(newId),其中RvSelect为组件名,ID为事件名,newId为事件的新值)。
+组件插槽标签slot，slot标签name属性用于区分插槽，如果组件内只有一个插槽这不需要name属性
+
 
 ```
 
@@ -202,7 +225,10 @@ RV.component用于声明组件的方法,
   var con = RV.component({ //定义自定义RV组件
         name: "MyComponent",//定义RV组件名字
         template: `
-            <div class="aaa" key="aaa"><p key="bbb" style="color:%#pcolor#%" time="%#time#%" componentValue="%#pvalue#%">"%#pcontent#%"</p><div>
+            <div class="aaa" key="aaa">
+             <p key="bbb" style="color:%#pcolor#%" time="%#time#%" componentValue="%#pvalue#%">"%#pcontent#%"</p>
+                <slot name="foot" key="slot"></slot>   <!--slot标签为组件添加插槽-->
+             <div>
         `,//定义RV组件,HTML语法声明组件模板
         style: `
         .aaa {
@@ -264,14 +290,17 @@ RV.component用于声明组件的方法,
             }
 
         },
-        domChange(){
+        onDomChange(){
             //dom 变化时触发，用于运行dom相关代码
-        }
+        },
         watch: {
             pcolor() {
                 console.log(`pcolorChange,change:`)
 
             }
+        },
+        onMount(){
+          //组件挂载时候调用
         }
 
 
@@ -299,7 +328,9 @@ rv = new RV({
                          <div key="4">
                             <p key="{%#v.id#%+'_content'}" childDomData="v" for="v _in_ week"  domData="week">"%#v.content#%"</p>
                          </div>
-                         <MyComponent content="%#componentCotent#%"  time="{Math.floor(new Date()/1000)+'_ttt'}" value="%#componentValue#%" key="888"></MyComponent>
+                         <MyComponent content="%#componentCotent#%"  time="{Math.floor(new Date()/1000)+'_ttt'}" value="%#componentValue#%" key="888">
+                             <div slot="foot">"插槽demo"</div>
+                         </MyComponent>
                        </div>`,
   // MyComponent为自定义RV组件名字，定义组件时name值.content,value,time为定义组件时属性,定义组件时props值
 });

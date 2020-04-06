@@ -2,10 +2,15 @@ import Util from './util';
 import {NODE_REPLACE,CHILD_RE_ORDER,NODE_PROPS,NODE_CONTENT} from "./domState"
 class Patch {
     constructor(node, patches) {
-        let walker = {
+        this.node=node
+        this.patches=patches
+        this.walker = {
             index: 0
         }
-        this.dfsWalk(node, walker, patches)
+        
+    }
+    apply(){
+        this.dfsWalk(this.node, this.walker, this.patches)
     }
     dfsWalk(node, walker, patches) {
         let currentPatches = patches[walker.index]
@@ -54,7 +59,7 @@ class Patch {
                 let key = snode.getAttribute('key')
                 if (key) {
                     nodeMaps[key] = snode
-                }
+               }
             }
         })
         moves.forEach((move) => {
@@ -66,6 +71,7 @@ class Patch {
                 staticNodeList.splice(index, 1)
             } else if (move.type === 1) {
                 let insertNode = nodeMaps[move.item.key] ?
+                   
                     nodeMaps(move.item.key).cloneNode(true) :
                     Util.isString(move.item) ? document.createTextNode(move.item) : move.item.render()
                 staticNodeList.splice(index, 0, insertNode)

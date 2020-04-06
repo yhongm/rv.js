@@ -13,6 +13,9 @@ class Util {
         }
         return array
     }
+    static isHtmlTag(tag){
+        return "img,iframe,embed,object,param,video,audio,source,track,canvas,map,area,svg,math,datails,summary,menuitem,menu,form,fieldset,legend,label,input,button,select,datalist,optgroup,option,textarea,keygen,output,progress,meter,table,caption,colgroup,col,tbody,thead,tfoot,tr,td,th,a,em,strong,small,s,cite,q,dfn,abbr,data,time,code,var,samp,kbd,sub,sup,i,b,u,mark,ruby,rt,bdi,bdo,span,br,wbr,p,hr,pre,blockquote,ol,ul,li,dl,dt,dd,body,section,nav,article,aside,h1,h2,h3,h4,h5,h6,header,footer,address,main,head,title,base,link,meta,style,script,noscript,template,ins,del,html,div".split(",").includes(tag)
+    }
     static loopGet(obj) {
         Object.keys(obj).forEach((key) => {
             if (obj[key] instanceof Array) {
@@ -21,6 +24,7 @@ class Util {
                 })
             } else {
                 obj[key]
+                //console.log("loopGet,obj[key]:"+obj[key])
             }
         })
 
@@ -47,9 +51,10 @@ class Util {
     static invokeGlobalFunName(name) {
         return `window._______js_yhongm_rv____.${name}`
     }
-    static createRvEvent(eventName) {
-        var event = document.createEvent("Event");
-        event.initEvent(eventName, false, true);
+    static createRvEvent(eventName,objData) {
+        var event = document.createEvent("CustomEvent")
+        event.initCustomEvent(`rv_${eventName}`, false, true,objData);
+        document.dispatchEvent(event)
         return event
     }
     /**
@@ -57,8 +62,8 @@ class Util {
      * by yhongm
      */
     static generateHashMNameByMName(method){
-        // return `${Util.getMethodHashId(method)}_${method}`
-        return `_m${Util.getMethodHashId(method)}`
+        return `${Util.getMethodHashId(method)}_${method}`
+        //return `_m${Util.getMethodHashId(method)}`
     }
     static getMethodHashId(name) {
         return `_rv_${Util.getHashCode(name)}`

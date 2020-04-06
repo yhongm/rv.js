@@ -9,8 +9,12 @@ class Diff {
      */
     constructor(oldTree, newTree) {
         this.index = 0
+        this.oldTree=oldTree
+        this.newTree=newTree
         this.patches = {}
-        this.dfsWalk(oldTree, newTree, this.index)
+    }
+    goDiff(){
+        this.dfsWalk(this.oldTree, this.newTree, this.index)
     }
     dfsWalk(oldNode, newNode, index) {
         let currentPatch = []
@@ -68,6 +72,7 @@ class Diff {
     }
     diffChildren(oldChildren, newChildren, index, currentPatch) {
         let diffList = new DiffList(oldChildren, newChildren)
+        diffList.goDiff()
         let diffs = diffList.getResult()
         newChildren = diffs.child
         if (diffs.moves.length) {

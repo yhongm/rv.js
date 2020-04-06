@@ -2,113 +2,91 @@ import Util from "./util"
 import Patch from "./patch"
 import Diff from "./diff"
 import Element from "./element"
-import YhmParse from "./rvParse"
-import RVDomUtil from "./rvDomUtil"
-import RvComponent from "./rvComponent"
-import Map from "./map"
-class RV {
-    constructor(option) {
-        const {
-            el,
-            data,
-            style,
-            template
-        } = option
-        this.el = el
-        this.data = data
-        this.style = style
-        this.template = template
-        this.observeMap = new Map()
-        this.name="main"
-        this.parse = new YhmParse(this.name)
-        this.rvDomUtil = new RVDomUtil(this.data)
-
-
+import RvComponent from "yrv.js/src/rv/yrvComponent"
+import RvRoute from "yrv.js/src/rv/yrvRoute"
+class RV extends RvComponent{
+    constructor(el,componentParam){
+        super(componentParam)
+        this.el=el
+        this.context.route=new RvRoute()
     }
-    use(rvComponentObj) {
-        this.parse.useCustomComponent(rvComponentObj)
+    route(routeConfigs){
+        //the function use to register route
+        this.context.route.register(routeConfigs)
     }
-    methods(methodObj) {
-        this.methods = methodObj
-        this._defineMethod()
-    }
-    _defineMethod() {
-        for (let method of Object.keys(this.methods)) {
-            var that = this
-            this.methods[method] = this.methods[method].bind(this) //the method this point to  this rv object
-            console.log(`method:${method} ,value:${Util.getMethodHashId(`${this.name}_${method}`)}`)
-            Util.defineRvInnerGlobalValue(Util.generateHashMNameByMName(`${this.name}_${method}`), function () {
-                that.methods[method].call(that, Util.getRvInnerGlobalValue(Util.getMethodHashId(`${that.name}_${method}`)))
-            })
-        }
-    }
+    
     /**
      * run rv
      */
     run(funCallback) {
         let root = Util.isString(this.el) ? document.querySelector(this.el) : this.el
         Util.addStyle2Head(this.style)
-        let dom = this._getDomTree()
-
         let rvThis = this
-       
-        this._handleMultiComponet(this.parse,rvThis)
-        this.ve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(dom).rdom)
+        this.use(this.context.route.getNeedRenderComponent())//todo
+        this._handleMultiComponent(this.parse,rvThis)
+        this.ve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom)
         this.w = this.ve.render()
         root.appendChild(this.w)
-
         observe(this.data, this.observeMap, () => {
-            this._updatedom(this._getDomTree())
+            this._updatedom()
         })
-        this._updatedom(dom)
+       
         funCallback(this)
+        
+        Object.defineProperty(this,"_$goRoutePath",{
+            set(val){
+                this.context.route.go(val)
+                this._updatedom()
+            },
+        })
+        window.routeChange=function(path){
+            let customEvent=document.createEvent("CustomEvent")
+            customEvent.initCustomEvent("routeChange",true,true,path)
+            document.dispatchEvent(customEvent)
+        }
+        document.addEventListener("routeChange",(e)=>{
+            this._$goRoutePath=e.detail
+            this.parse.componentMap.clear()
+            this.use(this.context.route.getNeedRenderComponent())//todo
+            this._handleMultiComponent(this.parse,rvThis)//todo
+           
+        })
+        this._updatedom()
     }
-    _handleMultiComponet(parse,rvThis){
-        parse.componetMap.forEach(function (componet) {
-            if(componet.parse.componetMap&&componet.parse.componetMap.length>0){
-                rvThis._handleMultiComponet(componet.parse,rvThis)
+    _handleMultiComponent(parse,rvThis){
+       parse.componentMap.forEach(function (component) {
+         if(component.parse.componentMap&&component.parse.componentMap.length>0){
+                rvThis._handleMultiComponent(component.parse,rvThis)
             }
-            observe(componet.data, componet.observeMap, () => {
+            observe(component.data, component.observeMap, () => {
                 rvThis._updatedom(rvThis._getDomTree())
             })
-            Util.loopGet(componet.data)
-            Object.keys(componet.watchObj).forEach((watchFun) => {
+            Util.loopGet(component.data)
+            Object.keys(component.watchObj).forEach((watchFun) => {
 
-                if ((componet.observeMap.hasKey(watchFun))) {
-                    componet.observeMap.get(watchFun).add(() => {
-                        componet.watchObj[watchFun]()
+                if ((component.observeMap.hasKey(watchFun))) {
+                    component.observeMap.get(watchFun).add(() => {
+                        component.watchObj[watchFun]()
                     })
                 }
             })
-            componet.run()
+            component.run()
 
         })
     }
-    _getDomTree() {
-        try {
-            this.parse.parseHtmlTemplate(this.template.trim())
-
-        } catch (e) {
-            console.error(`rv parse e:${e}`)
-        }
-        return this.parse.getHtmlDom()
-    }
-    _updatedom(dom) {
-        let nve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(dom).rdom)
-        window.nve = nve
-        window.ve = this.ve
-        patch(this.w, diff(this.ve, nve))
-        this.parse.componetMap.forEach((component) => {
-            component.domChange()
-        })
-        this.ve = nve
-    }
+    
     watch(key, callback) {
         if (this.observeMap.hasKey(key)) {
             this.observeMap.get(key).add(callback)
         }
 
     }
+    _updatedom() {    
+        let nve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom)
+        patch(this.w, diff(this.ve, nve))
+        this.ve = nve
+    }
+   
     /**
      * this static function use to declaration a RV component
      * @param {*} option 
@@ -117,12 +95,10 @@ class RV {
 
         const { name, template, style, props, data } = option
         
-        return new RvComponent({ template: template, style: style, props: props, name: name, data: data, methods: option.methods, run: option.run, domChange: option.domChange, watch: option.watch })
+        return new RvComponent({ template: template, style: style, props: props, name: name, data: data, methods: option.methods, run: option.run, onDomChange: option.onDomChange, watch: option.watch,onMount:option.onMount},false)
     }
 
-
 }
-
 
 function observe(obj, observeMap, callback) {
 
@@ -157,7 +133,10 @@ class Observable {
         this.updateFunctions = new Set()
     }
     add(observableUpdate) {
-        this.updateFunctions.add(observableUpdate)
+        if(!this.updateFunctions.has(observableUpdate)){
+            this.updateFunctions.add(observableUpdate)
+        }
+       
     }
     invoke() {
         this.updateFunctions.forEach(fun => fun())
@@ -203,14 +182,12 @@ function h(tagName, props, children) {
 }
 function diff(oldTree, newTree) {
     let d = new Diff(oldTree, newTree)
+    d.goDiff()
     return d.patches
 }
 
 
 function patch(node, patches) {
-    return new Patch(node, patches)
+    new Patch(node, patches).apply()
 }
-
-
-
 export default RV

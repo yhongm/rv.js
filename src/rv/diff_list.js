@@ -3,77 +3,80 @@ class DiffList {
      * diff list 
      * @param {*} oldList 
      * @param {*} newList 
-     * @param {*} key 
      */
     constructor(oldList, newList) {
-        let oldListKeyIndex = this.makeKeyIndex(oldList).keyIndex
-        let newListKeyIndex = this.makeKeyIndex(newList).keyIndex
+        this.oldList=oldList
+        this.newList=newList
+        this.oldListKeyIndex = this.makeListKeyIndex(this.oldList)
+        this.newListKeyIndex = this.makeListKeyIndex(this.newList)
         this.moveOperator = []
         this.childList = []
-        for (let i = 0; i < oldList.length; i++) {
-            let oldItem = oldList[i]
+        this.tempList=[]
+    }
+    /**
+     * this function start diff 
+     */
+    goDiff(){
+        for (let i = 0; i < this.oldList.length; i++) {
+            let oldItem = this.oldList[i]
             let oItemKey = this.getKey(oldItem)
-            if (!newListKeyIndex.hasOwnProperty(oItemKey)) {
+            if (!this.newListKeyIndex.hasOwnProperty(oItemKey)) {
                 this.childList.push(null)
             } else {
-                this.childList.push(newList[newListKeyIndex[oItemKey]])
+                this.childList.push(this.newList[this.newListKeyIndex[oItemKey]])
             }
         }
-        this.tempList = this.childList.slice(0)
+        this.tempList = this.childList.concat()//copy the childList to a teml list
         let i = 0;
         while (i < this.tempList.length) {
             if (this.tempList[i] === null) {
-                this.remove(i)
+                this.removeOperator(i)
                 this.removeCopyTempList(i)
             } else {
                 i++
             }
         }
         let index = 0
-        for (let i = 0; i < newList.length; i++) {
-            let nItem = newList[i]
+        for (let i = 0; i < this.newList.length; i++) {
+            let nItem = this.newList[i]
             let nItemKey = this.getKey(nItem)
             let cItem = this.tempList[index]
             let cItemKey = this.getKey(cItem)
             if (cItem) {
                 if (nItemKey != cItemKey) {
-                    if (oldListKeyIndex.hasOwnProperty(nItemKey)) {
+                    if (this.oldListKeyIndex.hasOwnProperty(nItemKey)) {
                         let cNextItemKey = getKey(this.tempList[index + 1])
                         if (nItemKey === cNextItemKey) {
-                            this.remove(i)
+                            this.removeOperator(i)
                             this.removeCopyTempList(index)
                             index++
                         } else {
-                            this.insert(i, nItem)
+                            this.insertOperator(i, nItem)
                         }
                     } else {
-                        this.insert(i, nItem)
+                        this.insertOperator(i, nItem)
                     }
                 } else {
                     index++
                 }
             } else {
-                this.insert(i, nItem)
+                this.insertOperator(i, nItem)
             }
         }
         let k = this.tempList.length - index
         while (index++ < this.tempList.length) {
             k--
-            this.remove(k + newList.length)
+            this.removeOperator(k + this.newList.length)
         }
-
-
     }
-    makeKeyIndex(list) {
-        let keyIndex = {}
+    makeListKeyIndex(list) {
+        let listkeyIndex = {}
         for (let i = 0; i < list.length; i++) {
             let item = list[i]
             let itemKey = this.getKey(item)
-            keyIndex[itemKey] = i
+            listkeyIndex[itemKey] = i
         }
-        return {
-            keyIndex: keyIndex
-        }
+        return listkeyIndex
     }
 
     getKey(item) {
@@ -85,14 +88,14 @@ class DiffList {
     removeCopyTempList(index) {
         this.tempList.splice(index, 1)
     }
-    remove(index) {
+    removeOperator(index) {
         this.moveOperator.push({
             index: index,
             type: 0
         })
     }
 
-    insert(index, item) {
+    insertOperator(index, item) {
         this.moveOperator.push({
             index: index,
             item: item,

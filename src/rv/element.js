@@ -39,7 +39,7 @@ class Element {
                     var evantName = propName.slice(3)
                     if (evantName == "watch") {
                         //this prop use to watch element value change in real time and auto to modify data
-                        if (el instanceof HTMLInputElement) {
+                        if           (el instanceof HTMLInputElement) {
                             el.addEventListener("input", (e) => {
                                 Util.defineRvInnerGlobalValue(Util.getMethodHashId(`${this.belong}_${props[propName]}value`), el.value, true)
                                 eval(`${Util.invokeGlobalFunName(Util.generateHashMNameByMName(`${this.belong}_${props[propName]}change`))}()`)
@@ -51,7 +51,6 @@ class Element {
                         el.addEventListener(evantName, (e) => {
                             Object.defineProperty(e, "element", { value: el })
                             Util.defineRvInnerGlobalValue(Util.getMethodHashId(`${this.belong}_${props[propName]}`), e, true)
-                            console.log("click,",Util.generateHashMNameByMName(`${this.belong}_${props[propName]}`))
                             eval(`${Util.invokeGlobalFunName(Util.generateHashMNameByMName(`${this.belong}_${props[propName]}`))}()`)
                         })
                     }

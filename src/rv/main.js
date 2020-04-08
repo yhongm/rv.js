@@ -14,11 +14,10 @@ class RV extends RvComponent {
         //the function use to register route
         this.context.route.register(routeConfigs)
     }
-
     /**
      * run rv
      */
-    run(funCallback) {
+    run(callback) {
         let root = Util.isString(this.el) ? document.querySelector(this.el) : this.el
         Util.addStyle2Head(this.style)
         let rvThis = this
@@ -27,12 +26,18 @@ class RV extends RvComponent {
         this.ve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom)
         this.w = this.ve.render()
         root.appendChild(this.w)
+        callback(this)
+        Object.keys(this.watchObj).forEach((watchFun) => {
+
+            if ((this.observeMap.hasKey(watchFun))) {
+                this.observeMap.get(watchFun).add(() => {
+                    this[watchFun]()
+                })
+            }
+        })
         observe(this.data, this.observeMap, () => {
             this._updatedom()
         })
-
-        funCallback(this)
-
         Object.defineProperty(this, "_$goRoutePath", {
             set(val) {
                 this.context.route.go(val)
@@ -73,13 +78,6 @@ class RV extends RvComponent {
             component._rv_ev_run()
 
         })
-    }
-
-    watch(key, callback) {
-        if (this.observeMap.hasKey(key)) {
-            this.observeMap.get(key).add(callback)
-        }
-
     }
     _updatedom() {
         let nve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom)

@@ -75,7 +75,7 @@ var rv = new RV({
   el: "#app", //el对象挂载的节点
   style: ``, //css样式
   data: myData, //数据对象，用于驱动视图更新，数据变化，视图自动更新
-  template: `<div key="1" style="color:%#pcolor#%,width:100px,height:100px" onclick="clickDiv()">
+  template: `<div key="1" style="color:%#pcolor#%,width:100px,height:100px"           onclick="clickDiv()">
                          "%#parent#%"
                          <p key="2" style="color:%#c1color#%,width:50px,height:50px" onclick="clickP1()">
                              "%#child#%"
@@ -88,30 +88,30 @@ var rv = new RV({
                          </div>
                          <MyComponent content="%#componentCotent#%"  time="{Math.floor(new Date()/1000)+'_ttt'}" value="%#componentValue#%" key="888"></MyComponent>
                        </div>`,
+  methods:{
+    test1(){
+       this.methods.test2()//调用test2()函数
+    }
+    test2(){
+       this.data // 访问data数据
+    }
+  },                     
+  watch:{
+    parent(){
+       alert("parent,change");
+    }
+    child(){
+      alert("child,change");
+
+    }
+    child2(){
+       alert("child2,change");
+
+    }
+  }                     
 });
 
-//rv.watch("key",callback) 观察data数据对象对应key的数值变化,变化触发callback
-rv.watch("parent", () => {
-  alert("parent,change");
-});
-
-rv.watch("child", () => {
-  alert("child,change");
-});
-rv.watch("child2", () => {
-  alert("child2,change");
-});
-rv.methods({
-  //为rv对象添加函数，函数中this指向本rv对象
-  test1(){
-    this.methods.test2()//调用test2()函数
-  }
-  test2(){
-    this.data // 访问data数据
-
-  }
-})
-rv.run(callback); //callback 运行时候执行的函数
+rv.run(callback(this)=>{}); //callback 运行时候执行的函数
 function clickDiv() {
   rv.data.parent = `click Div time:${new Date() / 1000}`; //点击更新data，视图自动更新
 }
@@ -169,12 +169,12 @@ function clickP2() {
 </tbody>
 ```
 
-3. rv.watch(data,callback)观察 data 属性对象变化,变化后触发 callback
-4. el 挂载对象节点选择器
-5. data 数据对象,虚拟 dom 中使用%##%访问 data 中数据
-6. rv.methods({}) ,为 rv 对象添加函数，函数中 this 指向此 rv 对象，可以访问此 rv 对象数据，调用此 rv 对象函数
-7. rv.run(callback) ,启动 rv,callback 为运行执行的函数
-8. rv.route(routerConfig) .rv添加组件路由
+3. RV构造函数形参el 挂载对象节点选择器
+4. RV构造函数形参componentParam对象属性template， 为RV组件html声明模板
+5. RV构造函数形参componentParam对象属性style 为RV组件声明css样式
+6. RV构造函数形参componentParam对象属性data 为RV组件data 虚拟 dom 中使用%##%访问 data 中数据
+7. RV构造函数形参componentParam对象属性methods，为RV组件method对象，在对象中创建方法以及回调。其中方法中的this指向此RV对象
+8. RV构造函数形参componentParam对象属性watch为RV组件对象，用于观察组件data数据变化
 9. 组件路由配置例子：
 ```javascript
 var routerConfig=[
@@ -194,6 +194,33 @@ var routerConfig=[
 export default routerConfig
 
 ```
+10. rv.route(routerConfig) .rv添加组件路由
+11. rv.run() ,启动 rv
+12. RV demo
+```javascript
+   let rv=new RV("#app",{
+        template:`
+            
+            <div key="main" style="width:100%;height:100%">
+                <routerview/>
+            </div>
+        `,
+        style: commonStyle,
+        data: {
+            key:1,
+        },//数据对象，用于驱动视图更新，数据变化，视图自动更新
+        methods: {
+            
+        },
+        watch:{
+
+        }
+
+   })
+   rv.run(()=>{
+     console.log("rv.run")
+   })
+```
 
 二. 声明组件以及使用组件:
 
@@ -201,18 +228,19 @@ export default routerConfig
 
 ```
 RV.component用于声明组件的方法,
-组件对象传参name 为RV组件名字
-组件对象传参template 为RV组件html声明模板
-组件对象传参style 为RV组件声明css样式
-组件对象传参props 为RV组件属性,目的为暴漏给父控件用于设置组件相应参数
-组件对象传参data 为RV组件data
-组件对象传参methods，为RV组件method对象，在对象中创建方法以及回调。其中方法中的this指向此组件
-组件对象传参run 为RV组件方法，用于运行组件相关js代码
-组件对象传参onDomChange为RV组件方法，dom变化时触发
-组件对象传参onMount为RV组件方法，组件挂载时触发
-组件对象传参watch为RV组件对象，用于观察组件data数据变化
-组件对象函数内调用this.$sendEvent({name,value,componentName}) 发送事件到其他组件 ,name为事件名称,value为事件值,componentName为要发送到的组件名。可以将此组件状态或属性值发送到其他组件。其他组件通过在组件methods中声明(组件名+事件名+'event')函数监听次事件(比如RvSelectIDEvent(newId),其中RvSelect为组件名,ID为事件名,newId为事件的新值)。
-组件插槽标签slot，slot标签name属性用于区分插槽，如果组件内只有一个插槽这不需要name属性
+RV组件构造函数形参componentParam对象属性name 为RV组件名字
+RV组件构造函数形参componentParam对象属性template 为RV组件html声明模板
+RV组件构造函数形参componentParam对象属性style 为RV组件声明css样式
+RV组件构造函数形参componentParam对象属性props 为RV组件属性,目的为暴漏给父控件用于设置组件相应参数
+RV组件构造函数形参componentParam对象属性data 为RV组件data
+RV组件构造函数形参componentParam对象属性methods，为RV组件method对象，在对象中创建方法以及回调。其中方法中的this指向此组件
+RV组件构造函数形参componentParam对象属性onRun 为RV组件方法，组件运行时候触发
+RV组件构造函数形参componentParam对象属性onDomChange为RV组件方法，dom变化时触发
+RV组件构造函数形参componentParam对象属性onMount为RV组件方法，组件挂载时触发
+RV组件构造函数形参componentParam对象属性watch为RV组件对象，用于观察组件data数据变化
+RV组件对象函数内调用this.$sendEvent({name,value,componentName}) 发送事件到其他组件 ,name为事件名称,value为事件值,componentName为要发送到的组件名。可以将此组件状态或属性值发送到其他组件。其他组件通过在组件methods中声明(组件名+事件名+'event')函数监听次事件(比如RvSelectIDEvent(newId),其中RvSelect为组件名,ID为事件名,newId为事件的新值)。
+
+RV组件模板插槽标签slot，slot标签name属性用于区分插槽，如果组件内只有一个插槽这不需要name属性
 
 
 ```
@@ -260,7 +288,7 @@ RV.component用于声明组件的方法,
 
           }
         }
-        run() {//定义自定义RV组件运行代码,用于运行RV组件相关JS代码,RV组件启动时启动此方法
+        onRun() {//定义自定义RV组件运行代码,用于运行RV组件相关JS代码,RV组件启动时启动此方法
 
 
 
@@ -333,19 +361,21 @@ rv = new RV({
                          </MyComponent>
                        </div>`,
   // MyComponent为自定义RV组件名字，定义组件时name值.content,value,time为定义组件时属性,定义组件时props值
+  methods:{
+    MyComponentColorEvent(color){
+        //组件MyComponent调用this.$sendEvent({name:"Color",value:this.data.pcolor}) 会触发此函数，color为新值
+       //this指向本组件,通过this可以访问本组件
+       this.methods.fun1()
+    }
+    fun1(){
+
+    },
+
+
+}
+
 });
-rv.methods({
-  MyComponentColorEvent(color){
-    //组件MyComponent调用this.$sendEvent({name:"Color",value:this.data.pcolor}) 会触发此函数，color为新值
-    //this指向本组件,通过this可以访问本组件
-    this.methods.fun1()
-  }
-  fun1(){
 
-  },
-
-
-})
 rv.use(con); //调用rv对象的use方法注册自定义组件
 ```
 

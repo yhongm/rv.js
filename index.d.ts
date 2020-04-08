@@ -34,7 +34,7 @@ declare class RV extends RvComponent {
     constructor(el: string, componentParam: RVOption)
     route(routeConfig: Array[RvRouteConfig]): void
     static component(option: RVOption): RvComponent
-    run(callback?: (rv: RV) => void): void
+    run(callback: (RV) => {}): void
 
 }
 export default RV

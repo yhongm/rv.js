@@ -3,12 +3,23 @@ import Util from "yrv.js/src/rv/util"
 import YhmParse from "yrv.js/src/rv/yrvParse"
 import Map from "yrv.js/src/rv/map"
 class RvComponent {
-    constructor(componentParam,ismain=true) {
-        let { template, style, props, name, data, methods, run, onDomChange, watch, onMount} = componentParam
-        this.isMainRvComponent=ismain
+    constructor(componentParam, ismain = true) {
+        let {
+            template,
+            style,
+            props,
+            name,
+            data,
+            methods,
+            onRun,
+            onDomChange,
+            watch,
+            onMount
+        } = componentParam
+        this.isMainRvComponent = ismain
         this.template = template
         this.name = name
-        if(this.isMainRvComponent){
+        if (this.isMainRvComponent) {
             this.name = "main"
         }
         this.isParsedHtml = false
@@ -17,24 +28,24 @@ class RvComponent {
         this.props = props
         this.data = data
         this.methods = methods
-        this.componentRun = run
+        this.componentRun = onRun
         this.componentDomChange = onDomChange
         this.mountLife = onMount
         this.watchObj = watch
-        this.paramObj={} // the paramObj 
-        this.context={
+        this.paramObj = {} // the paramObj 
+        this.context = {
             componentName: this.name,
-            componentData:this.data,
+            componentData: this.data,
             route: undefined
         }
         Util.addStyle2Head(this.style)
         this._defineMethod()
         this.init()
     }
-    init(){
+    init() {
         this.parse = new YhmParse(this.context)
         this.rvDomUtil = new RVDomUtil(this.context)
-        this.observeMap = new Map(this.name+"ComponentObserveMap")
+        this.observeMap = new Map(this.name + "ComponentObserveMap")
     }
     use(rvComponentObj) {
         this.parse.useCustomComponent(rvComponentObj)
@@ -64,7 +75,11 @@ class RvComponent {
                  * 
                  * in other component use 'componentName'+'eventName'+'Event' constitute functionName receive this event
                  */
-                const { name, value, componentName } = event
+                const {
+                    name,
+                    value,
+                    componentName
+                } = event
                 Util.defineRvInnerGlobalValue(Util.getMethodHashId(`${componentName}_${this.name}${name}Event`), value, true)
                 eval(`${Util.invokeGlobalFunName(Util.generateHashMNameByMName(`${componentName}_${this.name}${name}Event`))}()`)
             }
@@ -72,7 +87,7 @@ class RvComponent {
 
     }
     _getDomTree() {
-        if (!this.isParsedHtml||this.parse.componentMap.length>0) {
+        if (!this.isParsedHtml || this.parse.componentMap.length > 0) {
             //the parse html function only use once if the component not contain child component
             try {
                 this.parse.parseHtmlTemplate(this.template.trim())
@@ -85,10 +100,10 @@ class RvComponent {
         return this.parse.getHtmlDom()
     }
     applyTruthFulData() {
-       this.rdom = this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom
+        this.rdom = this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom
     }
 
-    run() {
+    _rv_ev_run() {
         this.componentRun.call(this)
     }
     /**
@@ -97,14 +112,12 @@ class RvComponent {
      * this event function call before the applyTruthFulData call ,so do something about data
      */
     _rv_ev_domChange() {
-        if(this.componentDomChange){    
-            this.componentDomChange.call(this,this.paramObj)
+        if (this.componentDomChange) {
+            this.componentDomChange.call(this, this.paramObj)
         }
     }
-    getName() {
-        return this.name
-    }
-     /**
+
+    /**
      * this is yrv.js inner event ,only call by yrv.js framework
      * when the component mount ,this function will call
      */
@@ -113,7 +126,9 @@ class RvComponent {
             this.mountLife.call(this)
         }
     }
-
+    getName() {
+        return this.name
+    }
 
     getDom() {
         return this.rdom
@@ -123,4 +138,5 @@ class RvComponent {
     }
 
 }
+
 export default RvComponent

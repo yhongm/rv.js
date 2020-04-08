@@ -1,15 +1,15 @@
 
 
 export interface RVOption {
+    name?: string,
     template: string,
     style: string,
-    props: string,
-    name?: string,
+    props: object,
     data: object,
     methods?: object,
-    run(): void,
-    onDomChange(paramObj: any): void,
     watch?: object,
+    onRun(): void,
+    onDomChange(paramObj: any): void,
     onMount(): void?,
 }
 export interface RvRouteConfig {
@@ -19,14 +19,21 @@ export interface RvRouteConfig {
     ismain: boolean
 }
 
+export interface RvEvent {
+    name: string,
+    value: any,
+    componentName: string
+}
+
 declare class RvComponent {
     constructor(componentParam: RVOption, ismain: boolean)
     use(component: RvComponent): void
+    $sendEvent(event: RvEvent): void
 }
 declare class RV extends RvComponent {
     constructor(el: string, componentParam: RVOption)
     route(routeConfig: Array[RvRouteConfig]): void
-    static component(option: RVOption): void
+    static component(option: RVOption): RvComponent
     run(callback?: (rv: RV) => void): void
 
 }

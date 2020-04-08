@@ -1,6 +1,6 @@
 {
   "name": "yrv.js",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "description": "a javascript Framework",
   "main": "src/rv/main.js",
   "scripts": {

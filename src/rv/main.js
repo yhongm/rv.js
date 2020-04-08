@@ -70,7 +70,7 @@ class RV extends RvComponent {
                     })
                 }
             })
-            component.run()
+            component._rv_ev_run()
 
         })
     }

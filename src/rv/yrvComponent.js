@@ -1,7 +1,7 @@
-import RVDomUtil from "yrv.js/src/rv/yrvDomUtil"
-import Util from "yrv.js/src/rv/util"
-import YhmParse from "yrv.js/src/rv/yrvParse"
-import Map from "yrv.js/src/rv/map"
+import RVDomUtil from "./yrvDomUtil"
+import Util from "./yrvUtil"
+import YhmParse from "./yrvParse"
+import Map from "./yrvMap"
 class RvComponent {
     constructor(componentParam, ismain = true) {
         let {
@@ -40,15 +40,20 @@ class RvComponent {
         }
         Util.addStyle2Head(this.style)
         this._defineMethod()
-        this.init()
+        this._init()
     }
-    init() {
+    _init() {
         this.parse = new YhmParse(this.context)
         this.rvDomUtil = new RVDomUtil(this.context)
         this.observeMap = new Map(this.name + "ComponentObserveMap")
     }
     use(rvComponentObj) {
         this.parse.useCustomComponent(rvComponentObj)
+    }
+    $routeChange(routeInfo) {
+        let customEvent = document.createEvent("CustomEvent")
+        customEvent.initCustomEvent("routeChange", true, true, routeInfo)
+        document.dispatchEvent(customEvent)
     }
     _defineMethod() {
         for (let method of Object.keys(this.methods)) {

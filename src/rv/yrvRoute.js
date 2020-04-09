@@ -1,41 +1,41 @@
-import Map from "yrv.js/src/rv/map"
+import Map from "./yrvMap"
 class RvRoute {
     constructor() {
-        this.needRenderpath=""
+        this.needRenderpath = ""
         this.routers = new Map("RvRouteMap")
     }
     register(routerConfigs) {
-        routerConfigs.forEach(routerConfig=>{
+        routerConfigs.forEach(routerConfig => {
             this.routers.put(routerConfig.path, routerConfig)
         })
-        
-        this.needRenderpath=this.routers.filterV((k,v)=>{
-            return v.ismain&&v.ismain===true
+
+        this.needRenderpath = this.routers.filterV((k, v) => {
+            return v.ismain && v.ismain === true
         }).path
     }
     getRoutes() {
         return this.routers
     }
     go(route) {
-        const {path,paramObj}=route
-        if(this.routers.hasKey(path)){
-            this.needRenderpath=path
-            if(paramObj){
-                this.routers.get(this.needRenderpath).param=paramObj
+        const { path, paramObj } = route
+        if (this.routers.hasKey(path)) {
+            this.needRenderpath = path
+            if (paramObj) {
+                this.routers.get(this.needRenderpath).param = paramObj
             }
             this.routers.get(this.needRenderpath).component._rv_ev_mount()
-        }else{
+        } else {
             throw new Error("the route path unexisted ,please first declaration in route config")
         }
-       
+
     }
-    getNeedRenderComponent(){
-      return this.routers.get(this.needRenderpath).component
+    getNeedRenderComponent() {
+        return this.routers.get(this.needRenderpath).component
     }
-    getNeedRenderComponentParam(){
+    getNeedRenderComponentParam() {
         return this.routers.get(this.needRenderpath).param
     }
-    
+
 
 }
 export default RvRoute

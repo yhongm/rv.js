@@ -1,5 +1,5 @@
-import Util from "./util"
-import Element from "./element"
+import Util from "./yrvUtil"
+import Element from "./yrvElement"
 
 /**
  * this class include a set of common function for handle virtual DOM
@@ -7,11 +7,11 @@ import Element from "./element"
  */
 class RVDomUtil {
     constructor(context) {
-        const { componentName, componentData,route } = context
-        this.Context={} //this Context use to save global info 
-        this.Context.data=componentData
-        this.Context.componentName=componentName
-   }
+        const { componentName, componentData, route } = context
+        this.Context = {} //this Context use to save global info 
+        this.Context.data = componentData
+        this.Context.componentName = componentName
+    }
 
     getVirtualElement(dom) {
         let children = []
@@ -30,7 +30,7 @@ class RVDomUtil {
             }
         }
 
-        return new Element(dom.tag, dom.props, children,dom.belong)
+        return new Element(dom.tag, dom.props, children, dom.belong)
     }
     applyTruthfulData(dom) {
         if ("for" in dom.props) {
@@ -50,17 +50,17 @@ class RVDomUtil {
                     }
                 }
                 else {
-                    let forExpressRight =dom.props['for'].split(" _in_ ")[1]
-                    if(Util.isDotOperatorExpression(forExpressRight)){
-                       let forERKey=forExpressRight.split(".")[0]
-                       let forERValue=forExpressRight.split(".")[1]
-                       if(forERKey in this.Context.data){
-                           dataArray=this.Context.data[forERKey][forERValue]
-                       }else{
-                        throw new Error("the for directive use error,the Dot Operator Express only in global context data" )
-                       }  
-                    }else{
-                       dataArray=this.Context.data[forExpressRight]
+                    let forExpressRight = dom.props['for'].split(" _in_ ")[1]
+                    if (Util.isDotOperatorExpression(forExpressRight)) {
+                        let forERKey = forExpressRight.split(".")[0]
+                        let forERValue = forExpressRight.split(".")[1]
+                        if (forERKey in this.Context.data) {
+                            dataArray = this.Context.data[forERKey][forERValue]
+                        } else {
+                            throw new Error("the for directive use error,the Dot Operator Express only in global context data")
+                        }
+                    } else {
+                        dataArray = this.Context.data[forExpressRight]
                     }
                     dataSingle = dom.props['for'].split(" _in_ ")[0]
                 }
@@ -118,7 +118,7 @@ class RVDomUtil {
         obj.tag = dom.tag
         obj.children = []
         obj.props = {}
-        obj.belong=dom.belong
+        obj.belong = dom.belong
         let props = Object.keys(dom.props)
         for (let prop in props) {
             let value = props[prop]
@@ -134,21 +134,21 @@ class RVDomUtil {
             }
             else {
                 if (Util.isPlaceHolder(dom.props[value])) {
-                    var propValue=Util.getPlaceHolderValue(dom.props[value])
+                    var propValue = Util.getPlaceHolderValue(dom.props[value])
                     if (!Util.isDotOperatorExpression(propValue)) {
                         obj.props[value] = data[propValue]
                     } else {
-                      
-                        var propKey=propValue.split(".")[0]
-                        var propValue=propValue.split(".")[1]
-                        if (propKey in this.Context.data){
-                            obj.props[value]=this.Context.data[propKey][propValue]
-                        }else{
+
+                        var propKey = propValue.split(".")[0]
+                        var propValue = propValue.split(".")[1]
+                        if (propKey in this.Context.data) {
+                            obj.props[value] = this.Context.data[propKey][propValue]
+                        } else {
                             obj.props[value] = data[propValue]
                         }
                     }
                 } else if (Util.isOperatorExpression(dom.props[value])) {
-                    obj.props[value] = Util.getOperatorExpression(dom.props[value], data, dataSingle,this.Context)
+                    obj.props[value] = Util.getOperatorExpression(dom.props[value], data, dataSingle, this.Context)
                 }
                 else {
                     obj.props[value] = dom.props[value]
@@ -161,23 +161,23 @@ class RVDomUtil {
         for (let child in dom.children) {
             if (Util.isString(dom.children[child])) {
                 if (Util.isPlaceHolder(dom.children[child])) {
-                    var childValue=Util.getPlaceHolderValue(dom.children[child])
+                    var childValue = Util.getPlaceHolderValue(dom.children[child])
                     if (!Util.isDotOperatorExpression(childValue)) {
-                       obj.children[child] = Util.getNotUndefinedContent(data[childValue])
+                        obj.children[child] = Util.getNotUndefinedContent(data[childValue])
                     } else {
-                        var childValueKey=childValue.split(".")[0]
-                        var childValueValue=childValue.split(".")[1]
-                        if(childValueKey in this.Context.data){
-                            obj.children[child] =Util.getNotUndefinedContent(this.Context.data[childValueKey][childValueValue])
-                        }else{
-                           
-                            obj.children[child]=Util.getNotUndefinedContent(data[childValueValue])
-                        
+                        var childValueKey = childValue.split(".")[0]
+                        var childValueValue = childValue.split(".")[1]
+                        if (childValueKey in this.Context.data) {
+                            obj.children[child] = Util.getNotUndefinedContent(this.Context.data[childValueKey][childValueValue])
+                        } else {
+
+                            obj.children[child] = Util.getNotUndefinedContent(data[childValueValue])
+
                         }
                     }
 
                 } else if (Util.isOperatorExpression(dom.children[child])) {
-                    obj.children[child] = Util.getNotUndefinedContent(Util.getOperatorExpression(dom.children[child], data, dataSingle,this.Context))
+                    obj.children[child] = Util.getNotUndefinedContent(Util.getOperatorExpression(dom.children[child], data, dataSingle, this.Context))
                 }
                 else {
                     obj.children[child] = Util.getNotUndefinedContent(dom.children[child])
@@ -214,14 +214,14 @@ class RVDomUtil {
 
     }
     handleSingleStyle(data, style, dataSingle) {
-        
+
         let newStyle = ''
         if (dataSingle) {
             if (Util.isPlaceHolder(style)) {
                 if (Util.getPlaceHolderValue(style).indexOf(dataSingle) != -1) {
                     let key = Util.getPlaceHolderValue(style).split(".")[1]
                     newStyle = data[key]
-               } else {
+                } else {
                     let styleKey = style.split(":")[0]
                     let styleValue = style.split(":")[1]
                     styleValue = data[Util.getPlaceHolderValue(styleValue)]
@@ -236,7 +236,7 @@ class RVDomUtil {
             let styleValue = style.split(":")[1]
             if (Util.isPlaceHolder(styleValue)) {
                 styleValue = data[Util.getPlaceHolderValue(styleValue)]
-                
+
                 newStyle = styleKey + ":" + styleValue
             } else {
                 newStyle = style

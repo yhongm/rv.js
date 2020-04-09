@@ -1,5 +1,5 @@
-import Map from "yrv.js/src/rv/map"
-import Util from "yrv.js/src/rv/util"
+import Map from "./yrvMap"
+import Util from "./yrvUtil"
 
 /**
  * this class is parse html template to virtual dom tree
@@ -8,37 +8,42 @@ import Util from "yrv.js/src/rv/util"
 class YhmParse {
   constructor(context) {
     this.mIndex = 0
-    this.context=context
-    this.componentMap = new Map(this.context.componentName+"YhmParseComponentMap")
-    this.mMap = new Map(this.context.componentName+"HtmlDomMap")
-    
+    this.context = context
+    this.componentMap = new Map(this.context.componentName + "YhmParseComponentMap")
+    this.mMap = new Map(this.context.componentName + "HtmlDomMap")
+
     this.mPropRe = /([^=\s]+)(\s*=\s*((\"([^"]*)\")|(\'([^']*)\')|[^>\s]+))?/gm
     this.mHandler = {
       startELement: function (tagName, prop, content, that) {
         that.mIndex += 1
 
-        if (that.componentMap.hasKey(tagName) ||tagName==="routerview") {
+        if (that.componentMap.hasKey(tagName) || tagName === "routerview") {
           //if the tag is have  registered component
           if (that.context.componentName === "main" && tagName === "routerview") {
             //if in main page and the current tag is 'routeview' , so get component insert DOM TREE by the route 
-            let needRenderComponent=that.context.route.getNeedRenderComponent()
-            needRenderComponent.paramObj=that.context.route.getNeedRenderComponentParam()
+            let needRenderComponent = that.context.route.getNeedRenderComponent()
+            needRenderComponent.paramObj = that.context.route.getNeedRenderComponentParam()
             needRenderComponent._rv_ev_domChange()
             needRenderComponent.applyTruthFulData()
-            
+
             that.mMap.put(that.mIndex, needRenderComponent.getDom())
           } else {
             //this registered component insert dom tree
-            let component =that.componentMap.get(tagName)
-            Object.keys(component.props).forEach(componentProp=>{
-                let propValue=prop[componentProp]
-                if(Util.isPlaceHolder(propValue)){
-                   propValue= that.context.componentData[Util.getPlaceHolderValue(propValue)]
-                }
-                component.props[componentProp]=propValue
+            let component = that.componentMap.get(tagName)
+            Object.keys(component.props).forEach(componentProp => {
+              let propValue = prop[componentProp]
+              if (Util.isPlaceHolder(propValue)) {
+                propValue = that.context.componentData[Util.getPlaceHolderValue(propValue)]
+              }
+              component.props[componentProp] = propValue
             })
+
             component._rv_ev_domChange()
             component.applyTruthFulData()
+            if (prop.slot) {
+
+              that.componentMap.get(tagName).getDom().props["slot"] = prop.slot
+            }
             that.mMap.put(that.mIndex, that.componentMap.get(tagName).getDom())
 
           }
@@ -46,7 +51,7 @@ class YhmParse {
 
         } else {
           var obj = { tag: tagName, props: prop, children: [], index: that.mIndex, content: content, isClose: false, belong: that.context.componentName }
-          
+
           if (content.length > 0) {
 
             obj.children.push(content.trim())
@@ -57,29 +62,26 @@ class YhmParse {
       },
       endElement: function (that) {
         that.mMap.get(that.mIndex).isClose = true
+        let theParentDom = that.mMap.get(that.mIndex - 1)
+        let theCurrentDom = that.mMap.get(that.mIndex)
         if (that.mMap.hasKey((that.mIndex - 1))) {
-          if(that.mMap.get(that.mIndex).props.hasOwnProperty("slot")){
-            let slotPosition=that.mMap.get(that.mIndex).props.slot
-            let slotIndex=-1
-            if (slotPosition=="default"){
-                slotIndex=that.mMap.get(that.mIndex - 1).children.findIndex((child)=>{
-                return child.tag==="slot"
-              })
-              
-            }else{
-                slotIndex=that.mMap.get(that.mIndex - 1).children.findIndex((child)=>{
-                return child.tag==="slot"&&child.props.name===slotPosition
-              })
+          if (theCurrentDom.props.hasOwnProperty("slot")) {
+            YhmParse.handeSlotDom(theParentDom, theCurrentDom)
+          } else {
+
+            theParentDom.children.push(theCurrentDom)
+
+            if (!theParentDom.props.hasOwnProperty("key")) {
+              //if theParentDom not set 'key' prop,auto generator new value set 'key' prop by theParentDom info
+              theParentDom.props["key"] = "yrv_auto_key_" + Util.getHashCode(`${theParentDom.tag}_${JSON.stringify(theParentDom.children)}_${theParentDom.props}_${that.mIndex - 1}`)
             }
-            if(slotIndex>-1){
-              that.mMap.get(that.mIndex - 1).children[slotIndex]=that.mMap.get(that.mIndex)
+            //check unique by the dom key
+            if (Util.checkHaveSameValueFromArray(theParentDom.children.flatMap((child) => child.props.key))) {
+              throw new Error(`the tag:${theParentDom.tag} child dom props 'key' reuse`)
             }
-           
-          }else{
-            that.mMap.get(that.mIndex - 1).children.push(that.mMap.get(that.mIndex))
           }
-         
           that.mMap.remove(that.mIndex)
+
         }
         that.mIndex -= 1
       }
@@ -144,15 +146,16 @@ class YhmParse {
       var prop = {}
       if (html.indexOf(' ') > -1) {
         var props = html.substring(html.indexOf(' ') + 1, html.indexOf('/>') == -1 ? html.indexOf('>') : html.indexOf('/>'))
+        if (props && props.length > 0) {
+          var propsResult = props.match(that.mPropRe)
+          for (let i = 0; i < propsResult.length; i++) {
+            var pr = propsResult[i]
+            //prop[pr.split("=")[0]] = pr.split("=")[1].match(/(?<=").*?(?=")/)?pr.split("=")[1].match(/(?<=").*?(?=")/)[0]:pr.split("=")[1]
+            //IE and FF browser unsupport regExp ?<=
 
-        var propsResult = props.match(that.mPropRe)
-        for (let i = 0; i < propsResult.length; i++) {
-          var pr = propsResult[i]
-          //prop[pr.split("=")[0]] = pr.split("=")[1].match(/(?<=").*?(?=")/)?pr.split("=")[1].match(/(?<=").*?(?=")/)[0]:pr.split("=")[1]
-          //IE and FF browser unsupport regExp ?<=
+            prop[pr.split("=")[0]] = /\".*?\"/.test(pr.split("=")[1]) ? pr.split("=")[1].slice(1, -1) : pr.split("=")[1]
 
-          prop[pr.split("=")[0]] = /\".*?\"/.test(pr.split("=")[1]) ? pr.split("=")[1].slice(1, -1) : pr.split("=")[1]
-
+          }
         }
       }
 
@@ -179,6 +182,41 @@ class YhmParse {
   }
   getHtmlDom() {
     return this.mMap.get(1)
+  }
+  /**
+   * this function use to handle slot  rvcomponet and html tag
+   * @param {*} dom 
+   * @param {*} slotDom 
+   */
+  static handeSlotDom(dom, slotDom) {
+    if (Util.isString(dom)) {
+      return
+    }
+
+    let slotPosition = slotDom.props.slot
+    let slotIndex = -1
+    if (dom.children.length > 0) {
+      if (slotPosition == "default") {
+        slotIndex = dom.children.findIndex((child) => {
+          if (child.tag !== "slot") {
+            YhmParse.handeSlotDom(child, slotDom)
+          }
+          return child.tag === "slot"
+        })
+
+      } else {
+        slotIndex = dom.children.findIndex((child) => {
+          if (child.tag !== "slot") {
+            YhmParse.handeSlotDom(child, slotDom)
+          }
+          return child.tag === "slot" && child.props.name === slotPosition
+        })
+      }
+      if (slotIndex > -1 && dom.children[slotIndex]) {
+        dom.children[slotIndex] = slotDom
+      }
+    }
+
   }
 
 }

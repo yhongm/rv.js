@@ -4,7 +4,7 @@ const {
 } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
-  entry: './src/rv/main.js',
+  entry: './src/rv/yrvMain.js',
   //entry: './demo.js',
   mode: "production",
   //mode: "development",

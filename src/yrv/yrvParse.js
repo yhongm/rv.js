@@ -1,5 +1,5 @@
-import Map from "./yrvMap"
-import Util from "./yrvUtil"
+import YrvMap from "./yrvMap"
+import YrvUtil from "./yrvUtil"
 
 /**
  * this class is parse html template to virtual dom tree
@@ -9,8 +9,8 @@ class YhmParse {
   constructor(context) {
     this.mIndex = 0
     this.context = context
-    this.componentMap = new Map(this.context.componentName + "YhmParseComponentMap")
-    this.mMap = new Map(this.context.componentName + "HtmlDomMap")
+    this.componentMap = new YrvMap(this.context.componentName + "YhmParseComponentMap")
+    this.mMap = new YrvMap(this.context.componentName + "HtmlDomMap")
 
     this.mPropRe = /([^=\s]+)(\s*=\s*((\"([^"]*)\")|(\'([^']*)\')|[^>\s]+))?/gm
     this.mHandler = {
@@ -32,8 +32,8 @@ class YhmParse {
             let component = that.componentMap.get(tagName)
             Object.keys(component.props).forEach(componentProp => {
               let propValue = prop[componentProp]
-              if (Util.isPlaceHolder(propValue)) {
-                propValue = that.context.componentData[Util.getPlaceHolderValue(propValue)]
+              if (YrvUtil.isPlaceHolder(propValue)) {
+                propValue = that.context.componentData[YrvUtil.getPlaceHolderValue(propValue)]
               }
               component.props[componentProp] = propValue
             })
@@ -50,7 +50,15 @@ class YhmParse {
 
 
         } else {
-          var obj = { tag: tagName, props: prop, children: [], index: that.mIndex, content: content, isClose: false, belong: that.context.componentName }
+          var obj = {
+            tag: tagName,
+            props: prop,
+            children: [],
+            index: that.mIndex,
+            content: content,
+            isClose: false,
+            belong: that.context.componentName
+          }
 
           if (content.length > 0) {
 
@@ -73,10 +81,10 @@ class YhmParse {
 
             if (!theParentDom.props.hasOwnProperty("key")) {
               //if theParentDom not set 'key' prop,auto generator new value set 'key' prop by theParentDom info
-              theParentDom.props["key"] = "yrv_auto_key_" + Util.getHashCode(`${theParentDom.tag}_${JSON.stringify(theParentDom.children)}_${theParentDom.props}_${that.mIndex - 1}`)
+              theParentDom.props["key"] = "yrv_auto_key_" + YrvUtil.getHashCode(`${theParentDom.tag}_${JSON.stringify(theParentDom.children)}_${theParentDom.props}_${that.mIndex - 1}`)
             }
             //check unique by the dom key
-            if (Util.checkHaveSameValueFromArray(theParentDom.children.flatMap((child) => child.props.key))) {
+            if (YrvUtil.checkHaveSameValueFromArray(theParentDom.children.flatMap((child) => child.props.key))) {
               throw new Error(`the tag:${theParentDom.tag} child dom props 'key' reuse`)
             }
           }
@@ -170,11 +178,13 @@ class YhmParse {
       }
 
     }
+
     function _parseEndTag(html, that) {
       if (that.mHandler) {
         that.mHandler.endElement(that)
       }
     }
+
     function parseComment(html) {
       // console.log(`parseComment=${html}`)
     }
@@ -189,7 +199,7 @@ class YhmParse {
    * @param {*} slotDom 
    */
   static handeSlotDom(dom, slotDom) {
-    if (Util.isString(dom)) {
+    if (YrvUtil.isString(dom)) {
       return
     }
 
@@ -221,4 +231,3 @@ class YhmParse {
 
 }
 export default YhmParse
-

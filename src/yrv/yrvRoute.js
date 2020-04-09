@@ -1,8 +1,8 @@
-import Map from "./yrvMap"
-class RvRoute {
+import YrvMap from "./yrvMap"
+class YrvRoute {
     constructor() {
         this.needRenderpath = ""
-        this.routers = new Map("RvRouteMap")
+        this.routers = new YrvMap("RvRouteMap")
     }
     register(routerConfigs) {
         routerConfigs.forEach(routerConfig => {
@@ -17,7 +17,10 @@ class RvRoute {
         return this.routers
     }
     go(route) {
-        const { path, paramObj } = route
+        const {
+            path,
+            paramObj
+        } = route
         if (this.routers.hasKey(path)) {
             this.needRenderpath = path
             if (paramObj) {
@@ -38,4 +41,4 @@ class RvRoute {
 
 
 }
-export default RvRoute
+export default YrvRoute

@@ -1,6 +1,4 @@
-
-
-class Observable {
+class YrvObservable {
     constructor() {
         this.updateFunctions = new Set()
     }
@@ -17,4 +15,4 @@ class Observable {
         this.updateFunctions.forEach(fun => fun())
     }
 }
-export default Observable
+export default YrvObservable

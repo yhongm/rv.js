@@ -1,10 +1,10 @@
 /**
  * the map object use to save likily (key,value) data
  */
-class Map {
+class YrvMap {
     constructor(name) {
         this.length = 0;
-        this.name=name
+        this.name = name
         this.map = new Object();
     }
     put(key, value) {
@@ -28,29 +28,29 @@ class Map {
     }
     forEach(callback) {
         Object.keys(this.map).forEach(mapKey => {
-           
+
             callback(this.map[mapKey])
         })
     }
-    forEachKV(callback){
-        Object.keys(this.map).forEach(mapKey=>{
-            callback(mapKey,this.map[mapKey])
+    forEachKV(callback) {
+        Object.keys(this.map).forEach(mapKey => {
+            callback(mapKey, this.map[mapKey])
         })
     }
     /*
     * filter value by callback()
       if callback return true 
      */
-    filterV(callback){
-        var value=undefined;
-        this.forEachKV((k,v)=>{
-            if(callback(k,v)==true){
-                value=v
-            }else{
-            
+    filterV(callback) {
+        var value = undefined;
+        this.forEachKV((k, v) => {
+            if (callback(k, v) == true) {
+                value = v
+            } else {
+
             }
         })
-       
+
         return value
     }
     size() {
@@ -61,4 +61,4 @@ class Map {
         this.map = new Object();
     }
 }
-export default Map
+export default YrvMap

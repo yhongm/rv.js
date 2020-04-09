@@ -1,8 +1,8 @@
-import RVDomUtil from "./yrvDomUtil"
-import Util from "./yrvUtil"
+import YrvDomUtil from "./yrvDomUtil"
+import YrvUtil from "./yrvUtil"
 import YhmParse from "./yrvParse"
-import Map from "./yrvMap"
-class RvComponent {
+import YrvMap from "./yrvMap"
+class YrvComponent {
     constructor(componentParam, ismain = true) {
         let {
             template,
@@ -38,14 +38,14 @@ class RvComponent {
             componentData: this.data,
             route: undefined
         }
-        Util.addStyle2Head(this.style)
+        YrvUtil.addStyle2Head(this.style)
         this._defineMethod()
         this._init()
     }
     _init() {
         this.parse = new YhmParse(this.context)
-        this.rvDomUtil = new RVDomUtil(this.context)
-        this.observeMap = new Map(this.name + "ComponentObserveMap")
+        this.rvDomUtil = new YrvDomUtil(this.context)
+        this.observeMap = new YrvMap(this.name + "ComponentObserveMap")
     }
     use(rvComponentObj) {
         this.parse.useCustomComponent(rvComponentObj)
@@ -59,14 +59,14 @@ class RvComponent {
         for (let method of Object.keys(this.methods)) {
             var that = this
             this.methods[method] = that.methods[method].bind(this) //the method this point to  this rv component object
-            Util.defineRvInnerGlobalValue(Util.generateHashMNameByMName(`${this.name}_${method}`), () => {
-                that.methods[method].call(that, Util.getRvInnerGlobalValue(Util.getMethodHashId(`${this.name}_${method}`)))
+            YrvUtil.defineRvInnerGlobalValue(YrvUtil.generateHashMNameByMName(`${this.name}_${method}`), () => {
+                that.methods[method].call(that, YrvUtil.getRvInnerGlobalValue(YrvUtil.getMethodHashId(`${this.name}_${method}`)))
             })
         }
         for (let data of Object.keys(this.data)) {
             //define RV inner function to auto modify  data value
-            Util.defineRvInnerGlobalValue(Util.generateHashMNameByMName(`${this.name}_${data}change`), () => {
-                this.data[data] = Util.getRvInnerGlobalValue(Util.getMethodHashId(`${this.name}_${data}value`))
+            YrvUtil.defineRvInnerGlobalValue(YrvUtil.generateHashMNameByMName(`${this.name}_${data}change`), () => {
+                this.data[data] = YrvUtil.getRvInnerGlobalValue(YrvUtil.getMethodHashId(`${this.name}_${data}value`))
             })
         }
 
@@ -85,8 +85,8 @@ class RvComponent {
                     value,
                     componentName
                 } = event
-                Util.defineRvInnerGlobalValue(Util.getMethodHashId(`${componentName}_${this.name}${name}Event`), value, true)
-                eval(`${Util.invokeGlobalFunName(Util.generateHashMNameByMName(`${componentName}_${this.name}${name}Event`))}()`)
+                YrvUtil.defineRvInnerGlobalValue(YrvUtil.getMethodHashId(`${componentName}_${this.name}${name}Event`), value, true)
+                eval(`${YrvUtil.invokeGlobalFunName(YrvUtil.generateHashMNameByMName(`${componentName}_${this.name}${name}Event`))}()`)
             }
         })
 
@@ -144,4 +144,4 @@ class RvComponent {
 
 }
 
-export default RvComponent
+export default YrvComponent

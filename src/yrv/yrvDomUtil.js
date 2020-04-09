@@ -1,13 +1,17 @@
-import Util from "./yrvUtil"
-import Element from "./yrvElement"
+import YrvUtil from "./yrvUtil"
+import YrvElement from "./yrvElement"
 
 /**
  * this class include a set of common function for handle virtual DOM
  * @author yhongm
  */
-class RVDomUtil {
+class YrvDomUtil {
     constructor(context) {
-        const { componentName, componentData, route } = context
+        const {
+            componentName,
+            componentData,
+            route
+        } = context
         this.Context = {} //this Context use to save global info 
         this.Context.data = componentData
         this.Context.componentName = componentName
@@ -30,14 +34,14 @@ class RVDomUtil {
             }
         }
 
-        return new Element(dom.tag, dom.props, children, dom.belong)
+        return new YrvElement(dom.tag, dom.props, children, dom.belong)
     }
     applyTruthfulData(dom) {
         if ("for" in dom.props) {
             let dataArray = []
             let dataSingle
 
-            if (Util.isForIn(dom.props['for'])) {
+            if (YrvUtil.isForIn(dom.props['for'])) {
                 if ("childDomDatakey" in dom) {
                     dataArray = dom.data
                     dataSingle = dom.childDomDatakey
@@ -48,10 +52,9 @@ class RVDomUtil {
                     } else {
                         throw new Error("domData key error")
                     }
-                }
-                else {
+                } else {
                     let forExpressRight = dom.props['for'].split(" _in_ ")[1]
-                    if (Util.isDotOperatorExpression(forExpressRight)) {
+                    if (YrvUtil.isDotOperatorExpression(forExpressRight)) {
                         let forERKey = forExpressRight.split(".")[0]
                         let forERValue = forExpressRight.split(".")[1]
                         if (forERKey in this.Context.data) {
@@ -86,7 +89,10 @@ class RVDomUtil {
             }
 
 
-            let vDomObj = { isFor: true, rdom: objs }
+            let vDomObj = {
+                isFor: true,
+                rdom: objs
+            }
             return vDomObj
         } else {
 
@@ -102,7 +108,10 @@ class RVDomUtil {
             }
 
             let obj = this.vdom2rdom(dom, data, childDomDatakey)
-            let vDomObj = { isFor: false, rdom: obj }
+            let vDomObj = {
+                isFor: false,
+                rdom: obj
+            }
             return vDomObj
         }
     }
@@ -131,11 +140,10 @@ class RVDomUtil {
                 } else {
                     obj.props[value] = this.handleSingleStyle(data, style, dataSingle)
                 }
-            }
-            else {
-                if (Util.isPlaceHolder(dom.props[value])) {
-                    var propValue = Util.getPlaceHolderValue(dom.props[value])
-                    if (!Util.isDotOperatorExpression(propValue)) {
+            } else {
+                if (YrvUtil.isPlaceHolder(dom.props[value])) {
+                    var propValue = YrvUtil.getPlaceHolderValue(dom.props[value])
+                    if (!YrvUtil.isDotOperatorExpression(propValue)) {
                         obj.props[value] = data[propValue]
                     } else {
 
@@ -147,10 +155,9 @@ class RVDomUtil {
                             obj.props[value] = data[propValue]
                         }
                     }
-                } else if (Util.isOperatorExpression(dom.props[value])) {
-                    obj.props[value] = Util.getOperatorExpression(dom.props[value], data, dataSingle, this.Context)
-                }
-                else {
+                } else if (YrvUtil.isOperatorExpression(dom.props[value])) {
+                    obj.props[value] = YrvUtil.getOperatorExpression(dom.props[value], data, dataSingle, this.Context)
+                } else {
                     obj.props[value] = dom.props[value]
                 }
 
@@ -159,28 +166,27 @@ class RVDomUtil {
         }
 
         for (let child in dom.children) {
-            if (Util.isString(dom.children[child])) {
-                if (Util.isPlaceHolder(dom.children[child])) {
-                    var childValue = Util.getPlaceHolderValue(dom.children[child])
-                    if (!Util.isDotOperatorExpression(childValue)) {
-                        obj.children[child] = Util.getNotUndefinedContent(data[childValue])
+            if (YrvUtil.isString(dom.children[child])) {
+                if (YrvUtil.isPlaceHolder(dom.children[child])) {
+                    var childValue = YrvUtil.getPlaceHolderValue(dom.children[child])
+                    if (!YrvUtil.isDotOperatorExpression(childValue)) {
+                        obj.children[child] = YrvUtil.getNotUndefinedContent(data[childValue])
                     } else {
                         var childValueKey = childValue.split(".")[0]
                         var childValueValue = childValue.split(".")[1]
                         if (childValueKey in this.Context.data) {
-                            obj.children[child] = Util.getNotUndefinedContent(this.Context.data[childValueKey][childValueValue])
+                            obj.children[child] = YrvUtil.getNotUndefinedContent(this.Context.data[childValueKey][childValueValue])
                         } else {
 
-                            obj.children[child] = Util.getNotUndefinedContent(data[childValueValue])
+                            obj.children[child] = YrvUtil.getNotUndefinedContent(data[childValueValue])
 
                         }
                     }
 
-                } else if (Util.isOperatorExpression(dom.children[child])) {
-                    obj.children[child] = Util.getNotUndefinedContent(Util.getOperatorExpression(dom.children[child], data, dataSingle, this.Context))
-                }
-                else {
-                    obj.children[child] = Util.getNotUndefinedContent(dom.children[child])
+                } else if (YrvUtil.isOperatorExpression(dom.children[child])) {
+                    obj.children[child] = YrvUtil.getNotUndefinedContent(YrvUtil.getOperatorExpression(dom.children[child], data, dataSingle, this.Context))
+                } else {
+                    obj.children[child] = YrvUtil.getNotUndefinedContent(dom.children[child])
                 }
 
             } else {
@@ -217,14 +223,14 @@ class RVDomUtil {
 
         let newStyle = ''
         if (dataSingle) {
-            if (Util.isPlaceHolder(style)) {
-                if (Util.getPlaceHolderValue(style).indexOf(dataSingle) != -1) {
-                    let key = Util.getPlaceHolderValue(style).split(".")[1]
+            if (YrvUtil.isPlaceHolder(style)) {
+                if (YrvUtil.getPlaceHolderValue(style).indexOf(dataSingle) != -1) {
+                    let key = YrvUtil.getPlaceHolderValue(style).split(".")[1]
                     newStyle = data[key]
                 } else {
                     let styleKey = style.split(":")[0]
                     let styleValue = style.split(":")[1]
-                    styleValue = data[Util.getPlaceHolderValue(styleValue)]
+                    styleValue = data[YrvUtil.getPlaceHolderValue(styleValue)]
                     newStyle = styleKey + ":" + styleValue
                 }
             } else {
@@ -234,8 +240,8 @@ class RVDomUtil {
 
             let styleKey = style.split(":")[0]
             let styleValue = style.split(":")[1]
-            if (Util.isPlaceHolder(styleValue)) {
-                styleValue = data[Util.getPlaceHolderValue(styleValue)]
+            if (YrvUtil.isPlaceHolder(styleValue)) {
+                styleValue = data[YrvUtil.getPlaceHolderValue(styleValue)]
 
                 newStyle = styleKey + ":" + styleValue
             } else {
@@ -256,4 +262,4 @@ class RVDomUtil {
     }
 }
 
-export default RVDomUtil
+export default YrvDomUtil

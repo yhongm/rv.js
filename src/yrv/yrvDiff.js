@@ -6,12 +6,14 @@ import {
     NODE_PROPS,
     NODE_CONTENT
 } from "./yrvDomState"
-class Diff {
+class YrvDiff {
     /**
      * dom tree diff algorithm object constructor
      * @param {*} oldTree the dom tree for before update 
      * @param {*} newTree the dom tree for after update
      */
+
+
     constructor(oldTree, newTree) {
         this.index = 0
         this.oldTree = oldTree
@@ -101,4 +103,4 @@ class Diff {
 
     }
 }
-export default Diff;
+export default YrvDiff;

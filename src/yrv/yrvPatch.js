@@ -1,6 +1,11 @@
-import Util from './yrvUtil';
-import { NODE_REPLACE, CHILD_RE_ORDER, NODE_PROPS, NODE_CONTENT } from "./yrvDomState"
-class Patch {
+import YrvUtil from './yrvUtil';
+import {
+    NODE_REPLACE,
+    CHILD_RE_ORDER,
+    NODE_PROPS,
+    NODE_CONTENT
+} from "./yrvDomState"
+class YrvPatch {
     constructor(node, patches) {
         this.node = node
         this.patches = patches
@@ -29,7 +34,7 @@ class Patch {
         currentPatche.forEach((currentPatch) => {
             switch (currentPatch.type) {
                 case NODE_REPLACE:
-                    let newNode = Util.isString(currentPatch.node) ? document.createTextNode(currentPatch.node) : currentPatch.node.render()
+                    let newNode = YrvUtil.isString(currentPatch.node) ? document.createTextNode(currentPatch.node) : currentPatch.node.render()
                     node.parentNode.replaceChild(newNode, node)
                     break
                 case CHILD_RE_ORDER:
@@ -52,7 +57,7 @@ class Patch {
         })
     }
     reorderChildren(node, moves) {
-        let staticNodeList = Util.toArray(node.childNodes)
+        let staticNodeList = YrvUtil.toArray(node.childNodes)
         let nodeMaps = {}
         staticNodeList.forEach((snode) => {
             if (snode.nodeType === 1) {
@@ -73,7 +78,7 @@ class Patch {
                 let insertNode = nodeMaps[move.item.key] ?
 
                     nodeMaps(move.item.key).cloneNode(true) :
-                    Util.isString(move.item) ? document.createTextNode(move.item) : move.item.render()
+                    YrvUtil.isString(move.item) ? document.createTextNode(move.item) : move.item.render()
                 staticNodeList.splice(index, 0, insertNode)
                 node.insertBefore(insertNode, node.childNodes[index] || null)
             }
@@ -86,10 +91,10 @@ class Patch {
                 node.removeAttribute(key)
             } else {
                 const value = props[key]
-                Util.setAttr(node, key, value)
+                YrvUtil.setAttr(node, key, value)
             }
         }
 
     }
 }
-export default Patch;
+export default YrvPatch;

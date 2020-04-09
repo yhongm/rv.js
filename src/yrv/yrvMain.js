@@ -1,13 +1,13 @@
-import Util from "./yrvUtil"
+import YrvUtil from "./yrvUtil"
 
-import RvComponent from "./yrvComponent"
-import RvRoute from "./yrvRoute"
+import YrvComponent from "./yrvComponent"
+import YrvRoute from "./yrvRoute"
 
-class RV extends RvComponent {
+class RV extends YrvComponent {
     constructor(el, componentParam) {
         super(componentParam)
         this.el = el
-        this.context.route = new RvRoute()
+        this.context.route = new YrvRoute()
     }
     route(routeConfigs) {
         //the function use to register route
@@ -17,8 +17,8 @@ class RV extends RvComponent {
      * run rv
      */
     run(callback) {
-        let root = Util.isString(this.el) ? document.querySelector(this.el) : this.el
-        Util.addStyle2Head(this.style)
+        let root = YrvUtil.isString(this.el) ? document.querySelector(this.el) : this.el
+        YrvUtil.addStyle2Head(this.style)
         let rvThis = this
         this.use(this.context.route.getNeedRenderComponent()) //todo
         this._handleMultiComponent(this.parse, rvThis)
@@ -37,7 +37,7 @@ class RV extends RvComponent {
             })
         }
 
-        Util.observe(this.data, this.observeMap, () => {
+        YrvUtil.observe(this.data, this.observeMap, () => {
             this._updatedom()
         })
         document.addEventListener("routeChange", (e) => {
@@ -55,10 +55,10 @@ class RV extends RvComponent {
             if (component.parse.componentMap && component.parse.componentMap.length > 0) {
                 rvThis._handleMultiComponent(component.parse, rvThis)
             }
-            Util.observe(component.data, component.observeMap, () => {
+            YrvUtil.observe(component.data, component.observeMap, () => {
                 rvThis._updatedom(rvThis._getDomTree())
             })
-            Util.loopGet(component.data)
+            YrvUtil.loopGet(component.data)
             if (component.watchObj) {
                 Object.keys(component.watchObj).forEach((watchFun) => {
 
@@ -75,7 +75,7 @@ class RV extends RvComponent {
     }
     _updatedom() {
         let nve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom)
-        Util.patch(this.w, Util.diff(this.ve, nve))
+        YrvUtil.patch(this.w, YrvUtil.diff(this.ve, nve))
         this.ve = nve
     }
 
@@ -85,7 +85,7 @@ class RV extends RvComponent {
      */
     static component(option) {
 
-        return new RvComponent(option, false)
+        return new YrvComponent(option, false)
     }
 
 }

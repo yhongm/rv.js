@@ -1,22 +1,23 @@
-class DiffList {
+class YrvDiffList {
     /**
      * diff list 
      * @param {*} oldList 
      * @param {*} newList 
      */
     constructor(oldList, newList) {
-        this.oldList=oldList
-        this.newList=newList
+        this.oldList = oldList
+        this.newList = newList
         this.oldListKeyIndex = this.makeListKeyIndex(this.oldList)
         this.newListKeyIndex = this.makeListKeyIndex(this.newList)
         this.moveOperator = []
         this.childList = []
-        this.tempList=[]
+        this.tempList = []
     }
+
     /**
      * this function start diff 
      */
-    goDiff(){
+    goDiff() {
         for (let i = 0; i < this.oldList.length; i++) {
             let oldItem = this.oldList[i]
             let oItemKey = this.getKey(oldItem)
@@ -26,7 +27,7 @@ class DiffList {
                 this.childList.push(this.newList[this.newListKeyIndex[oItemKey]])
             }
         }
-        this.tempList = this.childList.concat()//copy the childList to a teml list
+        this.tempList = this.childList.concat() //copy the childList to a teml list
         let i = 0;
         while (i < this.tempList.length) {
             if (this.tempList[i] === null) {
@@ -110,4 +111,4 @@ class DiffList {
         }
     }
 }
-export default DiffList;
+export default YrvDiffList;

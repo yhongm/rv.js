@@ -1,7 +1,7 @@
-import Observable from "./yrvObservable"
-import Diff from "./yrvDiff"
-import Patch from "./yrvPatch"
-class Util {
+import YrvObservable from "./yrvObservable"
+import YrvDiff from "./yrvDiff"
+import YrvPatch from "./yrvPatch"
+class YrvUtil {
 
     static isString(some) {
         return typeof some === 'string'
@@ -85,11 +85,11 @@ class Util {
      * by yhongm
      */
     static generateHashMNameByMName(method) {
-        return `${Util.getMethodHashId(method)}_${method}`
+        return `${YrvUtil.getMethodHashId(method)}_${method}`
         //return `_m${Util.getMethodHashId(method)}`
     }
     static getMethodHashId(name) {
-        return `_rv_${Util.getHashCode(name)}`
+        return `_rv_${YrvUtil.getHashCode(name)}`
     }
     static getHashCode(str) {
         // str = str.toLowerCase();
@@ -213,7 +213,7 @@ class Util {
      */
     static isOperatorExpression(content) {
 
-        if (Util.isString(content)) {
+        if (YrvUtil.isString(content)) {
             if (/^\{\w*|\|\%+\}$/.test(content)) {
 
                 return true
@@ -225,16 +225,16 @@ class Util {
         return false
     }
     static getOperatorExpression(content, data, dataKey, context) {
-        if (Util.isString(content)) {
+        if (YrvUtil.isString(content)) {
 
             var expression = content.slice(content.indexOf("{") + 1, content.indexOf("}"))
             let startIndex = expression.indexOf("%#")
             let endIndex = expression.indexOf("#%") + 2
             if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
                 let placeHolder = expression.slice(startIndex, endIndex)
-                var placeHolderValue = Util.getPlaceHolderValue(placeHolder)
+                var placeHolderValue = YrvUtil.getPlaceHolderValue(placeHolder)
                 let realValue
-                if (Util.isDotOperatorExpression(placeHolderValue)) {
+                if (YrvUtil.isDotOperatorExpression(placeHolderValue)) {
 
                     var placeHolderValueKey = placeHolderValue.split(".")[0]
                     var placeHolderValueValue = placeHolderValue.split(".")[1]
@@ -247,9 +247,9 @@ class Util {
                             placeHolderVValue = data[placeHolderValueValue]
                         }
                     }
-                    realValue = Util.isNumber(placeHolderVValue) ? placeHolderVValue : `"${placeHolderVValue}"` //get real value by PlaceHolder
+                    realValue = YrvUtil.isNumber(placeHolderVValue) ? placeHolderVValue : `"${placeHolderVValue}"` //get real value by PlaceHolder
                 } else {
-                    realValue = data[Util.getPlaceHolderValue(placeHolder)] //get real value by PlaceHolder 
+                    realValue = data[YrvUtil.getPlaceHolderValue(placeHolder)] //get real value by PlaceHolder 
                 }
                 expression = expression.replace(placeHolder, realValue)
 
@@ -294,22 +294,22 @@ class Util {
         return new Element(tagName, props, children)
     }
     static diff(oldTree, newTree) {
-        let d = new Diff(oldTree, newTree)
+        let d = new YrvDiff(oldTree, newTree)
         d.goDiff()
         return d.patches
     }
 
 
     static patch(node, patches) {
-        new Patch(node, patches).apply()
+        new YrvPatch(node, patches).apply()
     }
     static observe(obj, observeMap, callback) {
 
         Object.keys(obj).forEach(key => {
             let internalValue = obj[key]
-            let observable = new Observable()
+            let observable = new YrvObservable()
             if (internalValue instanceof Object) {
-                Util.observe(internalValue, observeMap, callback)
+                YrvUtil.observe(internalValue, observeMap, callback)
             }
             if (!observeMap.hasKey(key)) {
                 observeMap.put(key, observable)
@@ -336,4 +336,4 @@ class Util {
     }
 }
 
-export default Util
+export default YrvUtil

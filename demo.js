@@ -1,5 +1,5 @@
 // import RV from './src/rv/main'
-import RV from './src/rv/main'
+import RV from './src/yrv/yrvMain'
 
 let rv
 
@@ -14,11 +14,10 @@ let myData = {
     child2: "child2",
     time: 10000,
     pkey: "dddd",
-    componentColor: "red",//用于自定义组件
-    componentCotent: "componentCotent 888",//用于自定义组件
-    componentValue: "componentValue 888",//用于自定义组件
-    week: [
-        {
+    componentColor: "red", //用于自定义组件
+    componentCotent: "componentCotent 888", //用于自定义组件
+    componentValue: "componentValue 888", //用于自定义组件
+    week: [{
             id: 11,
             content: "111"
         },
@@ -37,10 +36,10 @@ window.RV = RV
 window.onload = function () {
     this.console.log("onload")
     var con = RV.component({ //定义自定义RV组件
-        name: "MyComponent",//定义RV组件名字
+        name: "MyComponent", //定义RV组件名字
         template: `
             <div class="aaa" key="aaa"><p key="bbb" class="bbb" style="color:%#pcolor#%" time="%#time#%" componentValue="%#pvalue#%">"%#pcontent#%"</p><div>
-        `,//定义RV组件,HTML语法声明组件模板
+        `, //定义RV组件,HTML语法声明组件模板
         style: `
         .aaa {
             background-color: red
@@ -51,12 +50,12 @@ window.onload = function () {
         }
         `,
         //定义RV组件样式表,css语法声明组件样式
-        props: {//定义RV组件属性,用于外部设值组件属性
+        props: { //定义RV组件属性,用于外部设值组件属性
             time: "1000",
             content: "a custom component",
             value: "componentValue"
         },
-        data: {//定义RV组件data,data数据变化，自动更新模板内容
+        data: { //定义RV组件data,data数据变化，自动更新模板内容
             pcontent: "a custom component",
             pcolor: "yellow",
             time: 10000,
@@ -64,7 +63,7 @@ window.onload = function () {
 
         },
 
-        run() {//定义自定义RV组件运行代码,用于运行RV组件相关JS代码,RV组件启动时启动此方法
+        run() { //定义自定义RV组件运行代码,用于运行RV组件相关JS代码,RV组件启动时启动此方法
 
 
             let colors = ['red', 'green', 'blue', 'yellow', 'gray', 'white', 'black']
@@ -77,6 +76,7 @@ window.onload = function () {
 
 
             }, 1000)
+
             function getRandomInt(max) {
                 return Math.floor(Math.random() * Math.floor(max));
             }
@@ -98,7 +98,7 @@ window.onload = function () {
         {
             el: "#app",
             //el对象挂载的节点s
-            data: myData,//数据对象，用于驱动视图更新，数据变化，视图自动更新
+            data: myData, //数据对象，用于驱动视图更新，数据变化，视图自动更新
             style: ``,
             template: `<div key="1" style="color:%#pcolor#%,width:100px,height:100px" onclick="clickDiv()">
                          "%#parent#%"
@@ -118,7 +118,7 @@ window.onload = function () {
     rv.run((rv) => {
         console.log("rv,run:")
 
-    })//启动
+    }) //启动
     rv.watch("parent", () => {
         alert("parent,change")
     }) //rv.watch("key",callback) 观察data数据对象对应key的数值变化,变化触发callback

@@ -1,6 +1,11 @@
-import DiffList from "./yrvDiff_list"
+import DiffList from "./yrvDiffList"
 import Util from "./yrvUtil"
-import { NODE_REPLACE, CHILD_RE_ORDER, NODE_PROPS, NODE_CONTENT } from "./yrvDomState"
+import {
+    NODE_REPLACE,
+    CHILD_RE_ORDER,
+    NODE_PROPS,
+    NODE_CONTENT
+} from "./yrvDomState"
 class Diff {
     /**
      * dom tree diff algorithm object constructor

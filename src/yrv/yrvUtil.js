@@ -56,9 +56,14 @@ class Util {
     }
     static defineRvInnerGlobalValue(key, value, isCanWrite) {
         if (!window.hasOwnProperty("_______js_yhongm_rv____")) {
-            Object.defineProperty(window, "_______js_yhongm_rv____", { value: {} })
+            Object.defineProperty(window, "_______js_yhongm_rv____", {
+                value: {}
+            })
         }
-        Object.defineProperty(window["_______js_yhongm_rv____"], key, { value: value, writable: isCanWrite })
+        Object.defineProperty(window["_______js_yhongm_rv____"], key, {
+            value: value,
+            writable: isCanWrite
+        })
     }
     static getRvInnerGlobalValue(key) {
         if (!key) {
@@ -88,7 +93,8 @@ class Util {
     }
     static getHashCode(str) {
         // str = str.toLowerCase();
-        var hash = 1234567890, i, ch;
+        var hash = 1234567890,
+            i, ch;
         for (i = str.length - 1; i >= 0; i--) {
             ch = str.charCodeAt(i);
             hash ^= ((hash << 5) + ch + (hash >> 2));
@@ -119,25 +125,22 @@ class Util {
             //negative int 
             var reNeNumber = /^-\d+$/
             //正实数
-            var reRealNumber1 = /^[1-9]\d*[.]\d+$/  //非零开头
+            var reRealNumber1 = /^[1-9]\d*[.]\d+$/ //非零开头
             var reRealNumber2 = /^0[.]\d+$/ //零开头
             //负实数
-            var reNeRealNumber1 = /^-[1-9]\d*[.]\d+$/  //非零开头
+            var reNeRealNumber1 = /^-[1-9]\d*[.]\d+$/ //非零开头
             var reNeRealNumber2 = /^-0[.]\d+$/ //零开头
 
-            if (reNumber.test(value) || reNeNumber.test(value)
-                || reRealNumber1.test(value) || reRealNumber2.test(value)
-                || reNeRealNumber1.test(value) || reNeRealNumber2.test(value)) {
+            if (reNumber.test(value) || reNeNumber.test(value) ||
+                reRealNumber1.test(value) || reRealNumber2.test(value) ||
+                reNeRealNumber1.test(value) || reNeRealNumber2.test(value)) {
                 return true
-            }
-            else {
+            } else {
                 return false
             }
-        }
-        else if (typeof (value) === 'number') {
+        } else if (typeof (value) === 'number') {
             return true
-        }
-        else {
+        } else {
             return false
         }
     }
@@ -244,9 +247,9 @@ class Util {
                             placeHolderVValue = data[placeHolderValueValue]
                         }
                     }
-                    realValue = Util.isNumber(placeHolderVValue) ? placeHolderVValue : `"${placeHolderVValue}"`//get real value by PlaceHolder
+                    realValue = Util.isNumber(placeHolderVValue) ? placeHolderVValue : `"${placeHolderVValue}"` //get real value by PlaceHolder
                 } else {
-                    realValue = data[Util.getPlaceHolderValue(placeHolder)]//get real value by PlaceHolder 
+                    realValue = data[Util.getPlaceHolderValue(placeHolder)] //get real value by PlaceHolder 
                 }
                 expression = expression.replace(placeHolder, realValue)
 

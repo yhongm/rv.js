@@ -1,8 +1,8 @@
 {
   "name": "yrv.js",
-  "version": "1.7.6",
+  "version": "1.7.8",
   "description": "a javascript Framework",
-  "main": "src/rv/main.js",
+  "main": "src/yrv/yrvMain.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx webpack",

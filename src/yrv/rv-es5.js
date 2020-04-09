@@ -1,6 +1,5 @@
-
 /**
- * deprecated
+ * the version is deprecated
  * @author yhongm
  */
 (function (ROOT) {
@@ -228,7 +227,7 @@
 
     }
 
-    function Util() { }
+    function Util() {}
     Util.isString = function (some) {
         return typeof some === 'string'
     }
@@ -321,13 +320,13 @@
                 if (placeHolder.indexOf(".") > 0) {
                     if (Util.getPlaceHolderValue(placeHolder).split(".")[0] === dataKey) {
                         let placeHolderValue = data[Util.getPlaceHolderValue(placeHolder).split(".")[1]]
-                        realValue = Util.isNumber(placeHolderValue) ? placeHolderValue : `"${placeHolderValue}"`//通过placeHolder取真实的值
+                        realValue = Util.isNumber(placeHolderValue) ? placeHolderValue : `"${placeHolderValue}"` //通过placeHolder取真实的值
 
                     }
 
 
                 } else {
-                    realValue = data[Util.getPlaceHolderValue(placeHolder)]//通过placeHolder取真实的值
+                    realValue = data[Util.getPlaceHolderValue(placeHolder)] //通过placeHolder取真实的值
                 }
 
                 expression = expression.replace(placeHolder, realValue)
@@ -655,8 +654,7 @@
                     }
                     dataSingle = dom.props['for'].split(" _in_ ")[0]
 
-                }
-                else {
+                } else {
                     dataArray = this.data[dom.props['for'].split(" _in_ ")[1]]
                     dataSingle = dom.props['for'].split(" _in_ ")[0]
                 }
@@ -691,12 +689,12 @@
         }
     }
     /**
-   * virtual dom 2 real data dom
-   * @param {*} dom 
-   * @param {*} data 
-   * @param {*} dataSingle 
-   * @param {*} tdata 
-   */
+     * virtual dom 2 real data dom
+     * @param {*} dom 
+     * @param {*} data 
+     * @param {*} dataSingle 
+     * @param {*} tdata 
+     */
     RV.prototype.vdom2rdom = function (dom, data, dataSingle, tdata) {
         var obj = {}
         obj.tag = dom.tag
@@ -715,8 +713,7 @@
 
                     obj.props[value] = this.handleSingleStyle(data, style, dataSingle)
                 }
-            }
-            else {
+            } else {
                 if (Util.isPlaceHolder(dom.props[value])) {
                     if (!Util.isDotOperatorExpression(Util.getPlaceHolderValue(dom.props[value]))) {
                         obj.props[value] = tdata[Util.getPlaceHolderValue(dom.props[value])]
@@ -726,8 +723,7 @@
                 } else if (Util.isOperatorExpression(dom.props[value])) {
 
                     obj.props[value] = Util.getOperatorExpression(dom.props[value], data, dataSingle)
-                }
-                else {
+                } else {
                     obj.props[value] = dom.props[value]
                 }
 
@@ -745,8 +741,7 @@
                         obj.children[child] = data[Util.getPlaceHolderValue(dom.children[child]).split(".")[1]]
                     }
 
-                }
-                else {
+                } else {
                     obj.children[child] = dom.children[child]
                 }
 
@@ -833,7 +828,14 @@
         this.mHandler = {
             startELement: function (tagName, attr, content, that) {
                 that.mIndex += 1
-                var obj = { tag: tagName, props: attr, children: [], index: that.mIndex, content: content, isClose: false }
+                var obj = {
+                    tag: tagName,
+                    props: attr,
+                    children: [],
+                    index: that.mIndex,
+                    content: content,
+                    isClose: false
+                }
                 if (content.length > 0) {
                     obj.children.push(content.trim())
                 }
@@ -921,12 +923,14 @@
             }
 
         }
+
         function _parseEndTag(html, that) {
 
             if (that.mHandler) {
                 that.mHandler.endElement(that)
             }
         }
+
         function parseComment(html) {
             // console.log(`parseComment=${html}`)
         }

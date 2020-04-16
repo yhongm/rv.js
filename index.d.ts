@@ -8,11 +8,11 @@ export interface YrvOption {
   watch?: object;
   onRun(): void;
   onDomChange(paramObj: any): void;
-  onMount(): ?void;
+  onMount(): void;
 }
 export interface YrvRouteConfig {
   path: string;
-  component: RvComponent;
+  component: YrvComponent;
   param?: string;
   ismain: boolean;
 }
@@ -36,7 +36,7 @@ declare class YrvComponent {
 }
 declare class RV extends YrvComponent {
   constructor(el: string, componentParam: YrvOption);
-  route(routeConfig: Array[YrvRouteConfig]): void;
+  route(routeConfig: Array<YrvRouteConfig>): void;
   static component(option: YrvOption): YrvComponent;
   run(callback: (rv: RV) => {}): void;
 }

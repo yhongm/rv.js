@@ -19,55 +19,28 @@ class RV extends YrvComponent {
     run(callback) {
         let root = YrvUtil.isString(this.el) ? document.querySelector(this.el) : this.el
         YrvUtil.addStyle2Head(this.style)
-        let rvThis = this
         this.use(this.context.route.getNeedRenderComponent()) //todo
-        this._handleMultiComponent(this.parse, rvThis)
+        this._handleMultiComponent(this.parse)
         this.ve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom)
         this.w = this.ve.render()
         root.appendChild(this.w)
         callback(this)
-        if (this.watchObj) {
-            Object.keys(this.watchObj).forEach((watchFun) => {
-
-                if ((this.observeMap.hasKey(watchFun))) {
-                    this.observeMap.get(watchFun).add(() => {
-                        this[watchFun]()
-                    })
-                }
-            })
-        }
-
-        YrvUtil.observe(this.data, this.observeMap, () => {
+        YrvUtil.receiveRvEvent("routeChange",(e,detail)=>{
+            this.parse.componentMap.clear()
+            this.context.route.go(detail)
+            this.use(this.context.route.getNeedRenderComponent())
+            this._handleMultiComponent(this.parse)
             this._updatedom()
         })
-        document.addEventListener("routeChange", (e) => {
-            this.parse.componentMap.clear()
-            this.context.route.go(e.detail)
-            this.use(this.context.route.getNeedRenderComponent())
-            this._handleMultiComponent(this.parse, rvThis)
+        YrvUtil.receiveRvEvent("dataChange",(e,detail)=>{
             this._updatedom()
-
         })
         this._updatedom()
     }
-    _handleMultiComponent(parse, rvThis) {
+    _handleMultiComponent(parse) {
         parse.componentMap.forEach((component) => {
             if (component.parse.componentMap && component.parse.componentMap.length > 0) {
-                rvThis._handleMultiComponent(component.parse, rvThis)
-            }
-            YrvUtil.observe(component.data, component.observeMap, () => {
-                rvThis._updatedom(rvThis._getDomTree())
-            })
-            YrvUtil.loopGet(component.data)
-            if (component.watchObj) {
-                Object.keys(component.watchObj).forEach((watchFun) => {
-
-                    if ((component.observeMap.hasKey(watchFun))) {
-                        component.observeMap.get(watchFun).add(() => {
-                            component.watchObj[watchFun]()
-                        })
-                    }
-                })
+               this._handleMultiComponent(component.parse)
             }
             component._rv_ev_run()
 
@@ -84,7 +57,7 @@ class RV extends YrvComponent {
      * @param {*} option 
      */
     static component(option) {
-
+        // return option
         return new YrvComponent(option, false)
     }
 

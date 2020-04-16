@@ -16,7 +16,16 @@ class YrvDomUtil {
         this.Context.data = componentData
         this.Context.componentName = componentName
     }
-
+    updateContext(newContext){
+        const {
+            componentName,
+            componentData,
+            route
+        } = newContext
+        this.Context = {}
+        this.Context.data = componentData
+        this.Context.componentName = componentName
+    }
     getVirtualElement(dom) {
         let children = []
         for (let child in dom.children) {
@@ -34,7 +43,7 @@ class YrvDomUtil {
             }
         }
 
-        return new YrvElement(dom.tag, dom.props, children, dom.belong)
+        return new YrvElement(dom.tag, dom.props, children, dom.belong,dom.componentUniqueTag)
     }
     applyTruthfulData(dom) {
         if ("for" in dom.props) {
@@ -128,6 +137,7 @@ class YrvDomUtil {
         obj.children = []
         obj.props = {}
         obj.belong = dom.belong
+        obj.componentUniqueTag=dom.componentUniqueTag
         let props = Object.keys(dom.props)
         for (let prop in props) {
             let value = props[prop]

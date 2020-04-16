@@ -229,16 +229,32 @@ export default routerConfig
 ```
 RV.component用于声明组件的方法,
 RV组件构造函数形参componentParam对象属性name 为RV组件名字
+
 RV组件构造函数形参componentParam对象属性template 为RV组件html声明模板
+
 RV组件构造函数形参componentParam对象属性style 为RV组件声明css样式
+
 RV组件构造函数形参componentParam对象属性props 为RV组件属性,目的为暴漏给父控件用于设置组件相应参数
+
 RV组件构造函数形参componentParam对象属性data 为RV组件data
+
 RV组件构造函数形参componentParam对象属性methods，为RV组件method对象，在对象中创建方法以及回调。其中方法中的this指向此组件
-RV组件构造函数形参componentParam对象属性onRun 为RV组件方法，组件运行时候触发
-RV组件构造函数形参componentParam对象属性onDomChange为RV组件方法，dom变化时触发
-RV组件构造函数形参componentParam对象属性onMount为RV组件方法，组件挂载时触发
+
+RV组件构造函数形参componentParam对象属性onRun 为RV组件生命周期，组件运行时候触发
+
+RV组件构造函数形参componentParam对象属性onDomChange为RV组件生命周期，dom变化时触发
+
+RV组件构造函数形参componentParam对象属性onMount为RV组件生命周期，组件挂载时触发
+
 RV组件构造函数形参componentParam对象属性watch为RV组件对象，用于观察组件data数据变化
+
 RV组件对象函数内调用this.$sendEvent({name,value,componentName}) 发送事件到其他组件 ,name为事件名称,value为事件值,componentName为要发送到的组件名。可以将此组件状态或属性值发送到其他组件。其他组件通过在组件methods中声明(组件名+事件名+'event')函数监听次事件(比如RvSelectIDEvent(newId),其中RvSelect为组件名,ID为事件名,newId为事件的新值)。
+
+RV组件对象函数内调用this.$routeChange({path,paramObj}) 发送路由改变事件，更新页面组件。需要在路由配置文件中注册组件
+
+RV组件对象函数内调用this.getComponentUniqueTag() 获取组件唯一标记
+
+RV组件对象函数内调用this.getParentComponentName()  获取当前组件父组件名字
 
 RV组件模板插槽标签slot，slot标签name属性用于区分插槽，如果组件内只有一个插槽这不需要name属性
 

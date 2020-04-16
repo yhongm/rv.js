@@ -80,6 +80,16 @@ class YrvUtil {
         document.dispatchEvent(event)
         return event
     }
+    static createAndSendSimpleRvEvent(rvEventName,objData){
+        var event = document.createEvent("CustomEvent")
+        event.initCustomEvent(`rv_${YrvUtil.getHashCode(rvEventName)}`, true, true, objData);
+        document.dispatchEvent(event)
+    }
+    static receiveRvEvent(rvEventName,callback){
+        document.addEventListener(`rv_${YrvUtil.getHashCode(rvEventName)}`,(e)=>{
+            callback(e,e.detail)
+        })
+    }
     /**
      * generate hash method name by method name
      * by yhongm
@@ -93,14 +103,13 @@ class YrvUtil {
     }
     static getHashCode(str) {
         // str = str.toLowerCase();
-        var hash = 1234567890,
-            i, ch;
-        for (i = str.length - 1; i >= 0; i--) {
-            ch = str.charCodeAt(i);
-            hash ^= ((hash << 5) + ch + (hash >> 2));
+        let hash = 12345678
+        for (let i = str.length - 1; i >= 0; i--) {
+            hash ^= ((hash << 6) + str.charCodeAt(i) + (hash >> 3));
         }
-        return (hash & 0x7FFFFFFF);
+        return (hash & 0x11111111);
     }
+   
     static isForIn(direction) {
         return /^\w* _in_ [\w\.]*$/.test(direction)
     }
@@ -259,18 +268,18 @@ class YrvUtil {
 
 
     }
+    static getObjType(obj) {
+        if (obj === null) return "null";
+        if (obj === undefined) return "undefined";
+        return Object.prototype.toString.call(obj).slice(8, -1);
+    }
 
     /**
      * the method use to deep clone obj
      * @param {*} obj 
      */
     static clone(obj) {
-        let getType = (o) => {
-            if (o === null) return "null";
-            if (o === undefined) return "undefined";
-            return Object.prototype.toString.call(o).slice(8, -1);
-        }
-        let result, oClass = getType(obj);
+        let result, oClass = YrvUtil.getObjType(obj);
         if (oClass === "Object") {
             result = {};
         } else if (oClass === "Array") {
@@ -278,17 +287,24 @@ class YrvUtil {
         } else {
             return obj;
         }
-        for (key in obj) {
+        for (let key in obj) {
             let copy = obj[key];
-            if (getType(copy) == "Object") {
-                result[key] = arguments.callee(copy);
-            } else if (getType(copy) == "Array") {
-                result[key] = arguments.callee(copy);
+            if (YrvUtil.getObjType(copy) == "Object") {
+                result[key] = YrvUtil.clone(copy);
+            } else if (YrvUtil.getObjType(copy) == "Array") {
+                result[key] = YrvUtil.clone(copy);
             } else {
-                result[key] = obj[key];
+                result[key] = copy
             }
         }
         return result;
+    }
+    static cloneObj(origin) {
+        let originProto = Object.getPrototypeOf(origin);
+        return Object.assign(Object.create(originProto), origin);
+    }
+    static cloneObj2(obj){
+        return Object.create(Object.getPrototypeOf(obj),Object.getOwnPropertyDescriptors(obj))
     }
     static h(tagName, props, children) {
         return new Element(tagName, props, children)
@@ -303,8 +319,34 @@ class YrvUtil {
     static patch(node, patches) {
         new YrvPatch(node, patches).apply()
     }
-    static observe(obj, observeMap, callback) {
+    static deepinCloneObj(obj) {
+        if (obj) {
+            let getType = obj => {
+                let oClass = Object.prototype.toString.call(obj).slice(8, -1)
+                if (oClass == "Object") {
+                    return "obj"
+                } else if (oClass == "Array") {
+                    return "arr"
+                } else {
+                    return oClass
+                }
+            }
+            let newObj = Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj))
+            Object.keys(obj).forEach((key) => {
+                if (getType(obj[key]) == "obj") {
+                    newObj[key] = YrvUtil.deepinCloneObj(obj[key])
+                } else if (getType(obj[key]) == "arr") {
+                    newObj[key] = YrvUtil.deepinCloneObj(obj[key])
+                } else {
+                    newObj[key] = obj[key]
+                }
 
+            })
+            return newObj
+        }
+
+    }
+    static observe(obj,observeMap, callback) {
         Object.keys(obj).forEach(key => {
             let internalValue = obj[key]
             let observable = new YrvObservable()
@@ -314,25 +356,42 @@ class YrvUtil {
             if (!observeMap.hasKey(key)) {
                 observeMap.put(key, observable)
             }
+            if (!observable.has(callback)) {
+                observable.add(callback)
+            }
 
             Object.defineProperty(obj, key, {
                 get() {
-                    if (!observable.has(callback)) {
-                        observable.add(callback)
-                    }
-
+                    // if (!observable.has(callback)) {
+                    //     observable.add(callback)
+                    // }
+                   
                     return internalValue
                 },
                 set(newVal) {
                     const changed = internalValue !== newVal
-                    internalValue = newVal
                     if (changed) {
+                        internalValue = newVal
                         observable.invoke()
                     }
                 }
             })
         })
-        return obj
+        
+    }
+    static observeComponent(component, callback) {
+        if(component.data){
+            YrvUtil.observe(component.data,component.observeMap,callback)
+        }
+        if (component.watchObj) {
+            Object.keys(component.watchObj).forEach((watchFun) => {
+                if ((component.observeMap.hasKey(watchFun))) {
+                    component.observeMap.get(watchFun).add(() => {
+                        component.watchObj[watchFun]()
+                    })
+                }
+            })
+        }
     }
 }
 

@@ -1,10 +1,5 @@
 {
-    "git.ignoreLimitWarning": true,
-    "editor.formatOnSave":true
+  "editor.fontFamily": "JetBrains Mono", //后边的引号中写上要设置的字体类型，个人比较喜欢Fira Code
+  "editor.fontLigatures": true, //这个控制是否启用字体连字，true启用，false不启用，这里选择启用
+  "editor.fontSize": 14 //这个设置字体粗细，可选normal,bold,"100"~"900"等，选择合适的就行
 }
-
-{
-    "key": "cmd+b",//自己定键位
-    "command": "HookyQR.beautify",
-    "when": "editorFocus"
-  }

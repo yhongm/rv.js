@@ -31,6 +31,8 @@ declare class YrvComponent {
   use(component: YrvComponent): void;
   $sendEvent(event: YrvEvent): void;
   $routeChange(routeInfo: RouteInfo): void;
+  getParentComponentName(): string;
+  getComponentUniqueTag(): string;
 }
 declare class RV extends YrvComponent {
   constructor(el: string, componentParam: YrvOption);

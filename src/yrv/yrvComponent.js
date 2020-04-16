@@ -24,7 +24,7 @@ class YrvComponent {
         }
         this.isParsedHtml = false
         this.style = style
-        this.rdom = this.rdom
+        this.rdom = {}
         this.props = props
         this.data = data
         this.methods = methods
@@ -32,63 +32,81 @@ class YrvComponent {
         this.componentDomChange = onDomChange
         this.mountLife = onMount
         this.watchObj = watch
-        this.paramObj = {} // the paramObj 
-        this.context = {
-            componentName: this.name,
-            componentData: this.data,
-            route: undefined
-        }
+        this.paramObj = {} // the paramObj
+        this.belongComponent = "main"
+        this.componentUniqueTag = this.name //the clone tag is unique
+        this.cloneArray = []
+
         YrvUtil.addStyle2Head(this.style)
-        this._defineMethod()
+        // this._defineMethod()
         this._init()
     }
     _init() {
+        this.context = {
+            componentName: this.name,
+            componentData: this.data,
+            componentUniqueTag: this.componentUniqueTag,
+            route: undefined
+        }
         this.parse = new YhmParse(this.context)
         this.rvDomUtil = new YrvDomUtil(this.context)
         this.observeMap = new YrvMap(this.name + "ComponentObserveMap")
+        YrvUtil.observeComponent(this, () => {
+            YrvUtil.createAndSendSimpleRvEvent("dataChange")
+        })
+    }
+
+    _belong(belongComponent) {
+        this.belongComponent = belongComponent
+    }
+    getParentComponentName(){
+        return this.belongComponent
+    }
+    getComponentUniqueTag(){
+        return this.componentUniqueTag
     }
     use(rvComponentObj) {
-        this.parse.useCustomComponent(rvComponentObj)
+        this.parse.useCustomComponent(rvComponentObj._cloneNew())
     }
+
     $routeChange(routeInfo) {
-        let customEvent = document.createEvent("CustomEvent")
-        customEvent.initCustomEvent("routeChange", true, true, routeInfo)
-        document.dispatchEvent(customEvent)
+        YrvUtil.createAndSendSimpleRvEvent("routeChange", routeInfo)
     }
+    $sendEvent(event) {
+        /**
+                * this function use to send event to other component
+                * *params name   this is event name
+                * *params value  this is event value
+                * call $sendEvent(name,value) send event
+                * 
+                * in other component use 'componentName'+'eventName'+'Event' constitute functionName receive this event
+                */
+        const {
+            name,
+            value,
+            componentName
+        } = event
+        YrvUtil.createAndSendSimpleRvEvent(`${componentName}_${this.name}${name}Event`, value)
+    }
+
     _defineMethod() {
         for (let method of Object.keys(this.methods)) {
             var that = this
             this.methods[method] = that.methods[method].bind(this) //the method this point to  this rv component object
-            YrvUtil.defineRvInnerGlobalValue(YrvUtil.generateHashMNameByMName(`${this.name}_${method}`), () => {
-                that.methods[method].call(that, YrvUtil.getRvInnerGlobalValue(YrvUtil.getMethodHashId(`${this.name}_${method}`)))
+            YrvUtil.defineRvInnerGlobalValue(YrvUtil.generateHashMNameByMName(`${this.name}_${this.componentUniqueTag}_${method}`), () => {
+                that.methods[method].call(that, YrvUtil.getRvInnerGlobalValue(YrvUtil.getMethodHashId(`${this.name}_${this.componentUniqueTag}_${method}`)))
+            })
+
+            YrvUtil.receiveRvEvent(`${this.name}_${method}`, (e, detail) => {
+                that.methods[method].call(that, detail)
             })
         }
         for (let data of Object.keys(this.data)) {
             //define RV inner function to auto modify  data value
-            YrvUtil.defineRvInnerGlobalValue(YrvUtil.generateHashMNameByMName(`${this.name}_${data}change`), () => {
-                this.data[data] = YrvUtil.getRvInnerGlobalValue(YrvUtil.getMethodHashId(`${this.name}_${data}value`))
+            YrvUtil.defineRvInnerGlobalValue(YrvUtil.generateHashMNameByMName(`${this.name}_${this.componentUniqueTag}_${data}change`), () => {
+                this.data[data] = YrvUtil.getRvInnerGlobalValue(YrvUtil.getMethodHashId(`${this.name}_${this.componentUniqueTag}_${data}value`))
             })
         }
-
-        Object.defineProperty(this, "$sendEvent", {
-            value: function (event) {
-                /**
-                 * this function use to send event to other component
-                 * *params name   this is event name
-                 * *params value  this is event value
-                 * call $sendEvent(name,value) send event
-                 * 
-                 * in other component use 'componentName'+'eventName'+'Event' constitute functionName receive this event
-                 */
-                const {
-                    name,
-                    value,
-                    componentName
-                } = event
-                YrvUtil.defineRvInnerGlobalValue(YrvUtil.getMethodHashId(`${componentName}_${this.name}${name}Event`), value, true)
-                eval(`${YrvUtil.invokeGlobalFunName(YrvUtil.generateHashMNameByMName(`${componentName}_${this.name}${name}Event`))}()`)
-            }
-        })
 
     }
     _getDomTree() {
@@ -104,7 +122,7 @@ class YrvComponent {
         }
         return this.parse.getHtmlDom()
     }
-    applyTruthFulData() {
+    _applyTruthFulData() {
         this.rdom = this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom
     }
 
@@ -135,11 +153,33 @@ class YrvComponent {
         return this.name
     }
 
-    getDom() {
+    _getDom() {
         return this.rdom
     }
-    getProp() {
+    _getProp() {
         return this.props
+    }
+    _cloneData() {
+        return YrvUtil.clone(this.data)
+    }
+    _cloneNew() {
+        let cloneObj = YrvUtil.deepinCloneObj(this)
+        cloneObj.componentUniqueTag = `${cloneObj.name}_rv_${Math.floor(new Date() / 1)}`
+        cloneObj.context = {
+            componentName: cloneObj.name,
+            componentData: cloneObj.data,
+            componentUniqueTag: cloneObj.componentUniqueTag,
+            route: undefined
+        }
+        cloneObj.parse.updateContext(cloneObj.context)
+        cloneObj.rvDomUtil.updateContext(cloneObj.context)
+        cloneObj._defineMethod()
+        YrvUtil.observeComponent(cloneObj, () => {
+            YrvUtil.createAndSendSimpleRvEvent("dataChange")
+        })
+        this.cloneArray.push(cloneObj)
+        return cloneObj
+
     }
 
 }

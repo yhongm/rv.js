@@ -16,7 +16,6 @@ class YhmParse {
     this.mHandler = {
       startELement: function (tagName, prop, content, that) {
         that.mIndex += 1
-
         if (that.componentMap.hasKey(tagName) || tagName === "routerview") {
           //if the tag is have  registered component
           if (that.context.componentName === "main" && tagName === "routerview") {
@@ -24,9 +23,9 @@ class YhmParse {
             let needRenderComponent = that.context.route.getNeedRenderComponent()
             needRenderComponent.paramObj = that.context.route.getNeedRenderComponentParam()
             needRenderComponent._rv_ev_domChange()
-            needRenderComponent.applyTruthFulData()
+            needRenderComponent._applyTruthFulData()
 
-            that.mMap.put(that.mIndex, needRenderComponent.getDom())
+            that.mMap.put(that.mIndex, needRenderComponent._getDom())
           } else {
             //this registered component insert dom tree
             let component = that.componentMap.get(tagName)
@@ -37,14 +36,14 @@ class YhmParse {
               }
               component.props[componentProp] = propValue
             })
-
+            component._belong(that.context.componentName)
             component._rv_ev_domChange()
-            component.applyTruthFulData()
+            component._applyTruthFulData()
             if (prop.slot) {
 
-              that.componentMap.get(tagName).getDom().props["slot"] = prop.slot
+              that.componentMap.get(tagName)._getDom().props["slot"] = prop.slot
             }
-            that.mMap.put(that.mIndex, that.componentMap.get(tagName).getDom())
+            that.mMap.put(that.mIndex, that.componentMap.get(tagName)._getDom())
 
           }
 
@@ -57,9 +56,9 @@ class YhmParse {
             index: that.mIndex,
             content: content,
             isClose: false,
-            belong: that.context.componentName
+            belong: that.context.componentName,
+            componentUniqueTag:that.context.componentUniqueTag
           }
-
           if (content.length > 0) {
 
             obj.children.push(content.trim())
@@ -84,9 +83,9 @@ class YhmParse {
               theParentDom.props["key"] = "yrv_auto_key_" + YrvUtil.getHashCode(`${theParentDom.tag}_${JSON.stringify(theParentDom.children)}_${theParentDom.props}_${that.mIndex - 1}`)
             }
             //check unique by the dom key
-            if (YrvUtil.checkHaveSameValueFromArray(theParentDom.children.flatMap((child) => child.props.key))) {
-              throw new Error(`the tag:${theParentDom.tag} child dom props 'key' reuse`)
-            }
+            // if (YrvUtil.checkHaveSameValueFromArray(theParentDom.children.flatMap((child) => child.props.key))) {
+            //   throw new Error(`the tag:${theParentDom.tag} child dom props 'key' reuse`)
+            // }
           }
           that.mMap.remove(that.mIndex)
 
@@ -104,6 +103,10 @@ class YhmParse {
    */
   useCustomComponent(rvComponent) {
     this.componentMap.put(rvComponent.getName(), rvComponent)
+  }
+  updateContext(newContext){
+    this.context=newContext
+
   }
   parseHtmlTemplate(html) {
     let startTime = new Date() / 1000

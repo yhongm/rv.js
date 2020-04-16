@@ -1,4 +1,5 @@
 import YrvMap from "./yrvMap"
+import YrvComponent from "yrv.js/src/yrv/yrvComponent"
 class YrvRoute {
     constructor() {
         this.needRenderpath = ""
@@ -6,6 +7,8 @@ class YrvRoute {
     }
     register(routerConfigs) {
         routerConfigs.forEach(routerConfig => {
+            //routerConfig.component=new YrvComponent(routerConfig.component,routerConfig.ismain) //todo 2020 0411 1141
+            routerConfig.component=routerConfig.component._cloneNew()
             this.routers.put(routerConfig.path, routerConfig)
         })
 

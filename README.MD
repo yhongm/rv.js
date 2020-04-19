@@ -263,7 +263,7 @@ RV组件模板插槽标签slot，slot标签name属性用于区分插槽，如果
 
 ```
 
-<img src="rvTheLifeCycle.png">
+<img src="./rvTheLifeCycle.png">
 
 1.声明组件:
 通过 RV.component 声明组件

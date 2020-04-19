@@ -95,8 +95,8 @@ class YrvUtil {
      * by yhongm
      */
     static generateHashMNameByMName(method) {
-        return `${YrvUtil.getMethodHashId(method)}_${method}`
-        //return `_m${Util.getMethodHashId(method)}`
+        //return `${YrvUtil.getMethodHashId(method)}_${method}`
+        return `_m${Util.getMethodHashId(method)}`
     }
     static getMethodHashId(name) {
         return `_rv_${YrvUtil.getHashCode(name)}`

@@ -267,7 +267,7 @@ RV组件模板插槽标签slot，slot标签name属性用于区分插槽，如果
 
 1.声明组件:
 通过 RV.component 声明组件
-任何组件都可以通过 use()方法注册已经声明好的的 rv 组件
+任何组件都可以通过 use(component,key?)方法注册已经声明好的的 rv 组件,component为rv组件，key为组件唯一标识，一个组件内使用多次相同组件用key区分
 
 ```javascript
   var con = RV.component({ //定义自定义RV组件

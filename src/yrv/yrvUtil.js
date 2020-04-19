@@ -207,6 +207,13 @@ class YrvUtil {
             return false
         }
     }
+    static isRvEventProp(content){
+        if(content){
+            return content.startsWith("::")
+        }else{
+            return false
+        }
+    }
     static isDotOperatorExpression(content) {
         return /^\w*\.\w*$/.test(content)
     }
@@ -333,12 +340,14 @@ class YrvUtil {
             }
             let newObj = Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj))
             Object.keys(obj).forEach((key) => {
-                if (getType(obj[key]) == "obj") {
-                    newObj[key] = YrvUtil.deepinCloneObj(obj[key])
-                } else if (getType(obj[key]) == "arr") {
-                    newObj[key] = YrvUtil.deepinCloneObj(obj[key])
-                } else {
-                    newObj[key] = obj[key]
+                if(key!=="componentMap"){
+                    if (getType(obj[key]) == "obj") {
+                        newObj[key] = YrvUtil.deepinCloneObj(obj[key])
+                    } else if (getType(obj[key]) == "arr") {
+                        newObj[key] = YrvUtil.deepinCloneObj(obj[key])
+                    } else {
+                        newObj[key] = obj[key]
+                    }
                 }
 
             })

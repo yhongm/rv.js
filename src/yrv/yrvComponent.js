@@ -34,6 +34,7 @@ class YrvComponent {
         this.watchObj = watch
         this.paramObj = {} // the paramObj
         this.belongComponent = "main"
+        this.componentkey=name
         this.componentUniqueTag = this.name //the clone tag is unique
         this.cloneArray = []
 
@@ -51,9 +52,6 @@ class YrvComponent {
         this.parse = new YhmParse(this.context)
         this.rvDomUtil = new YrvDomUtil(this.context)
         this.observeMap = new YrvMap(this.name + "ComponentObserveMap")
-        YrvUtil.observeComponent(this, () => {
-            YrvUtil.createAndSendSimpleRvEvent("dataChange")
-        })
     }
 
     _belong(belongComponent) {
@@ -65,8 +63,11 @@ class YrvComponent {
     getComponentUniqueTag(){
         return this.componentUniqueTag
     }
-    use(rvComponentObj) {
-        this.parse.useCustomComponent(rvComponentObj._cloneNew())
+    use(rvComponentObj,key="",needClone=true) {
+        if(needClone){
+            rvComponentObj=rvComponentObj._cloneNew(key)
+        }
+        this.parse.useCustomComponent(rvComponentObj)
     }
 
     $routeChange(routeInfo) {
@@ -110,9 +111,11 @@ class YrvComponent {
 
     }
     _getDomTree() {
+
         if (!this.isParsedHtml || this.parse.componentMap.length > 0) {
             //the parse html function only use once if the component not contain child component
             try {
+               
                 this.parse.parseHtmlTemplate(this.template.trim())
                 this.isParsedHtml = true
 
@@ -162,9 +165,10 @@ class YrvComponent {
     _cloneData() {
         return YrvUtil.clone(this.data)
     }
-    _cloneNew() {
+    _cloneNew(key) {
         let cloneObj = YrvUtil.deepinCloneObj(this)
-        cloneObj.componentUniqueTag = `${cloneObj.name}_rv_${Math.floor(new Date() / 1)}`
+        cloneObj.componentkey=key
+        cloneObj.componentUniqueTag = `${cloneObj.name}_${cloneObj.componentkey}_rv_${Math.floor(new Date() / 1)}`
         cloneObj.context = {
             componentName: cloneObj.name,
             componentData: cloneObj.data,

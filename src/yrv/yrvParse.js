@@ -22,28 +22,60 @@ class YhmParse {
             //if in main page and the current tag is 'routeview' , so get component insert DOM TREE by the route 
             let needRenderComponent = that.context.route.getNeedRenderComponent()
             needRenderComponent.paramObj = that.context.route.getNeedRenderComponentParam()
+            Object.keys(needRenderComponent.props).forEach(componentProp => {
+              let propValue = prop[componentProp]
+              if (YrvUtil.isPlaceHolder(propValue)) {
+                propValue = that.context.componentData[YrvUtil.getPlaceHolderValue(propValue)]
+              }
+              needRenderComponent.props[componentProp] = propValue
+              
+            })
             needRenderComponent._rv_ev_domChange()
             needRenderComponent._applyTruthFulData()
 
             that.mMap.put(that.mIndex, needRenderComponent._getDom())
           } else {
             //this registered component insert dom tree
-            let component = that.componentMap.get(tagName)
+            let component
+            
+            if(prop.key){
+                component=that.componentMap.get(tagName).filter((comp)=>{
+                return comp.componentkey===prop.key
+                
+            })[0]
+            }else{
+               component=that.componentMap.get(tagName)[0]
+            }
+            
+            
             Object.keys(component.props).forEach(componentProp => {
               let propValue = prop[componentProp]
+             
               if (YrvUtil.isPlaceHolder(propValue)) {
                 propValue = that.context.componentData[YrvUtil.getPlaceHolderValue(propValue)]
               }
               component.props[componentProp] = propValue
+              
             })
+            Object.keys(prop).forEach((propKey)=>{
+              if(YrvUtil.isRvEventProp(propKey)){
+                component.methods[propKey.slice(2)]=function(param){
+                  YrvUtil.createAndSendSimpleRvEvent(`${that.context.componentName}_${prop[propKey]}`,param)
+              } 
+              }
+            })
+            
+            
+
+            
             component._belong(that.context.componentName)
             component._rv_ev_domChange()
             component._applyTruthFulData()
             if (prop.slot) {
 
-              that.componentMap.get(tagName)._getDom().props["slot"] = prop.slot
+              component._getDom().props["slot"] = prop.slot
             }
-            that.mMap.put(that.mIndex, that.componentMap.get(tagName)._getDom())
+            that.mMap.put(that.mIndex, component._getDom())
 
           }
 
@@ -102,8 +134,18 @@ class YhmParse {
    * @param {*} rvComponent 
    */
   useCustomComponent(rvComponent) {
-    this.componentMap.put(rvComponent.getName(), rvComponent)
+    if(this.componentMap.hasKey(rvComponent.getName())){
+       this.componentMap.get(rvComponent.getName()).push(rvComponent)
+
+    }else{
+      let componentQueue=[]
+      componentQueue.push(rvComponent)
+      this.componentMap.put(rvComponent.getName(), componentQueue)
+
+    }
+   
   }
+  
   updateContext(newContext){
     this.context=newContext
 
@@ -148,7 +190,6 @@ class YhmParse {
     }
     let endTime = new Date() / 1000
     // console.log(`total parse time:${endTime - startTime}`)
-
 
 
     function _parseStartTag(html, content, that) {

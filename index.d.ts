@@ -28,7 +28,7 @@ export interface RouteInfo {
 }
 declare class YrvComponent {
   constructor(componentParam: YrvOption, ismain: boolean);
-  use(component: YrvComponent): void;
+  use(component: YrvComponent ,key?:string): void;
   $sendEvent(event: YrvEvent): void;
   $routeChange(routeInfo: RouteInfo): void;
   getParentComponentName(): string;

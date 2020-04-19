@@ -37,6 +37,8 @@ npm i yrv.js
 
 rv-event="eventName"    用于监听事件(包括Window 事件属性,Form 事件,Keyboard 事件,Mouse 事件等等)。eventName为在当前RV对象methods中声明的函数。事件参数会通过参数传递到eventName函数中。
 rv-watch="value"         用于观察input标签value值，value值变化会自动更新data中对应value
+
+
 ```
 
 1. demo 及使用说明
@@ -230,7 +232,7 @@ export default routerConfig
 RV.component用于声明组件的方法,
 RV组件构造函数形参componentParam对象属性name 为RV组件名字
 
-RV组件构造函数形参componentParam对象属性template 为RV组件html声明模板
+RV组件构造函数形参componentParam对象属性template 为RV组件html声明模板 （::属性绑定方法到组件）
 
 RV组件构造函数形参componentParam对象属性style 为RV组件声明css样式
 
@@ -260,6 +262,8 @@ RV组件模板插槽标签slot，slot标签name属性用于区分插槽，如果
 
 
 ```
+
+<img src="rvTheLifeCycle.png">
 
 1.声明组件:
 通过 RV.component 声明组件
@@ -301,6 +305,7 @@ RV组件模板插槽标签slot，slot标签name属性用于区分插槽，如果
             this.methods.test2()
           }
           test2(){
+            this.method.clickMyCon() //此方法通过::属性绑定到此组件
 
           }
         }
@@ -372,7 +377,7 @@ rv = new RV({
                          <div key="4">
                             <p key="{%#v.id#%+'_content'}" childDomData="v" for="v _in_ week"  domData="week">"%#v.content#%"</p>
                          </div>
-                         <MyComponent content="%#componentCotent#%"  time="{Math.floor(new Date()/1000)+'_ttt'}" value="%#componentValue#%" key="888">
+                         <MyComponent ::clickMyCon="fun2" content="%#componentCotent#%"  time="{Math.floor(new Date()/1000)+'_ttt'}" value="%#componentValue#%" key="888">
                              <div slot="foot">"插槽demo"</div>
                          </MyComponent>
                        </div>`,
@@ -386,6 +391,9 @@ rv = new RV({
     fun1(){
 
     },
+    fun2(){
+      //此方法绑定到MyComponent组件clickMyCon方法上
+    }
 
 
 }

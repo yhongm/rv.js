@@ -28,7 +28,7 @@ class RV extends YrvComponent {
         YrvUtil.receiveRvEvent("routeChange",(e,detail)=>{
             this.parse.componentMap.clear()
             this.context.route.go(detail)
-            this.use(this.context.route.getNeedRenderComponent())
+            this.use(this.context.route.getNeedRenderComponent(),false)
             this._handleMultiComponent(this.parse)
             this._updatedom()
         })
@@ -38,11 +38,14 @@ class RV extends YrvComponent {
         this._updatedom()
     }
     _handleMultiComponent(parse) {
-        parse.componentMap.forEach((component) => {
-            if (component.parse.componentMap && component.parse.componentMap.length > 0) {
-               this._handleMultiComponent(component.parse)
-            }
-            component._rv_ev_run()
+        parse.componentMap.forEach((componentQueue) => {
+            componentQueue.forEach((component)=>{
+                if (component.parse.componentMap && component.parse.componentMap.length > 0) {
+                    this._handleMultiComponent(component.parse)
+                 }
+                 component._rv_ev_run()
+            })
+           
 
         })
     }

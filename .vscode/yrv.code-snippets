@@ -1,0 +1,22 @@
+{
+	"rv": {
+		"prefix": "RV",
+		"body": [
+			"import RV from \"yrv.js\""
+
+            "export default RV.component({"
+              "name:$1,"
+              "template:`$0`,"
+              "style:``,"
+              "props:{},"
+              "data:{},"
+              "watch:{},"
+              "methods:{},"
+              "onDomChange(paramObj){},"
+              "onMount(){},"
+              "onRun(){}"
+            "})"
+		],
+		"description": "rv template"
+	}
+}

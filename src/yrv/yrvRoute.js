@@ -7,19 +7,23 @@ class YrvRoute {
     }
     register(routerConfigs) {
         routerConfigs.forEach(routerConfig => {
-            //routerConfig.component=new YrvComponent(routerConfig.component,routerConfig.ismain) //todo 2020 0411 1141
-            routerConfig.component=routerConfig.component._cloneNew()
+            routerConfig.component=routerConfig.component._cloneNew("")
             this.routers.put(routerConfig.path, routerConfig)
         })
 
-        this.needRenderpath = this.routers.filterV((k, v) => {
+        let mainComponent = this.routers.filterV((k, v) => {
             return v.ismain && v.ismain === true
-        }).path
+        })
+        if(!mainComponent){
+            throw new Error("register route ,but the main component not declaranted")
+        }
+        this.go({path:mainComponent.path,paramObj:mainComponent.param})
     }
     getRoutes() {
         return this.routers
     }
     go(route) {
+        
         const {
             path,
             paramObj

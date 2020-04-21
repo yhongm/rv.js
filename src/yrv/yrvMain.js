@@ -19,8 +19,8 @@ class RV extends YrvComponent {
     run(callback) {
         let root = YrvUtil.isString(this.el) ? document.querySelector(this.el) : this.el
         YrvUtil.addStyle2Head(this.style)
-        this.use(this.context.route.getNeedRenderComponent()) //todo
-        this._handleMultiComponent(this.parse)
+        this.use(this.context.route.getNeedRenderComponent(),"",false) 
+        this._rv_ev_run()
         this.ve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom)
         this.w = this.ve.render()
         root.appendChild(this.w)
@@ -28,26 +28,14 @@ class RV extends YrvComponent {
         YrvUtil.receiveRvEvent("routeChange",(e,detail)=>{
             this.parse.componentMap.clear()
             this.context.route.go(detail)
-            this.use(this.context.route.getNeedRenderComponent(),false)
-            this._handleMultiComponent(this.parse)
+            this.use(this.context.route.getNeedRenderComponent(),"",false)
+            this._rv_ev_run()
             this._updatedom()
         })
         YrvUtil.receiveRvEvent("dataChange",(e,detail)=>{
             this._updatedom()
         })
         this._updatedom()
-    }
-    _handleMultiComponent(parse) {
-        parse.componentMap.forEach((componentQueue) => {
-            componentQueue.forEach((component)=>{
-                if (component.parse.componentMap && component.parse.componentMap.length > 0) {
-                    this._handleMultiComponent(component.parse)
-                 }
-                 component._rv_ev_run()
-            })
-           
-
-        })
     }
     _updatedom() {
         let nve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom)

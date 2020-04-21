@@ -63,7 +63,7 @@ class YrvComponent {
     getComponentUniqueTag(){
         return this.componentUniqueTag
     }
-    use(rvComponentObj,key="",needClone=true) {
+    use(rvComponentObj,key="",needClone=true,) {
         if(needClone){
             rvComponentObj=rvComponentObj._cloneNew(key)
         }
@@ -130,7 +130,15 @@ class YrvComponent {
     }
 
     _rv_ev_run() {
-        this.componentRun.call(this)
+        if(this.componentRun){
+            this.componentRun.call(this)
+        }
+        this.parse.componentMap.forEachKV((name,componentQueue)=>{
+            componentQueue.forEach((component)=>{
+                component._rv_ev_run()
+            })
+        })
+        
     }
     /**
      * this is yrv.js inner event ,only call by yrv.js framework
@@ -151,6 +159,11 @@ class YrvComponent {
         if (this.mountLife) {
             this.mountLife.call(this)
         }
+        this.parse.componentMap.forEachKV((name,componentQueue)=>{
+            componentQueue.forEach((component)=>{
+                component._rv_ev_mount()
+            })
+        })
     }
     getName() {
         return this.name
@@ -167,7 +180,9 @@ class YrvComponent {
     }
     _cloneNew(key) {
         let cloneObj = YrvUtil.deepinCloneObj(this)
-        cloneObj.componentkey=key
+        if(key!==""){
+            cloneObj.componentkey=key
+        }
         cloneObj.componentUniqueTag = `${cloneObj.name}_${cloneObj.componentkey}_rv_${Math.floor(new Date() / 1)}`
         cloneObj.context = {
             componentName: cloneObj.name,

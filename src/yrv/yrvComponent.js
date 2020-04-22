@@ -102,10 +102,17 @@ class YrvComponent {
                 that.methods[method].call(that, detail)
             })
         }
+        for(let watchFun of Object.keys(this.watchObj)){
+                this.watchObj[watchFun]=this.watchObj[watchFun].bind(this)
+        }
         for (let data of Object.keys(this.data)) {
             //define RV inner function to auto modify  data value
-            YrvUtil.defineRvInnerGlobalValue(YrvUtil.generateHashMNameByMName(`${this.name}_${this.componentUniqueTag}_${data}change`), () => {
-                this.data[data] = YrvUtil.getRvInnerGlobalValue(YrvUtil.getMethodHashId(`${this.name}_${this.componentUniqueTag}_${data}value`))
+            // YrvUtil.defineRvInnerGlobalValue(YrvUtil.generateHashMNameByMName(`${this.name}_${this.componentUniqueTag}_${data}change`), () => {
+            //     this.data[data] = YrvUtil.getRvInnerGlobalValue(YrvUtil.getMethodHashId(`${this.name}_${this.componentUniqueTag}_${data}value`))
+            // })
+            //TODO rewrite yhongm 2020 0422 10:03
+            YrvUtil.receiveRvEvent(YrvUtil.generateHashMNameByMName(`${this.name}_${this.componentUniqueTag}_${data}change`),(el,value)=>{
+                this.data[data] =value
             })
         }
 

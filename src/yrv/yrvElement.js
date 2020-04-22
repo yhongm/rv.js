@@ -42,8 +42,10 @@ class YrvElement {
                         //this prop use to watch element value change in real time and auto to modify data
                         if (el instanceof HTMLInputElement) {
                             el.addEventListener("input", (e) => {
-                                YrvUtil.defineRvInnerGlobalValue(YrvUtil.getMethodHashId(`${this.belong}_${this.componentUniqueTag}_${props[propName]}value`), el.value, true)
-                                eval(`${YrvUtil.invokeGlobalFunName(YrvUtil.generateHashMNameByMName(`${this.belong}_${this.componentUniqueTag}_${props[propName]}change`))}()`)
+                                //TODO rewrite yhongm 2020 0422 10:03
+                                // YrvUtil.defineRvInnerGlobalValue(YrvUtil.getMethodHashId(`${this.belong}_${this.componentUniqueTag}_${props[propName]}value`), el.value, true)
+                                // eval(`${YrvUtil.invokeGlobalFunName(YrvUtil.generateHashMNameByMName(`${this.belong}_${this.componentUniqueTag}_${props[propName]}change`))}()`)
+                                YrvUtil.createAndSendSimpleRvEvent(YrvUtil.generateHashMNameByMName(`${this.belong}_${this.componentUniqueTag}_${props[propName]}change`),el.value)
                             })
                         } else {
                             console.log("RV warning:the rv-watch only use in input label")
@@ -53,8 +55,10 @@ class YrvElement {
                             Object.defineProperty(e, "element", {
                                 value: el
                             })
-                            YrvUtil.defineRvInnerGlobalValue(YrvUtil.getMethodHashId(`${this.belong}_${this.componentUniqueTag}_${props[propName]}`), e, true)
-                            eval(`${YrvUtil.invokeGlobalFunName(YrvUtil.generateHashMNameByMName(`${this.belong}_${this.componentUniqueTag}_${props[propName]}`))}()`)
+                            //TODO rewrite yhongm 2020 0422 10:03
+                            // YrvUtil.defineRvInnerGlobalValue(YrvUtil.getMethodHashId(`${this.belong}_${this.componentUniqueTag}_${props[propName]}`), e, true)
+                            // eval(`${YrvUtil.invokeGlobalFunName(YrvUtil.generateHashMNameByMName(`${this.belong}_${this.componentUniqueTag}_${props[propName]}`))}()`)
+                            YrvUtil.createAndSendSimpleRvEvent(YrvUtil.generateHashMNameByMName(`${this.belong}_${this.componentUniqueTag}_${props[propName]}`),e)
                         })
                     }
 

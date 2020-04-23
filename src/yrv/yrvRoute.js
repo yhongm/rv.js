@@ -7,7 +7,7 @@ class YrvRoute {
     }
     register(routerConfigs) {
         routerConfigs.forEach(routerConfig => {
-            routerConfig.component=routerConfig.component._cloneNew("")
+            routerConfig.component=routerConfig.component["this"]._cloneNew("")
             this.routers.put(routerConfig.path, routerConfig)
         })
 

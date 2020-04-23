@@ -19,28 +19,37 @@ class RV extends YrvComponent {
     run(callback) {
         let root = YrvUtil.isString(this.el) ? document.querySelector(this.el) : this.el
         YrvUtil.addStyle2Head(this.style)
-        this.use(this.context.route.getNeedRenderComponent(),"",false) 
+        this.use(this.context.route.getNeedRenderComponent(), "", false)
         this._rv_ev_run()
-        this.ve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom)
+        
+        this.ve = YrvUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom,(el,props,belong,componentUniqueTag)=>{
+            this._hookRender(el,props,belong,componentUniqueTag)
+        })
         this.w = this.ve.render()
         root.appendChild(this.w)
         callback(this)
-        YrvUtil.receiveRvEvent("routeChange",(e,detail)=>{
+        YrvUtil.receiveRvEvent("routeChange", (e, detail) => {
             this.parse.componentMap.clear()
             this.context.route.go(detail)
-            this.use(this.context.route.getNeedRenderComponent(),"",false)
+            this.use(this.context.route.getNeedRenderComponent(), "", false)
             this._rv_ev_run()
             this._updatedom()
         })
-        YrvUtil.receiveRvEvent("dataChange",(e,detail)=>{
+        YrvUtil.receiveRvEvent("dataChange", (e, detail) => {
             this._updatedom()
         })
         this._updatedom()
     }
     _updatedom() {
-        let nve = this.rvDomUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom)
+        let nve = YrvUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom,(el,props,belong,componentUniqueTag)=>{
+            this._hookRender(el,props,belong,componentUniqueTag)
+        })
         YrvUtil.patch(this.w, YrvUtil.diff(this.ve, nve))
         this.ve = nve
+    }
+
+    _hookRender(el,props,belong,componentUniqueTag){
+        
     }
 
     /**
@@ -48,8 +57,26 @@ class RV extends YrvComponent {
      * @param {*} option 
      */
     static component(option) {
-        // return option
-        return new YrvComponent(option, false)
+        return new Proxy(new YrvComponent(option, false),{
+            set: function (obj, prop, value) {
+                obj[prop] = value
+            },
+            get: function (obj, prop) {
+                if (prop === "this") {
+                    return obj
+                }
+                if(prop.startsWith("_")){
+                    throw new Error("the prop start with _ is a inner function or data,please not call that")
+                    return 
+                }
+                return obj[prop]
+            },
+            apply: function (target, thisArg, argumentsList) {
+                console.log(`target:${target},argumentsList:${argumentsList}`)
+                target(argumentsList)
+            }
+        })
+
     }
 
 }

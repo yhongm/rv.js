@@ -1,6 +1,7 @@
 import YrvObservable from "./yrvObservable"
 import YrvDiff from "./yrvDiff"
 import YrvPatch from "./yrvPatch"
+import YrvElement from "./yrvElement"
 class YrvUtil {
 
     static isString(some) {
@@ -54,41 +55,57 @@ class YrvUtil {
 
         return /^rv-\w*$/.test(direction)
     }
-    static defineRvInnerGlobalValue(key, value, isCanWrite) {
-        if (!window.hasOwnProperty("_______js_yhongm_rv____")) {
-            Object.defineProperty(window, "_______js_yhongm_rv____", {
-                value: {}
-            })
+    static getVirtualElement(virtualDom,callback) {
+        let children = []
+        for (let child in virtualDom.children) {
+            let childVirtualDom = virtualDom.children[child]
+            if (childVirtualDom instanceof Array) {
+                childVirtualDom.forEach(singleChildDom => { 
+                    children.push(YrvUtil.getVirtualElement(singleChildDom,callback))
+                })
+            } else if (childVirtualDom instanceof Object) {
+                children.push(YrvUtil.getVirtualElement(childVirtualDom,callback))
+            } else {
+                children.push(childVirtualDom)
+            }
         }
-        Object.defineProperty(window["_______js_yhongm_rv____"], key, {
-            value: value,
-            writable: isCanWrite
-        })
+        return new YrvElement(virtualDom.tag, virtualDom.props, children, virtualDom.belong,virtualDom.componentUniqueTag,callback)
     }
-    static getRvInnerGlobalValue(key) {
-        if (!key) {
-            return undefined
-        }
-        return window["_______js_yhongm_rv____"][`${key}`]
-    }
-    static invokeGlobalFunName(name) {
-        return `window._______js_yhongm_rv____.${name}`
-    }
-    static createRvEvent(eventName, objData) {
-        var event = document.createEvent("CustomEvent")
-        event.initCustomEvent(`rv_${eventName}`, false, true, objData);
-        document.dispatchEvent(event)
-        return event
-    }
+    // static defineRvInnerGlobalValue(key, value, isCanWrite) {
+    //     if (!window.hasOwnProperty("_______js_yhongm_rv____")) {
+    //         Object.defineProperty(window, "_______js_yhongm_rv____", {
+    //             value: {}
+    //         })
+    //     }
+    //     Object.defineProperty(window["_______js_yhongm_rv____"], key, {
+    //         value: value,
+    //         writable: isCanWrite
+    //     })
+    // }
+    // static getRvInnerGlobalValue(key) {
+    //     if (!key) {
+    //         return undefined
+    //     }
+    //     return window["_______js_yhongm_rv____"][`${key}`]
+    // }
+    // static invokeGlobalFunName(name) {
+    //     return `window._______js_yhongm_rv____.${name}`
+    // }
+    
     static createAndSendSimpleRvEvent(rvEventName,objData){
         var event = document.createEvent("CustomEvent")
-        event.initCustomEvent(`rv_${YrvUtil.getHashCode(rvEventName)}`, true, true, objData);
+        event.initCustomEvent(`rv_${rvEventName}_${YrvUtil.getHashCode(rvEventName)}`, true, true, objData);
         document.dispatchEvent(event)
     }
     static receiveRvEvent(rvEventName,callback){
-        document.addEventListener(`rv_${YrvUtil.getHashCode(rvEventName)}`,(e)=>{
+        document.addEventListener(`rv_${rvEventName}_${YrvUtil.getHashCode(rvEventName)}`,(e)=>{
             callback(e,e.detail)
         })
+    }
+    static addElementEventListener(element,event,callback){
+        if(element instanceof HTMLElement){
+            element.addEventListener(event,callback)
+        }
     }
     /**
      * generate hash method name by method name
@@ -106,7 +123,8 @@ class YrvUtil {
         for (let i = str.length - 1; i >= 0; i--) {
             hash ^= ((hash << 6) + str.charCodeAt(i) + (hash >> 3));
         }
-        return (hash & 0x11111111);
+        let resultHashCode=(hash & 0xffffffff)
+        return resultHashCode;
     }
    
     static isForIn(direction) {

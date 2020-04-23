@@ -63,9 +63,12 @@ class YrvComponent {
     getComponentUniqueTag(){
         return this.componentUniqueTag
     }
-    use(rvComponentObj,key="",needClone=true,) {
-        if(needClone){
-            rvComponentObj=rvComponentObj._cloneNew(key)
+    use(rvComponentObjProxy, key = "", needClone = true, ) {
+        let rvComponentObj
+        if (needClone) {
+            rvComponentObj = rvComponentObjProxy["this"]._cloneNew(key)
+        }else{
+            rvComponentObj = rvComponentObjProxy
         }
         this.parse.useCustomComponent(rvComponentObj)
     }
@@ -92,27 +95,20 @@ class YrvComponent {
 
     _defineMethod() {
         for (let method of Object.keys(this.methods)) {
-            var that = this
-            this.methods[method] = that.methods[method].bind(this) //the method this point to  this rv component object
-            YrvUtil.defineRvInnerGlobalValue(YrvUtil.generateHashMNameByMName(`${this.name}_${this.componentUniqueTag}_${method}`), () => {
-                that.methods[method].call(that, YrvUtil.getRvInnerGlobalValue(YrvUtil.getMethodHashId(`${this.name}_${this.componentUniqueTag}_${method}`)))
+            this.methods[method] = this.methods[method].bind(this) //the method this point to  this rv component object
+            YrvUtil.receiveRvEvent(YrvUtil.generateHashMNameByMName(`${this.name}_${this.componentUniqueTag}_${method}`), (e, detail) => {
+                this.methods[method].call(this, detail)
             })
-
             YrvUtil.receiveRvEvent(`${this.name}_${method}`, (e, detail) => {
-                that.methods[method].call(that, detail)
+                this.methods[method].call(this, detail)
             })
         }
-        for(let watchFun of Object.keys(this.watchObj)){
-                this.watchObj[watchFun]=this.watchObj[watchFun].bind(this)
+        for (let watchFun of Object.keys(this.watchObj)) {
+            this.watchObj[watchFun] = this.watchObj[watchFun].bind(this)
         }
         for (let data of Object.keys(this.data)) {
-            //define RV inner function to auto modify  data value
-            // YrvUtil.defineRvInnerGlobalValue(YrvUtil.generateHashMNameByMName(`${this.name}_${this.componentUniqueTag}_${data}change`), () => {
-            //     this.data[data] = YrvUtil.getRvInnerGlobalValue(YrvUtil.getMethodHashId(`${this.name}_${this.componentUniqueTag}_${data}value`))
-            // })
-            //TODO rewrite yhongm 2020 0422 10:03
-            YrvUtil.receiveRvEvent(YrvUtil.generateHashMNameByMName(`${this.name}_${this.componentUniqueTag}_${data}change`),(el,value)=>{
-                this.data[data] =value
+            YrvUtil.receiveRvEvent(YrvUtil.generateHashMNameByMName(`${this.name}_${this.componentUniqueTag}_${data}change`), (el, value) => {
+                this.data[data] = value
             })
         }
 
@@ -122,7 +118,7 @@ class YrvComponent {
         if (!this.isParsedHtml || this.parse.componentMap.length > 0) {
             //the parse html function only use once if the component not contain child component
             try {
-               
+
                 this.parse.parseHtmlTemplate(this.template.trim())
                 this.isParsedHtml = true
 
@@ -137,15 +133,15 @@ class YrvComponent {
     }
 
     _rv_ev_run() {
-        if(this.componentRun){
+        if (this.componentRun) {
             this.componentRun.call(this)
         }
-        this.parse.componentMap.forEachKV((name,componentQueue)=>{
-            componentQueue.forEach((component)=>{
+        this.parse.componentMap.forEachKV((name, componentQueue) => {
+            componentQueue.forEach((component) => {
                 component._rv_ev_run()
             })
         })
-        
+
     }
     /**
      * this is yrv.js inner event ,only call by yrv.js framework
@@ -166,8 +162,8 @@ class YrvComponent {
         if (this.mountLife) {
             this.mountLife.call(this)
         }
-        this.parse.componentMap.forEachKV((name,componentQueue)=>{
-            componentQueue.forEach((component)=>{
+        this.parse.componentMap.forEachKV((name, componentQueue) => {
+            componentQueue.forEach((component) => {
                 component._rv_ev_mount()
             })
         })
@@ -187,8 +183,8 @@ class YrvComponent {
     }
     _cloneNew(key) {
         let cloneObj = YrvUtil.deepinCloneObj(this)
-        if(key!==""){
-            cloneObj.componentkey=key
+        if (key !== "") {
+            cloneObj.componentkey = key
         }
         cloneObj.componentUniqueTag = `${cloneObj.name}_${cloneObj.componentkey}_rv_${Math.floor(new Date() / 1)}`
         cloneObj.context = {

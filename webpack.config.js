@@ -5,7 +5,6 @@ const {
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
   entry: './src/yrv/yrvMain.js',
-  //entry: './demo.js',
   mode: "production",
   //mode: "development",
   //devtool: 'inline-source-map',

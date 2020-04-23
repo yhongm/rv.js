@@ -5,8 +5,11 @@ class YrvElement {
      * @param {*} tag  the html tag name
      * @param {*} props  the prop (key，style..)
      * @param {*} children child data
+     * @param {*} belong
+     * @param {*} componentUniqueTag
+     * @param {*} renderCallback the renderCallback can hook render 
      */
-    constructor(tag, props, children, belong, componentUniqueTag) {
+    constructor(tag, props, children, belong, componentUniqueTag, renderCallback) {
         if (!(this instanceof YrvElement)) {
             return new YrvElement(tagName, props, children, belong, componentUniqueTag)
         }
@@ -16,6 +19,7 @@ class YrvElement {
         this.props = props || {}
         this.children = children || []
         this.key = props ? props.key : undefined
+        this.renderCallback = renderCallback
         if (!this.key) {
             throw new Error(`${tag} ... html tag in component ${this.belong} the key is undefined`)
         }
@@ -34,6 +38,23 @@ class YrvElement {
     render() {
         const el = document.createElement(this.tag)
         const props = this.props
+        if (this.renderCallback) {
+            this.renderCallback(el, props, this.belong, this.componentUniqueTag)
+        }
+        this._innerHandlerProps(el, props)
+        this.children.forEach(child => {
+            const childEl = (child instanceof YrvElement) ? child.render() : document.createTextNode(child)
+            el.appendChild(childEl)
+        })
+        return el;
+    }
+    /**
+     * this method use to handle props for dom
+     * 
+     * @param {*} el 
+     * @param {*} props 
+     */
+    _innerHandlerProps(el, props) {
         for (const propName in props) {
             if (!YrvUtil.isRvJsProp(propName)) {
                 if (YrvUtil.isRvEvent(propName)) {
@@ -41,24 +62,19 @@ class YrvElement {
                     if (evantName == "watch") {
                         //this prop use to watch element value change in real time and auto to modify data
                         if (el instanceof HTMLInputElement) {
-                            el.addEventListener("input", (e) => {
-                                //TODO rewrite yhongm 2020 0422 10:03
-                                // YrvUtil.defineRvInnerGlobalValue(YrvUtil.getMethodHashId(`${this.belong}_${this.componentUniqueTag}_${props[propName]}value`), el.value, true)
-                                // eval(`${YrvUtil.invokeGlobalFunName(YrvUtil.generateHashMNameByMName(`${this.belong}_${this.componentUniqueTag}_${props[propName]}change`))}()`)
-                                YrvUtil.createAndSendSimpleRvEvent(YrvUtil.generateHashMNameByMName(`${this.belong}_${this.componentUniqueTag}_${props[propName]}change`),el.value)
+                            YrvUtil.addElementEventListener(el,"input",(e) => {
+                                YrvUtil.createAndSendSimpleRvEvent(YrvUtil.generateHashMNameByMName(`${this.belong}_${this.componentUniqueTag}_${props[propName]}change`), el.value)
                             })
                         } else {
                             console.log("RV warning:the rv-watch only use in input label")
                         }
+                      
                     } else {
-                        el.addEventListener(evantName, (e) => {
+                        YrvUtil.addElementEventListener(el,evantName,(e) => {
                             Object.defineProperty(e, "element", {
                                 value: el
                             })
-                            //TODO rewrite yhongm 2020 0422 10:03
-                            // YrvUtil.defineRvInnerGlobalValue(YrvUtil.getMethodHashId(`${this.belong}_${this.componentUniqueTag}_${props[propName]}`), e, true)
-                            // eval(`${YrvUtil.invokeGlobalFunName(YrvUtil.generateHashMNameByMName(`${this.belong}_${this.componentUniqueTag}_${props[propName]}`))}()`)
-                            YrvUtil.createAndSendSimpleRvEvent(YrvUtil.generateHashMNameByMName(`${this.belong}_${this.componentUniqueTag}_${props[propName]}`),e)
+                            YrvUtil.createAndSendSimpleRvEvent(YrvUtil.generateHashMNameByMName(`${this.belong}_${this.componentUniqueTag}_${props[propName]}`), e)
                         })
                     }
 
@@ -69,11 +85,6 @@ class YrvElement {
             }
         }
 
-        this.children.forEach(child => {
-            const childEl = (child instanceof YrvElement) ? child.render() : document.createTextNode(child)
-            el.appendChild(childEl)
-        })
-        return el;
     }
 }
 export default YrvElement;

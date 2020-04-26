@@ -79,7 +79,10 @@ class YrvElement {
                     }
 
                 } else {
-                    YrvUtil.setAttr(el, propName, props[propName])
+                    if(props[propName]!==undefined){
+                        YrvUtil.setAttr(el, propName, props[propName])
+                    }
+                    
                 }
 
             }

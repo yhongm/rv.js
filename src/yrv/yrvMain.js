@@ -8,6 +8,7 @@ class RV extends YrvComponent {
         super(componentParam)
         this.el = el
         this.context.route = new YrvRoute()
+        this._isUpdate=false
     }
     route(routeConfigs) {
         //the function use to register route
@@ -41,11 +42,17 @@ class RV extends YrvComponent {
         this._updatedom()
     }
     _updatedom() {
-        let nve = YrvUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom,(el,props,belong,componentUniqueTag)=>{
-            this._hookRender(el,props,belong,componentUniqueTag)
-        })
-        YrvUtil.patch(this.w, YrvUtil.diff(this.ve, nve))
-        this.ve = nve
+        if(!this._isUpdate){
+            this._isUpdate=true
+            let nve = YrvUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom,(el,props,belong,componentUniqueTag)=>{
+                this._hookRender(el,props,belong,componentUniqueTag)
+            })
+            YrvUtil.patch(this.w, YrvUtil.diff(this.ve, nve))
+            this.ve = nve
+            this._isUpdate=false
+
+        }
+        
     }
 
     _hookRender(el,props,belong,componentUniqueTag){
@@ -72,7 +79,6 @@ class RV extends YrvComponent {
                 return obj[prop]
             },
             apply: function (target, thisArg, argumentsList) {
-                console.log(`target:${target},argumentsList:${argumentsList}`)
                 target(argumentsList)
             }
         })

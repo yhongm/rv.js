@@ -60,14 +60,10 @@ class YhmParse {
             Object.keys(prop).forEach((propKey)=>{
               if(YrvUtil.isRvEventProp(propKey)){
                 component.methods[propKey.slice(2)]=function(param){
-                  YrvUtil.createAndSendSimpleRvEvent(`${that.context.componentName}_${prop[propKey]}`,param)
+                  YrvUtil.createAndSendSimpleRvEvent(YrvUtil.generateHashMNameByMName(`${that.context.componentName}_${that.context.componentUniqueTag}_${prop[propKey]}`),param)
               } 
               }
             })
-            
-            
-
-            
             component._belong(that.context.componentName)
             component._rv_ev_domChange()
             component._applyTruthFulData()

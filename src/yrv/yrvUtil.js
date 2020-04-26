@@ -2,6 +2,7 @@ import YrvObservable from "./yrvObservable"
 import YrvDiff from "./yrvDiff"
 import YrvPatch from "./yrvPatch"
 import YrvElement from "./yrvElement"
+import YrvMap from "./yrvMap"
 class YrvUtil {
 
     static isString(some) {
@@ -98,7 +99,9 @@ class YrvUtil {
         document.dispatchEvent(event)
     }
     static receiveRvEvent(rvEventName,callback){
+       
         document.addEventListener(`rv_${rvEventName}_${YrvUtil.getHashCode(rvEventName)}`,(e)=>{
+         
             callback(e,e.detail)
         })
     }
@@ -357,15 +360,32 @@ class YrvUtil {
             }
             let newObj = Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj))
             Object.keys(obj).forEach((key) => {
-                if(key!=="componentMap"){
-                    if (getType(obj[key]) == "obj") {
+                if (getType(obj[key]) == "obj") {
+                    if(key==="componentMap"){
+                        let newComponentMap=new YrvMap(obj[key].name+"_clone")
+                        obj[key].forEachKV((name,componentQueue)=>{
+                            let newComponentQueue=[]
+                            componentQueue.forEach((component)=>{
+                                 let newComponent=component._cloneNew(component.componentkey)
+                                 newComponent.componentUniqueTag=component.componentUniqueTag+"_c"
+                                newComponentQueue.push(newComponent)  
+                                // component._clearMethods()
+                            })
+                           
+                           newComponentMap.put(name,newComponentQueue)
+                        })
+                        newObj[key]=newComponentMap
+                    }else{
                         newObj[key] = YrvUtil.deepinCloneObj(obj[key])
-                    } else if (getType(obj[key]) == "arr") {
-                        newObj[key] = YrvUtil.deepinCloneObj(obj[key])
-                    } else {
-                        newObj[key] = obj[key]
+
+                        
                     }
+                } else if (getType(obj[key]) == "arr") {
+                        newObj[key] = YrvUtil.deepinCloneObj(obj[key])
+                } else {
+                        newObj[key] = obj[key]
                 }
+                
 
             })
             return newObj
@@ -379,9 +399,9 @@ class YrvUtil {
             if (internalValue instanceof Object) {
                 YrvUtil.observe(internalValue, observeMap, callback)
             }
-            if (!observeMap.hasKey(key)) {
+            // if (!observeMap.hasKey(key)) {
                 observeMap.put(key, observable)
-            }
+            // }
             if (!observable.has(callback)) {
                 observable.add(callback)
             }
@@ -396,6 +416,7 @@ class YrvUtil {
                 },
                 set(newVal) {
                     const changed = internalValue !== newVal
+                    
                     if (changed) {
                         internalValue = newVal
                         observable.invoke()

@@ -32,6 +32,8 @@ class YrvComponent {
         this.componentDomChange = onDomChange
         this.mountLife = onMount
         this.watchObj = watch
+        this._cloneMethods=YrvUtil.cloneObj(methods)
+        this._cloneWatchObj=YrvUtil.cloneObj(watch)
         this.paramObj = {} // the paramObj
         this.belongComponent = "main"
         this.componentkey=name
@@ -93,18 +95,26 @@ class YrvComponent {
         YrvUtil.createAndSendSimpleRvEvent(`${componentName}_${this.name}${name}Event`, value)
     }
 
-    _defineMethod() {
+    _defineMethod(thatThis) {
+        if(!thatThis){
+            thatThis=this
+        }
         for (let method of Object.keys(this.methods)) {
-            this.methods[method] = this.methods[method].bind(this) //the method this point to  this rv component object
+            this.methods[method] = this._cloneMethods[method].bind(thatThis) //the method this point to  this rv component object
+            const methodHandler = {
+                apply: function(target, thisArg, argumentsList) {
+                  return target(argumentsList);
+                }
+            };
             YrvUtil.receiveRvEvent(YrvUtil.generateHashMNameByMName(`${this.name}_${this.componentUniqueTag}_${method}`), (e, detail) => {
-                this.methods[method].call(this, detail)
+                this.methods[method].call(thatThis, detail)
             })
             YrvUtil.receiveRvEvent(`${this.name}_${method}`, (e, detail) => {
-                this.methods[method].call(this, detail)
+                this.methods[method].call(thatThis, detail)
             })
         }
         for (let watchFun of Object.keys(this.watchObj)) {
-            this.watchObj[watchFun] = this.watchObj[watchFun].bind(this)
+            this.watchObj[watchFun] = this._cloneWatchObj[watchFun].bind(thatThis)
         }
         for (let data of Object.keys(this.data)) {
             YrvUtil.receiveRvEvent(YrvUtil.generateHashMNameByMName(`${this.name}_${this.componentUniqueTag}_${data}change`), (el, value) => {
@@ -112,6 +122,11 @@ class YrvComponent {
             })
         }
 
+    }
+    _clearMethods(){
+        for (let method of Object.keys(this.methods)) {
+             delete this.methods[method]
+        }
     }
     _getDomTree() {
 
@@ -195,7 +210,7 @@ class YrvComponent {
         }
         cloneObj.parse.updateContext(cloneObj.context)
         cloneObj.rvDomUtil.updateContext(cloneObj.context)
-        cloneObj._defineMethod()
+        cloneObj._defineMethod(cloneObj)
         YrvUtil.observeComponent(cloneObj, () => {
             YrvUtil.createAndSendSimpleRvEvent("dataChange")
         })

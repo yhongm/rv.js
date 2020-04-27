@@ -71,8 +71,10 @@ class YrvDomUtil {
                         } else {
                             throw new Error("the for directive use error,the Dot Operator Express only in global context data")
                         }
+                        
                     } else {
                         dataArray = this.Context.data[forExpressRight]
+                        
                     }
                     dataSingle = dom.props['for'].split(" _in_ ")[0]
                 }
@@ -82,8 +84,9 @@ class YrvDomUtil {
             }
 
             let objs = []
-
+            
             if (dataArray) {
+                
                 dataArray.forEach((data) => {
                     let obj = this.vdom2rdom(dom, data, dataSingle)
                     if (obj.props.hasOwnProperty("for")) {
@@ -92,9 +95,14 @@ class YrvDomUtil {
                         //todo props childDomData ,domData
                         delete obj.props.for
                     }
+                    if(obj.props.hasOwnProperty("domData")){
+                        delete obj.props.domData
+                    }
 
                     objs.push(obj)
                 })
+            }else{
+                throw new Error("the for directive only use in Array data")
             }
 
 
@@ -115,7 +123,7 @@ class YrvDomUtil {
                 data = this.Context.data
                 childDomDatakey = undefined
             }
-
+            
             let obj = this.vdom2rdom(dom, data, childDomDatakey)
             let vDomObj = {
                 isFor: false,
@@ -200,7 +208,6 @@ class YrvDomUtil {
                 }
 
             } else {
-
                 if (dom.children[child] instanceof Object) {
                     if ("childDomData" in dom.props) {
                         if (dom.props.childDomData == "$this") {
@@ -212,7 +219,7 @@ class YrvDomUtil {
 
                     } else if ("domData" in dom.props) {
                         dom.children[child].domDataKey = dom.props.domData
-                        dom.children[child].data = data[child]
+                        dom.children[child].data = data
                     }
 
                 }

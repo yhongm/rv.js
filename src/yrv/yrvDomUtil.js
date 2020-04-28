@@ -115,7 +115,6 @@ class YrvDomUtil {
 
             let data
             let childDomDatakey
-
             if ("data" in dom) {
                 data = dom.data
                 childDomDatakey = dom.childDomDatakey
@@ -123,7 +122,6 @@ class YrvDomUtil {
                 data = this.Context.data
                 childDomDatakey = undefined
             }
-            
             let obj = this.vdom2rdom(dom, data, childDomDatakey)
             let vDomObj = {
                 isFor: false,
@@ -218,16 +216,23 @@ class YrvDomUtil {
                         }
 
                     } else if ("domData" in dom.props) {
-                        dom.children[child].domDataKey = dom.props.domData
-                        dom.children[child].data = data
+                        if("nofor" in dom.children[child].props){
+                            dom.children[child].data = data
+                        }else{
+                            dom.children[child].domDataKey = dom.props.domData
+                            dom.children[child].data = data
+                        }
+                        
                     }
 
                 }
 
                 var domObj = this.applyTruthfulData(dom.children[child])
                 if (domObj.isFor) {
-                    obj.children = domObj.rdom
-
+                    domObj.rdom.forEach((rdom)=>{
+                        obj.children.push(rdom)
+                    })
+                    
                 } else {
                     obj.children[child] = domObj.rdom
                 }

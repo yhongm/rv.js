@@ -174,9 +174,10 @@ class YrvUtil {
         }
     }
 
-    static addStyle2Head(styleString) {
+    static addStyle2Head(styleString,name) {
 
         var style = document.getElementsByTagName("style")[0]
+        
         if (style) {
             //style tag exists
             try {

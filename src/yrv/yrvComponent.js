@@ -40,7 +40,7 @@ class YrvComponent {
         this.componentUniqueTag = this.name //the clone tag is unique
         this.cloneArray = []
 
-        YrvUtil.addStyle2Head(this.style)
+        YrvUtil.addStyle2Head(this.style,this.name)
         // this._defineMethod()
         this._init()
     }

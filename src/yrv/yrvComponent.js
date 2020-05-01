@@ -38,7 +38,7 @@ class YrvComponent {
         this.belongComponent = "main"
         this.componentkey=name
         this.componentUniqueTag = this.name //the clone tag is unique
-        this.cloneArray = []
+        // this.cloneArray = []
 
         YrvUtil.addStyle2Head(this.style,this.name)
         // this._defineMethod()
@@ -214,7 +214,7 @@ class YrvComponent {
         YrvUtil.observeComponent(cloneObj, () => {
             YrvUtil.createAndSendSimpleRvEvent("dataChange")
         })
-        this.cloneArray.push(cloneObj)
+        // this.cloneArray.push(cloneObj)
         return cloneObj
 
     }

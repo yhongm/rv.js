@@ -20,25 +20,16 @@ class RV extends YrvComponent {
     run(callback) {
         let root = YrvUtil.isString(this.el) ? document.querySelector(this.el) : this.el
         YrvUtil.addStyle2Head(this.style)
-        this.use(this.context.route.getNeedRenderComponent(), "", false)
-        this._rv_ev_run()
-        
+        this.use(this.context.route.getNeedRenderComponent(), "", false) 
         this.ve = YrvUtil.getVirtualElement(this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom,(el,props,belong,componentUniqueTag)=>{
             this._hookRender(el,props,belong,componentUniqueTag)
         })
         this.w = this.ve.render()
+        this._registerEvent()
+        this._rv_ev_run()
         root.appendChild(this.w)
         callback(this)
-        YrvUtil.receiveRvEvent("routeChange", (e, detail) => {
-            this.parse.componentMap.clear()
-            this.context.route.go(detail)
-            this.use(this.context.route.getNeedRenderComponent(), "", false)
-            this._rv_ev_run()
-            this._updatedom()
-        })
-        YrvUtil.receiveRvEvent("dataChange", (e, detail) => {
-            this._updatedom()
-        })
+        
         this._updatedom()
     }
     _updatedom() {
@@ -57,6 +48,18 @@ class RV extends YrvComponent {
 
     _hookRender(el,props,belong,componentUniqueTag){
         
+    }
+    _registerEvent(){
+        YrvUtil.receiveRvEvent("routeChange", (e, detail) => {
+            this.parse.componentMap.clear()
+            this.context.route.go(detail)
+            this.use(this.context.route.getNeedRenderComponent(), "", false)
+            this._rv_ev_run()
+            this._updatedom()
+        })
+        YrvUtil.receiveRvEvent("dataChange", (e, detail) => {
+            this._updatedom()
+        })
     }
 
     /**

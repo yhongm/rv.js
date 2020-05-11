@@ -9,6 +9,7 @@ export interface YrvOption {
   onRun(): void;
   onDomChange(paramObj: any): void;
   onMount(): void;
+  onInit();void;
 }
 export interface YrvRouteConfig {
   path: string;
@@ -20,7 +21,6 @@ export interface YrvRouteConfig {
 export interface YrvEvent {
   name: string;
   value: any;
-  componentName: string;
 }
 export interface RouteInfo {
   path: string;
@@ -31,6 +31,7 @@ declare class YrvComponent {
   use(component: YrvComponent ,key?:string): void;
   $sendEvent(event: YrvEvent): void;
   $routeChange(routeInfo: RouteInfo): void;
+  $onEvent(event:string,callback:((value: ) => {}))
   getParentComponentName(): string;
   getComponentUniqueTag(): string;
 }

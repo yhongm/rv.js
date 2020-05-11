@@ -11,10 +11,11 @@ class YrvComponent {
             name,
             data,
             methods,
+            watch,
             onRun,
             onDomChange,
-            watch,
-            onMount
+            onMount,
+            onInit
         } = componentParam
         this.isMainRvComponent = ismain
         this.template = template
@@ -30,6 +31,7 @@ class YrvComponent {
         this.methods = methods
         this.componentRun = onRun
         this.componentDomChange = onDomChange
+        this.componentInit=onInit
         this.mountLife = onMount
         this.watchObj = watch
         this._cloneMethods=YrvUtil.cloneObj(methods)
@@ -37,6 +39,7 @@ class YrvComponent {
         this.paramObj = {} // the paramObj
         this.belongComponent = "main"
         this.componentkey=name
+        this._initInfo=false
         this.componentUniqueTag = this.name //the clone tag is unique
         // this.cloneArray = []
 
@@ -84,15 +87,17 @@ class YrvComponent {
                 * *params name   this is event name
                 * *params value  this is event value
                 * call $sendEvent(name,value) send event
-                * 
-                * in other component use 'componentName'+'eventName'+'Event' constitute functionName receive this event
                 */
         const {
             name,
-            value,
-            componentName
+            value
         } = event
-        YrvUtil.createAndSendSimpleRvEvent(`${componentName}_${this.name}${name}Event`, value)
+        YrvUtil.createAndSendSimpleRvEvent(name, value)
+    }
+    $onEvent(event,callback){
+        YrvUtil.receiveRvEvent(event,(value)=>{
+            callback(value.detail)
+        })
     }
 
     _defineMethod(thatThis) {
@@ -158,12 +163,20 @@ class YrvComponent {
         })
 
     }
+    _rv_ev_init_props(){
+        
+        if(this.componentInit&&!this._initInfo){
+            this.componentInit.call(this)
+            this._initInfo=true
+        }
+    }
     /**
      * this is yrv.js inner event ,only call by yrv.js framework
      * when the domtree will change ,this function will call by the yrv.js framework call
      * this event function call before the applyTruthFulData call ,so do something about data
      */
     _rv_ev_domChange() {
+        this._rv_ev_init_props()
         if (this.componentDomChange) {
             this.componentDomChange.call(this, this.paramObj)
         }

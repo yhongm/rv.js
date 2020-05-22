@@ -1,8 +1,13 @@
 import YrvMap from "./yrvMap"
-import YrvComponent from "yrv.js/src/yrv/yrvComponent"
+/**
+ * @author yhongm
+ * the route use page component swicth
+ * the route only use in page component
+ */
 class YrvRoute {
-    constructor() {
+    constructor(name) {
         this.needRenderpath = ""
+        this.routeName=name
         this.routers = new YrvMap("RvRouteMap")
     }
     register(routerConfigs) {
@@ -23,7 +28,6 @@ class YrvRoute {
         return this.routers
     }
     go(route) {
-        
         const {
             path,
             paramObj

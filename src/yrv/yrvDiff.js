@@ -1,64 +1,71 @@
 import DiffList from "./yrvDiffList"
-import Util from "./yrvUtil"
-import {
-    NODE_REPLACE,
-    CHILD_RE_ORDER,
-    NODE_PROPS,
-    NODE_CONTENT
-} from "./yrvDomState"
+import YrvUtil from "./yrvUtil"
+
 class YrvDiff {
+    constructor(context) {
+        this.context = context
+    }
     /**
-     * dom tree diff algorithm object constructor
-     * @param {*} oldTree the dom tree for before update 
-     * @param {*} newTree the dom tree for after update
-     */
-
-
-    constructor(oldTree, newTree) {
+    * dom tree diff algorithm object constructor
+    * @param {*} oldYrvElement the dom tree for before update 
+    * @param {*} newYrvElement the dom tree for after update
+    */
+    goDiff(oldYrvElement, newYrvElement) {
         this.index = 0
-        this.oldTree = oldTree
-        this.newTree = newTree
+        this.oldYrvElement = oldYrvElement
+        this.newYrvElement = newYrvElement
         this.patches = {}
+        this.dfsWalk(this.oldYrvElement, this.newYrvElement, this.index)
     }
-    goDiff() {
-        this.dfsWalk(this.oldTree, this.newTree, this.index)
+    getPatches() {
+        return this.patches
     }
-    dfsWalk(oldNode, newNode, index) {
+    setComponentContainer(componentContainer) {
+        this.componentContainer = componentContainer
+    }
+    dfsWalk(oldYrvElement, newYrvElement, index) {
+        
+        this.tempIndex = index
         let currentPatch = []
-        if (newNode == null) {
+        if (newYrvElement == null) {
 
-        } else if (Util.isString(oldNode) && Util.isString(newNode)) {
-            if (oldNode != newNode) {
+        } else if (YrvUtil.isString(oldYrvElement) && YrvUtil.isString(newYrvElement)) {
+            if (oldYrvElement != newYrvElement) {
                 currentPatch.push({
-                    type: NODE_CONTENT,
-                    content: newNode
+                    type: YrvUtil.NODE_CONTENT,
+                    content: newYrvElement
                 })
             }
-        } else if (oldNode.tagName === newNode.tagName && oldNode.key == newNode.key) {
-            let propsPatches = this.diffProps(oldNode, newNode)
+        } else if (oldYrvElement.tag === newYrvElement.tag && oldYrvElement.key == newYrvElement.key) {
+            let propsPatches = this.diffProps(oldYrvElement, newYrvElement)
             if (propsPatches) {
                 currentPatch.push({
-                    type: NODE_PROPS,
+                    type:YrvUtil.NODE_PROPS,
                     props: propsPatches
                 })
             }
-            if (!Util.isIgnoreChildren(newNode)) {
-                this.diffChildren(oldNode.children, newNode.children, index, currentPatch)
+            if (!YrvUtil.isIgnoreChildren(newYrvElement) && !YrvUtil.isIgnoreChildren(oldYrvElement)) {
+                let oChildren = oldYrvElement.children
+                let nChildren = newYrvElement.children
+
+                this.diffChildren(oChildren, nChildren, index, currentPatch)
             }
         } else {
-            currentPatch.push({
-                type: NODE_REPLACE,
-                node: newNode
+           currentPatch.push({
+                type: YrvUtil.NODE_REPLACE,
+                node: newYrvElement
             })
         }
         if (currentPatch.length) {
             this.patches[index] = currentPatch
         }
     }
-    diffProps(oldNode, newNode) {
-
-        const oldProps = oldNode.props
-        const newProps = newNode.props
+    diffProps(oldYrvElement, newYrvElement) {
+        if (oldYrvElement.isComponent && newYrvElement.isComponent) {
+            return null
+        }
+        const oldProps = oldYrvElement.props
+        const newProps = newYrvElement.props
 
         const propsPatches = {}
         let isSame = true;
@@ -84,13 +91,15 @@ class YrvDiff {
         newChildren = diffs.child
         if (diffs.moves.length) {
             let reorderPatch = {
-                type: CHILD_RE_ORDER,
+                type: YrvUtil.CHILD_RE_ORDER,
                 moves: diffs.moves
             }
             currentPatch.push(reorderPatch)
         }
         let leftNode = null
         let currentNodeIndex = index
+       
+
         oldChildren.forEach((child, i) => {
             let newChild = newChildren[i]
             currentNodeIndex = (leftNode && leftNode.count) ?

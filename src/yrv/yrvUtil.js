@@ -1,8 +1,9 @@
 import YrvObservable from "./yrvObservable"
-import YrvDiff from "./yrvDiff"
-import YrvPatch from "./yrvPatch"
-import YrvElement from "./yrvElement"
 import YrvMap from "./yrvMap"
+/**
+ * @author
+ * the YruUtil is a common function set
+ */
 class YrvUtil {
 
     static isString(some) {
@@ -56,22 +57,7 @@ class YrvUtil {
 
         return /^rv-\w*$/.test(direction)
     }
-    static getVirtualElement(virtualDom,callback) {
-        let children = []
-        for (let child in virtualDom.children) {
-            let childVirtualDom = virtualDom.children[child]
-            if (childVirtualDom instanceof Array) {
-                childVirtualDom.forEach(singleChildDom => { 
-                    children.push(YrvUtil.getVirtualElement(singleChildDom,callback))
-                })
-            } else if (childVirtualDom instanceof Object) {
-                children.push(YrvUtil.getVirtualElement(childVirtualDom,callback))
-            } else {
-                children.push(childVirtualDom)
-            }
-        }
-        return new YrvElement(virtualDom.tag, virtualDom.props, children, virtualDom.belong,virtualDom.componentUniqueTag,callback)
-    }
+    
     // static defineRvInnerGlobalValue(key, value, isCanWrite) {
     //     if (!window.hasOwnProperty("_______js_yhongm_rv____")) {
     //         Object.defineProperty(window, "_______js_yhongm_rv____", {
@@ -99,9 +85,7 @@ class YrvUtil {
         document.dispatchEvent(event)
     }
     static receiveRvEvent(rvEventName,callback){
-       
         document.addEventListener(`rv_${rvEventName}_${YrvUtil.getHashCode(rvEventName)}`,(e)=>{
-         
             callback(e,e.detail)
         })
     }
@@ -277,7 +261,7 @@ class YrvUtil {
                     var placeHolderValueValue = placeHolderValue.split(".")[1]
 
                     let placeHolderVValue = data[placeHolderValueValue]
-                    if (placeHolderValueKey in context.data) {
+                    if (placeHolderValueKey in context.componentData) {
                         placeHolderVValue = data[placeHolderValueKey][placeHolderValueValue]
                     } else {
                         if (placeHolderValueKey === dataKey && !dataKey) {
@@ -334,18 +318,10 @@ class YrvUtil {
     static cloneObj2(obj){
         return Object.create(Object.getPrototypeOf(obj),Object.getOwnPropertyDescriptors(obj))
     }
-    static h(tagName, props, children) {
-        return new Element(tagName, props, children)
-    }
-    static diff(oldTree, newTree) {
-        let d = new YrvDiff(oldTree, newTree)
-        d.goDiff()
-        return d.patches
-    }
-
-
-    static patch(node, patches) {
-        new YrvPatch(node, patches).apply()
+    
+    static typeObjOrArray(obj){
+        let oClass=Object.prototype.toString.call(obj).slice(8, -1)
+        return oClass=="Object"||oClass=="Array"
     }
     static deepinCloneObj(obj) {
         if (obj) {
@@ -397,9 +373,9 @@ class YrvUtil {
         Object.keys(obj).forEach(key => {
             let internalValue = obj[key]
             let observable = new YrvObservable()
-            if (internalValue instanceof Object) {
-                YrvUtil.observe(internalValue, observeMap, callback)
-            }
+            // if (internalValue instanceof Object) {
+            //     YrvUtil.observe(internalValue, observeMap, callback)
+            // }
             // if (!observeMap.hasKey(key)) {
                 observeMap.put(key, observable)
             // }
@@ -416,10 +392,18 @@ class YrvUtil {
                     return internalValue
                 },
                 set(newVal) {
-                    const changed = internalValue !== newVal
-                    
+                    let changed =false
+                    if(YrvUtil.typeObjOrArray(newVal)){
+                            changed=YrvUtil.getHashCode(JSON.stringify(internalValue))!==YrvUtil.getHashCode(JSON.stringify(newVal))
+                    }else{
+                        changed= internalValue !== newVal
+                        // console.log("internalValue:"+internalValue+",newVal:"+newVal)
+                    }
+                  
                     if (changed) {
+                        // console.log(`${key} ,changed:,newVal:${JSON.stringify(newVal)},internalValue:${internalValue}`)
                         internalValue = newVal
+                        
                         observable.invoke()
                     }
                 }
@@ -442,5 +426,9 @@ class YrvUtil {
         }
     }
 }
+YrvUtil.NODE_REPLACE = 0; //node replace 
+YrvUtil.CHILD_RE_ORDER = 1; //child node re order
+YrvUtil.NODE_PROPS = 2; //prop change 
+YrvUtil.NODE_CONTENT = 3; //content change
 
 export default YrvUtil

@@ -7,43 +7,29 @@ import YrvElement from "./yrvElement"
  */
 class YrvDomUtil {
     constructor(context) {
-        const {
-            componentName,
-            componentData,
-            route
-        } = context
-        this.Context = {} //this Context use to save global info 
-        this.Context.data = componentData
-        this.Context.componentName = componentName
+        this.context = {} //this Context use to save global info 
+        this.index=0
+        this.indexArrayOp=[]
     }
     updateContext(newContext){
-        const {
-            componentName,
-            componentData,
-            route
-        } = newContext
-        this.Context = {}
-        this.Context.data = componentData
-        this.Context.componentName = componentName
+       this.context=newContext
     }
-    getVirtualElement(dom) {
+    getYrvElement(virtualDom,callback) {
         let children = []
-        for (let child in dom.children) {
-            let cc = dom.children[child]
-            if (cc instanceof Array) {
-                cc.forEach(c => {
-                    let v = this.getVirtualElement(c)
-                    children.push(v)
+        for (let child in virtualDom.children) {
+            let childVirtualDom = virtualDom.children[child]
+            if (childVirtualDom instanceof Array) {
+               
+                childVirtualDom.forEach(singleChildDom => { 
+                    children.push(this.getYrvElement(singleChildDom,callback))
                 })
-            } else if (cc instanceof Object) {
-                let v = this.getVirtualElement(cc)
-                children.push(v)
+            } else if (childVirtualDom instanceof Object) {
+                children.push(this.getYrvElement(childVirtualDom,callback))
             } else {
-                children.push(cc)
+                children.push(childVirtualDom)
             }
         }
-
-        return new YrvElement(dom.tag, dom.props, children, dom.belong,dom.componentUniqueTag)
+        return new YrvElement(virtualDom.tag, virtualDom.props, children, virtualDom.belong,virtualDom.componentUniqueTag,virtualDom.uniqueTag,virtualDom.isComponent,callback)
     }
     applyTruthfulData(dom) {
         if ("for" in dom.props) {
@@ -66,19 +52,16 @@ class YrvDomUtil {
                     if (YrvUtil.isDotOperatorExpression(forExpressRight)) {
                         let forERKey = forExpressRight.split(".")[0]
                         let forERValue = forExpressRight.split(".")[1]
-                        if (forERKey in this.Context.data) {
-                            dataArray = this.Context.data[forERKey][forERValue]
+                        if (forERKey in this.context.componentData) {
+                            dataArray = this.context.componentData[forERKey][forERValue]
                         } else {
                             throw new Error("the for directive use error,the Dot Operator Express only in global context data")
                         }
-                        
                     } else {
-                        dataArray = this.Context.data[forExpressRight]
-                        
+                        dataArray = this.context.componentData[forExpressRight]
                     }
                     dataSingle = dom.props['for'].split(" _in_ ")[0]
                 }
-
             } else {
                 throw new Error("the for directive use error")
             }
@@ -98,28 +81,24 @@ class YrvDomUtil {
                     if(obj.props.hasOwnProperty("domData")){
                         delete obj.props.domData
                     }
-
                     objs.push(obj)
                 })
             }else{
                 throw new Error("the for directive only use in Array data")
             }
-
-
             let vDomObj = {
                 isFor: true,
                 rdom: objs
             }
             return vDomObj
         } else {
-
             let data
             let childDomDatakey
             if ("data" in dom) {
                 data = dom.data
                 childDomDatakey = dom.childDomDatakey
             } else {
-                data = this.Context.data
+                data = this.context.componentData
                 childDomDatakey = undefined
             }
             let obj = this.vdom2rdom(dom, data, childDomDatakey)
@@ -138,18 +117,20 @@ class YrvDomUtil {
      * @param {*} tdata 
      */
     vdom2rdom(dom, data, dataSingle) {
+        this.index+=1
         let obj = {}
         obj.tag = dom.tag
         obj.children = []
         obj.props = {}
         obj.belong = dom.belong
         obj.componentUniqueTag=dom.componentUniqueTag
+        obj.uniqueTag=dom.uniqueTag
+        obj.isComponent=dom.isComponent
         let props = Object.keys(dom.props)
         for (let prop in props) {
             let value = props[prop]
             if (value === "style") {
                 let style = dom.props[value]
-
                 if (style.indexOf(";") > -1) {
                     let styles = style.split(";")
                     obj.props[value] = this.handleArrayStyle(data, styles, dataSingle)
@@ -162,25 +143,21 @@ class YrvDomUtil {
                     if (!YrvUtil.isDotOperatorExpression(propValue)) {
                         obj.props[value] = data[propValue]
                     } else {
-
                         var propKey = propValue.split(".")[0]
                         var propValue = propValue.split(".")[1]
-                        if (propKey in this.Context.data) {
-                            obj.props[value] = this.Context.data[propKey][propValue]
+                        if (propKey in this.context.componentData) {
+                            obj.props[value] = this.context.componentData[propKey][propValue]
                         } else {
                             obj.props[value] = data[propValue]
                         }
                     }
                 } else if (YrvUtil.isOperatorExpression(dom.props[value])) {
-                    obj.props[value] = YrvUtil.getOperatorExpression(dom.props[value], data, dataSingle, this.Context)
+                    obj.props[value] = YrvUtil.getOperatorExpression(dom.props[value], data, dataSingle, this.context)
                 } else {
                     obj.props[value] = dom.props[value]
                 }
-
             }
-
         }
-
         for (let child in dom.children) {
             if (YrvUtil.isString(dom.children[child])) {
                 if (YrvUtil.isPlaceHolder(dom.children[child])) {
@@ -190,21 +167,17 @@ class YrvDomUtil {
                     } else {
                         var childValueKey = childValue.split(".")[0]
                         var childValueValue = childValue.split(".")[1]
-                        if (childValueKey in this.Context.data) {
-                            obj.children[child] = YrvUtil.getNotUndefinedContent(this.Context.data[childValueKey][childValueValue])
+                        if (childValueKey in this.context.componentData) {
+                            obj.children[child] = YrvUtil.getNotUndefinedContent(this.context.componentData[childValueKey][childValueValue])
                         } else {
-
                             obj.children[child] = YrvUtil.getNotUndefinedContent(data[childValueValue])
-
                         }
                     }
-
                 } else if (YrvUtil.isOperatorExpression(dom.children[child])) {
-                    obj.children[child] = YrvUtil.getNotUndefinedContent(YrvUtil.getOperatorExpression(dom.children[child], data, dataSingle, this.Context))
+                    obj.children[child] = YrvUtil.getNotUndefinedContent(YrvUtil.getOperatorExpression(dom.children[child], data, dataSingle, this.context))
                 } else {
                     obj.children[child] = YrvUtil.getNotUndefinedContent(dom.children[child])
                 }
-
             } else {
                 if (dom.children[child] instanceof Object) {
                     if ("childDomData" in dom.props) {
@@ -214,7 +187,6 @@ class YrvDomUtil {
                             dom.children[child].childDomDatakey = dom.props.childDomData
                             dom.children[child].data = data
                         }
-
                     } else if ("domData" in dom.props) {
                         if("nofor" in dom.children[child].props){
                             dom.children[child].data = data
@@ -222,27 +194,21 @@ class YrvDomUtil {
                             dom.children[child].domDataKey = dom.props.domData
                             dom.children[child].data = data
                         }
-                        
                     }
-
                 }
-
                 var domObj = this.applyTruthfulData(dom.children[child])
                 if (domObj.isFor) {
                     domObj.rdom.forEach((rdom)=>{
                         obj.children.push(rdom)
                     })
-                    
                 } else {
                     obj.children[child] = domObj.rdom
                 }
             }
         }
         return obj
-
     }
     handleSingleStyle(data, style, dataSingle) {
-
         let newStyle = ''
         if (dataSingle) {
             if (YrvUtil.isPlaceHolder(style)) {
@@ -259,7 +225,6 @@ class YrvDomUtil {
                 newStyle = style
             }
         } else {
-
             let styleKey = style.split(":")[0]
             let styleValue = style.split(":")[1]
             if (YrvUtil.isPlaceHolder(styleValue)) {
@@ -275,13 +240,12 @@ class YrvDomUtil {
     handleArrayStyle(data, styles, dataSingle) {
         let newStyleArray = ""
         for (let style of styles) {
-
             let newStyle = this.handleSingleStyle(data, style, dataSingle)
             newStyleArray += newStyle + ";"
         }
         return newStyleArray
-
     }
 }
 
 export default YrvDomUtil
+

@@ -30,14 +30,14 @@ declare class YrvComponent {
   constructor(componentParam: YrvOption, ismain: boolean);
   use(component: YrvComponent ,key?:string): void;
   $sendEvent(event: YrvEvent): void;
-  $routeChange(routeInfo: RouteInfo): void;
+  $routeChange(routeInfo: RouteInfo,componentName?:string): void;
   $onEvent(event:string,callback:((value: ) => {}))
+  route(routeConfig: Array<YrvRouteConfig>): void;
   getParentComponentName(): string;
   getComponentUniqueTag(): string;
 }
 declare class RV extends YrvComponent {
   constructor(el: string, componentParam: YrvOption);
-  route(routeConfig: Array<YrvRouteConfig>): void;
   static component(option: YrvOption): YrvComponent;
   run(callback: (rv: RV) => {}): void;
 }

@@ -196,7 +196,8 @@ var routerConfig=[
 export default routerConfig
 
 ```
-10. rv.route(routerConfig) .rv添加组件路由
+10. rv.route(routerConfig) .rv添加组件路由(1.9.2)新增页面组件可以添加route,用于页面内嵌套页面组件切换
+
 11. rv.run() ,启动 rv
 12. RV demo
 ```javascript
@@ -254,7 +255,7 @@ RV组件对象函数内调用this.$sendEvent({name,value}) 发送事件到其他
 
 RV组件对象函数内调用this.$onEvent(event,(value)=>{}) 组件监听其他组件发送的事件，event为事件名,value为事件传过的值
 
-RV组件对象函数内调用this.$routeChange({path,paramObj}) 发送路由改变事件，更新页面组件。需要在路由配置文件中注册组件
+RV组件对象函数内调用this.$routeChange({path,paramObj},componentName?) 发送路由改变事件，更新页面组件。需要在路由配置文件中注册组件.componentName为空时默认主路由切换页面，componentName内为对应页面组件内路由切换嵌套页面
 
 RV组件对象函数内调用this.getComponentUniqueTag() 获取组件唯一标记
 

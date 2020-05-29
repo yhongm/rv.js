@@ -1,21 +1,11 @@
 const path = require('path');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
-// const {
-//   CleanWebpackPlugin
-// } = require('clean-webpack-plugin');
-// const HtmlWebpackPlugin = require('html-webpack-plugin');
+
 module.exports = {
   entry: './src/yrv/yrvMain.js',
   mode: "production",
-  //mode: "development",
-  //devtool: 'inline-source-map',
   plugins: [
-    // new CleanWebpackPlugin(),
-    // new HtmlWebpackPlugin({
-    //   title: '',
-    //   template: 'home.html',
-    //   filename: 'home.html'
-    // })
+
   ],
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -34,7 +24,8 @@ module.exports = {
       use: {
         loader: 'babel-loader',
         options: {
-          presets: ['es2015']
+          // presets: ['es2015']
+          presets:["@babel/preset-env"]
         }
       }
     }]

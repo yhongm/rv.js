@@ -1,24 +1,31 @@
 const path = require('path');
-const {
-  CleanWebpackPlugin
-} = require('clean-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+// const {
+//   CleanWebpackPlugin
+// } = require('clean-webpack-plugin');
+// const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
   entry: './src/yrv/yrvMain.js',
   mode: "production",
   //mode: "development",
   //devtool: 'inline-source-map',
   plugins: [
-    new CleanWebpackPlugin(),
-    new HtmlWebpackPlugin({
-      title: '',
-      template: 'demo.html',
-      filename: 'demo.html'
-    })
+    // new CleanWebpackPlugin(),
+    // new HtmlWebpackPlugin({
+    //   title: '',
+    //   template: 'home.html',
+    //   filename: 'home.html'
+    // })
   ],
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js'
+    filename: 'yrv.js'
+  },
+  optimization: {
+    minimizer: [
+      new UglifyJsPlugin()
+    ],
+   
   },
   module: {
     rules: [{

@@ -1,8 +1,8 @@
 {
   "name": "yrv.js",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "description": "a javascript Framework",
-  "main": "src/yrv/yrvMain.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx webpack",
@@ -16,7 +16,6 @@
     "virtual",
     "dom",
     "javascript framework"
-
   ],
   "author": "yhongm",
   "license": "MIT",
@@ -37,6 +36,7 @@
   },
   "dependencies": {
     "@babel/core": "^7.4.5",
-    "@babel/preset-env": "^7.4.5"
+    "@babel/preset-env": "^7.4.5",
+    "uglifyjs-webpack-plugin": "^2.2.0"
   }
 }

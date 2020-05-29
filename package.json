@@ -1,8 +1,8 @@
 {
   "name": "yrv.js",
-  "version": "1.9.3",
+  "version": "1.9.4",
   "description": "a javascript Framework",
-  "main": "dist/index.js",
+  "main": "dist/lib/yrvMain.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx webpack",

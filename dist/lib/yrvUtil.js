@@ -221,20 +221,22 @@ var YrvUtil = /*#__PURE__*/function () {
   }, {
     key: "addStyle2Head",
     value: function addStyle2Head(styleString, name) {
-      var style = document.getElementsByTagName("style")[0];
+      var styles = document.getElementsByTagName("style");
+      var index = YrvUtil.toArray(styles).findIndex(function (style) {
+        style.getAttribute("name") === name;
+      });
 
-      if (style) {
-        //style tag exists
+      if (index === -1) {
+        var style = document.createElement("style");
+        style.type = 'text/css';
+
         try {
           style.appendChild(document.createTextNode(styleString));
         } catch (error) {
-          console.error("component style,".concat(error));
           style.stylesheet.cssText = styleString;
         }
-      } else {
-        //style tag isn't exits
-        style = document.createElement("style");
-        style.type = 'text/css';
+
+        style.setAttribute("name", name);
         var head = document.getElementsByTagName("head")[0];
         head.appendChild(style);
       }

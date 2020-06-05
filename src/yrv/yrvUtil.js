@@ -57,7 +57,7 @@ class YrvUtil {
 
         return /^rv-\w*$/.test(direction)
     }
-    
+
     // static defineRvInnerGlobalValue(key, value, isCanWrite) {
     //     if (!window.hasOwnProperty("_______js_yhongm_rv____")) {
     //         Object.defineProperty(window, "_______js_yhongm_rv____", {
@@ -78,20 +78,20 @@ class YrvUtil {
     // static invokeGlobalFunName(name) {
     //     return `window._______js_yhongm_rv____.${name}`
     // }
-    
-    static createAndSendSimpleRvEvent(rvEventName,objData){
+
+    static createAndSendSimpleRvEvent(rvEventName, objData) {
         var event = document.createEvent("CustomEvent")
         event.initCustomEvent(`rv_${rvEventName}_${YrvUtil.getHashCode(rvEventName)}`, true, true, objData);
         document.dispatchEvent(event)
     }
-    static receiveRvEvent(rvEventName,callback){
-        document.addEventListener(`rv_${rvEventName}_${YrvUtil.getHashCode(rvEventName)}`,(e)=>{
-            callback(e,e.detail)
+    static receiveRvEvent(rvEventName, callback) {
+        document.addEventListener(`rv_${rvEventName}_${YrvUtil.getHashCode(rvEventName)}`, (e) => {
+            callback(e, e.detail)
         })
     }
-    static addElementEventListener(element,event,callback){
-        if(element instanceof HTMLElement){
-            element.addEventListener(event,callback)
+    static addElementEventListener(element, event, callback) {
+        if (element instanceof HTMLElement) {
+            element.addEventListener(event, callback)
         }
     }
     /**
@@ -110,10 +110,10 @@ class YrvUtil {
         for (let i = str.length - 1; i >= 0; i--) {
             hash ^= ((hash << 6) + str.charCodeAt(i) + (hash >> 3));
         }
-        let resultHashCode=(hash & 0xffffffff)
+        let resultHashCode = (hash & 0xffffffff)
         return resultHashCode;
     }
-   
+
     static isForIn(direction) {
         return /^\w* _in_ [\w\.]*$/.test(direction)
     }
@@ -158,27 +158,23 @@ class YrvUtil {
         }
     }
 
-    static addStyle2Head(styleString,name) {
-
-        var style = document.getElementsByTagName("style")[0]
-        
-        if (style) {
-            //style tag exists
+    static addStyle2Head(styleString, name) {
+        let styles = document.getElementsByTagName("style")
+        let index = YrvUtil.toArray(styles).findIndex((style) => {
+            style.getAttribute("name") === name
+        })
+        if (index === -1) {
+            let style = document.createElement("style");
+            style.type = 'text/css';
             try {
                 style.appendChild(document.createTextNode(styleString));
             } catch (error) {
-                console.error(`component style,${error}`)
                 style.stylesheet.cssText = styleString;
-
             }
-        } else {
-            //style tag isn't exits
-            style = document.createElement("style");
-            style.type = 'text/css';
+            style.setAttribute("name", name)
             var head = document.getElementsByTagName("head")[0]
             head.appendChild(style);
         }
-
     }
 
     static setAttr(node, key, value) {
@@ -212,10 +208,10 @@ class YrvUtil {
             return false
         }
     }
-    static isRvEventProp(content){
-        if(content){
+    static isRvEventProp(content) {
+        if (content) {
             return content.startsWith("::")
-        }else{
+        } else {
             return false
         }
     }
@@ -315,13 +311,13 @@ class YrvUtil {
         let originProto = Object.getPrototypeOf(origin);
         return Object.assign(Object.create(originProto), origin);
     }
-    static cloneObj2(obj){
-        return Object.create(Object.getPrototypeOf(obj),Object.getOwnPropertyDescriptors(obj))
+    static cloneObj2(obj) {
+        return Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj))
     }
-    
-    static typeObjOrArray(obj){
-        let oClass=Object.prototype.toString.call(obj).slice(8, -1)
-        return oClass=="Object"||oClass=="Array"
+
+    static typeObjOrArray(obj) {
+        let oClass = Object.prototype.toString.call(obj).slice(8, -1)
+        return oClass == "Object" || oClass == "Array"
     }
     static deepinCloneObj(obj) {
         if (obj) {
@@ -338,38 +334,38 @@ class YrvUtil {
             let newObj = Object.create(Object.getPrototypeOf(obj), Object.getOwnPropertyDescriptors(obj))
             Object.keys(obj).forEach((key) => {
                 if (getType(obj[key]) == "obj") {
-                    if(key==="componentMap"){
-                        let newComponentMap=new YrvMap(obj[key].name+"_clone")
-                        obj[key].forEachKV((name,componentQueue)=>{
-                            let newComponentQueue=[]
-                            componentQueue.forEach((component)=>{
-                                 let newComponent=component._cloneNew(component.componentkey)
-                                 newComponent.componentUniqueTag=component.componentUniqueTag+"_c"
-                                newComponentQueue.push(newComponent)  
+                    if (key === "componentMap") {
+                        let newComponentMap = new YrvMap(obj[key].name + "_clone")
+                        obj[key].forEachKV((name, componentQueue) => {
+                            let newComponentQueue = []
+                            componentQueue.forEach((component) => {
+                                let newComponent = component._cloneNew(component.componentkey)
+                                newComponent.componentUniqueTag = component.componentUniqueTag + "_c"
+                                newComponentQueue.push(newComponent)
                                 // component._clearMethods()
                             })
-                           
-                           newComponentMap.put(name,newComponentQueue)
+
+                            newComponentMap.put(name, newComponentQueue)
                         })
-                        newObj[key]=newComponentMap
-                    }else{
+                        newObj[key] = newComponentMap
+                    } else {
                         newObj[key] = YrvUtil.deepinCloneObj(obj[key])
 
-                        
+
                     }
                 } else if (getType(obj[key]) == "arr") {
-                        newObj[key] = YrvUtil.deepinCloneObj(obj[key])
+                    newObj[key] = YrvUtil.deepinCloneObj(obj[key])
                 } else {
-                        newObj[key] = obj[key]
+                    newObj[key] = obj[key]
                 }
-                
+
 
             })
             return newObj
         }
 
     }
-    static observe(obj,observeMap, callback) {
+    static observe(obj, observeMap, callback) {
         Object.keys(obj).forEach(key => {
             let internalValue = obj[key]
             let observable = new YrvObservable()
@@ -377,7 +373,7 @@ class YrvUtil {
             //     YrvUtil.observe(internalValue, observeMap, callback)
             // }
             // if (!observeMap.hasKey(key)) {
-                observeMap.put(key, observable)
+            observeMap.put(key, observable)
             // }
             if (!observable.has(callback)) {
                 observable.add(callback)
@@ -388,32 +384,32 @@ class YrvUtil {
                     // if (!observable.has(callback)) {
                     //     observable.add(callback)
                     // }
-                   
+
                     return internalValue
                 },
                 set(newVal) {
-                    let changed =false
-                    if(YrvUtil.typeObjOrArray(newVal)){
-                            changed=YrvUtil.getHashCode(JSON.stringify(internalValue))!==YrvUtil.getHashCode(JSON.stringify(newVal))
-                    }else{
-                        changed= internalValue !== newVal
+                    let changed = false
+                    if (YrvUtil.typeObjOrArray(newVal)) {
+                        changed = YrvUtil.getHashCode(JSON.stringify(internalValue)) !== YrvUtil.getHashCode(JSON.stringify(newVal))
+                    } else {
+                        changed = internalValue !== newVal
                         // console.log("internalValue:"+internalValue+",newVal:"+newVal)
                     }
-                  
+
                     if (changed) {
                         // console.log(`${key} ,changed:,newVal:${JSON.stringify(newVal)},internalValue:${internalValue}`)
                         internalValue = newVal
-                        
+
                         observable.invoke()
                     }
                 }
             })
         })
-        
+
     }
     static observeComponent(component, callback) {
-        if(component.data){
-            YrvUtil.observe(component.data,component.observeMap,callback)
+        if (component.data) {
+            YrvUtil.observe(component.data, component.observeMap, callback)
         }
         if (component.watchObj) {
             Object.keys(component.watchObj).forEach((watchFun) => {

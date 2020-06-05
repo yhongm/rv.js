@@ -243,11 +243,12 @@ RV组件构造函数形参componentParam对象属性data 为RV组件data
 
 RV组件构造函数形参componentParam对象属性methods，为RV组件method对象，在对象中创建方法以及回调。其中方法中的this指向此组件
 
-RV组件构造函数形参componentParam对象属性onRun 为RV组件生命周期，组件运行时候触发
+RV组件构造函数形参componentParam对象属性onRun 为RV组件生命周期，组件运行时候触发，只执行一次
 
-RV组件构造函数形参componentParam对象属性onDomChange为RV组件生命周期，dom变化时触发
-
+RV组件构造函数形参componentParam对象属性onDomChange为RV组件生命周期，虚拟dom应用真实数据之前调用
+RV组件构造函数形参componentParam对象属性onInit为RV组件生命周期，第一次虚拟dom应用真实数据之前调用
 RV组件构造函数形参componentParam对象属性onMount为RV组件生命周期，组件挂载时触发
+RV组件构造函数形参componentParam对象属性onUnMount为RV组件生命周期，组件卸载时触发
 
 RV组件构造函数形参componentParam对象属性watch为RV组件对象，用于观察组件data数据变化
 
@@ -350,6 +351,12 @@ RV组件模板插槽标签slot，slot标签name属性用于区分插槽，如果
         },
         onMount(){
           //组件挂载时候调用
+        }
+        onUnMount(){
+          //组件卸载时调用
+        }
+        onInit(){
+          //用于初始化组件属性
         }
 
 

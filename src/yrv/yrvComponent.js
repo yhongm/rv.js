@@ -23,6 +23,7 @@ class YrvComponent {
             onRun,
             onDomChange,
             onMount,
+            onUnMount,
             onInit
         } = componentParam
         this.isMainRvComponent = ismain
@@ -40,7 +41,8 @@ class YrvComponent {
         this.componentRun = onRun
         this.componentDomChange = onDomChange
         this.componentInit = onInit
-        this.mountLife = onMount
+        this.mountLifeCycle = onMount
+        this.unMountLifeCycle=onUnMount
         this.watchObj = watch
         this._cloneMethods = YrvUtil.cloneObj(methods)
         this._cloneWatchObj = YrvUtil.cloneObj(watch)
@@ -229,7 +231,6 @@ class YrvComponent {
     }
     _rv_ev_run() {
         if (this.componentRun && !this._isRun) {
-            // console.log(`${this.name},_rv_ev_run`)
             if(this.context.route!==undefined){
                 this._registerEvent()
             }
@@ -284,12 +285,22 @@ class YrvComponent {
      * when the component mount ,this function will call
      */
     _rv_ev_mount() {
-        if (this.mountLife) {
-            this.mountLife.call(this)
+        if (this.mountLifeCycle) {
+            this.mountLifeCycle.call(this)
         }
         this.parse.componentMap.forEachKV((name, componentQueue) => {
             componentQueue.forEach((component) => {
                 component._rv_ev_mount()
+            })
+        })
+    }
+    _rv_ev_un_mount(){
+        if (this.unMountLifeCycle) {
+            this.unMountLifeCycle.call(this)
+        }
+        this.parse.componentMap.forEachKV((name, componentQueue) => {
+            componentQueue.forEach((component) => {
+                component._rv_ev_un_mount()
             })
         })
     }

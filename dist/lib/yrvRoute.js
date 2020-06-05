@@ -64,6 +64,11 @@ var YrvRoute = /*#__PURE__*/function () {
           paramObj = route.paramObj;
 
       if (this.routers.hasKey(path)) {
+        if (this.needRenderpath !== "" && this.needRenderpath !== path) {
+          this.routers.get(this.needRenderpath).component._rv_ev_un_mount(); //unMount the component before the new Component mount
+
+        }
+
         this.needRenderpath = path;
 
         if (paramObj) {

@@ -9,6 +9,7 @@ export interface YrvOption {
   onRun(): void;
   onDomChange(paramObj: any): void;
   onMount(): void;
+  onUnMount():void;
   onInit();void;
 }
 export interface YrvRouteConfig {

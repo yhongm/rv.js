@@ -49,6 +49,7 @@ var YrvComponent = /*#__PURE__*/function () {
         onRun = componentParam.onRun,
         onDomChange = componentParam.onDomChange,
         onMount = componentParam.onMount,
+        onUnMount = componentParam.onUnMount,
         onInit = componentParam.onInit;
     this.isMainRvComponent = ismain;
     this.template = template;
@@ -67,7 +68,8 @@ var YrvComponent = /*#__PURE__*/function () {
     this.componentRun = onRun;
     this.componentDomChange = onDomChange;
     this.componentInit = onInit;
-    this.mountLife = onMount;
+    this.mountLifeCycle = onMount;
+    this.unMountLifeCycle = onUnMount;
     this.watchObj = watch;
     this._cloneMethods = _yrvUtil["default"].cloneObj(methods);
     this._cloneWatchObj = _yrvUtil["default"].cloneObj(watch);
@@ -351,7 +353,6 @@ var YrvComponent = /*#__PURE__*/function () {
     key: "_rv_ev_run",
     value: function _rv_ev_run() {
       if (this.componentRun && !this._isRun) {
-        // console.log(`${this.name},_rv_ev_run`)
         if (this.context.route !== undefined) {
           this._registerEvent();
         }
@@ -414,13 +415,26 @@ var YrvComponent = /*#__PURE__*/function () {
   }, {
     key: "_rv_ev_mount",
     value: function _rv_ev_mount() {
-      if (this.mountLife) {
-        this.mountLife.call(this);
+      if (this.mountLifeCycle) {
+        this.mountLifeCycle.call(this);
       }
 
       this.parse.componentMap.forEachKV(function (name, componentQueue) {
         componentQueue.forEach(function (component) {
           component._rv_ev_mount();
+        });
+      });
+    }
+  }, {
+    key: "_rv_ev_un_mount",
+    value: function _rv_ev_un_mount() {
+      if (this.unMountLifeCycle) {
+        this.unMountLifeCycle.call(this);
+      }
+
+      this.parse.componentMap.forEachKV(function (name, componentQueue) {
+        componentQueue.forEach(function (component) {
+          component._rv_ev_un_mount();
         });
       });
     }

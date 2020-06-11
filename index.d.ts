@@ -42,4 +42,5 @@ declare class RV extends YrvComponent {
   static component(option: YrvOption): YrvComponent;
   run(callback: (rv: RV) => {}): void;
 }
+
 export default RV;

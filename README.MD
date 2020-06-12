@@ -252,12 +252,12 @@ RV组件构造函数形参componentParam对象属性onUnMount为RV组件生命�
 
 RV组件构造函数形参componentParam对象属性watch为RV组件对象，用于观察组件data数据变化
 
-RV组件对象函数内调用this.$emit({name,value},toParent) 发送事件到其他组件 ,name为事件名称,value为事件值.toParent是否将此事件发送到父组件
+RV组件对象函数内调用this.$emit({name,value},toParent?) 发送事件到其他组件 ,name为事件名称,value为事件值.toParent是否将此事件发送到父组件 默认true
 
-RV组件对象函数内调用this.$on(event,(value)=>{},fromParent) 组件监听其他组件发送的事件，event为事件名,value为事件传过的值,from是否为从父组件注册监听事件
+RV组件对象函数内调用this.$on(event,(value)=>{},fromParent?) 组件监听其他组件发送的事件，event为事件名,value为事件传过的值,from是否为从父组件注册监听事件 默认false
 
-RV组件对象函数内调用this.$ref(componentName,componentKey)访问组件，可以调用组件方法，可以访问子组件的方法。componentName组件名，componentKey组件key.
-RV组件对象函数内调用this.$routeChange({path,paramObj},componentName?) 发送路由改变事件，更新页面组件。需要在路由配置文件中注册组件.componentName为空时默认主路由切换页面，componentName内为对应页面组件内路由切换嵌套页面
+RV组件对象函数内调用this.$ref(componentName,componentKey?)访问组件,可以访问子组件的方法。componentName已用use方法注册过组件名，componentKey已用use方法注册过组件key.默认true
+RV组件对象函数内调用this.$routeChange({path,paramObj},parentRouteChange?) 发送路由改变事件，更新页面组件。（仅用于组件为页面）需要在路由配置文件中注册组件.parentRouteChange为true时发送路由改变到父页面组件，否则发送到当前页面组件
 
 RV组件对象函数内调用this.getComponentUniqueTag() 获取组件唯一标记
 

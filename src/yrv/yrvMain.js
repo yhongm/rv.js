@@ -1,7 +1,6 @@
 import YrvUtil from "./yrvUtil"
 
 import YrvComponent from "./yrvComponent"
-import YrvMessage from "./yrvMessage"
 
 /**
  * @author yhongm

@@ -1,6 +1,6 @@
 {
   "name": "yrv.js",
-  "version": "1.9.8",
+  "version": "1.9.9",
   "description": "a javascript Framework",
   "main": "dist/lib/yrvMain.js",
   "scripts": {

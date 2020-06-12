@@ -55,13 +55,9 @@ var YhmParse = /*#__PURE__*/function () {
             }
           }
 
-          Object.keys(prop).forEach(function (propKey) {
-            if (_yrvUtil["default"].isRvEventProp(propKey)) {
-              component.methods[propKey.slice(2)] = function (param) {
-                _yrvUtil["default"].createAndSendSimpleRvEvent(_yrvUtil["default"].generateHashMNameByMName("".concat(that.context.componentName, "_").concat(that.context.componentUniqueTag, "_").concat(prop[propKey])), param);
-              };
-            }
-          });
+          component._setParentContext(that.context);
+
+          component._handleComponentPropEvent(prop);
 
           component._parseHtmlTemplate();
 

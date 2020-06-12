@@ -30,9 +30,10 @@ export interface RouteInfo {
 declare class YrvComponent {
   constructor(componentParam: YrvOption, ismain: boolean);
   use(component: YrvComponent ,key?:string): void;
-  $sendEvent(event: YrvEvent): void;
-  $routeChange(routeInfo: RouteInfo,componentName?:string): void;
-  $onEvent(event:string,callback:((value: ) => {}))
+  $emit(event: YrvEvent,toParent?:boolean): void;
+  $routeChange(routeInfo: RouteInfo,parentRouteChange?:boolean): void;
+  $on(event:string,callback:((value) => {}),fromParent?:boolean)
+  $ref(componentName:string, componentkey?:string)
   route(routeConfig: Array<YrvRouteConfig>): void;
   getParentComponentName(): string;
   getComponentUniqueTag(): string;

@@ -1,6 +1,7 @@
 import YrvUtil from "./yrvUtil"
 
 import YrvComponent from "./yrvComponent"
+import YrvMessage from "./yrvMessage"
 
 /**
  * @author yhongm
@@ -36,10 +37,6 @@ class RV extends YrvComponent {
                 if (prop === "this") {
                     return obj
                 }
-                // if (prop.startsWith("_")) {
-                //     // throw new Error("the prop start with _ is a inner function or data,please not call that")
-                //     return
-                // }
                 return obj[prop]
             },
             apply: function (target, thisArg, argumentsList) {
@@ -50,6 +47,7 @@ class RV extends YrvComponent {
     }
 
 }
+
 
 export default RV
 

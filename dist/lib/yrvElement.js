@@ -20,12 +20,18 @@ var YrvElement = /*#__PURE__*/function () {
    * virtual dom object constructor
    * @param {*} tag  the html tag name
    * @param {*} props  the prop (key，style..)
-   * @param {*} children child data
-   * @param {*} belong
+   * @param {*} children child data or child element 
+   * @param {*} belong the element belong what component
    * @param {*} componentUniqueTag
-   * @param {*} renderCallback the renderCallback can hook render 
+   * @param {*} renderCallback the renderCallback can hook render
+   * @param {*} eventCallback the eventCallback  used to component watch dom event
+   * eventCallback（paramOne,paramTwo,paramThree,paramFour）
+   * the paramOne     if true is yrv event ,false dom event 
+   * the paramTwo     is the event name
+   * the paramThree   is the event prop
+   * the paramFour    is the event value
    */
-  function YrvElement(tag, props, children, belong, componentUniqueTag, uniqueTag, isComponent, renderCallback) {
+  function YrvElement(tag, props, children, belong, componentUniqueTag, uniqueTag, isComponent, renderCallback, eventCallback) {
     _classCallCheck(this, YrvElement);
 
     this.tag = tag;
@@ -37,9 +43,10 @@ var YrvElement = /*#__PURE__*/function () {
     this.children = children || [];
     this.key = props ? props.key : undefined;
     this.renderCallback = renderCallback;
+    this.eventCallback = eventCallback;
 
     if (_yrvUtil["default"].isHtmlTag(this.tag) && !this.key) {
-      throw new Error("".concat(tag, " ... html tag in component ").concat(this.belong, " the key is undefined"));
+      throw new Error("".concat(tag, " ... html tag in component ").concat(this.belong, " the key is undefined "));
     }
 
     var count = 0;
@@ -185,7 +192,10 @@ var YrvElement = /*#__PURE__*/function () {
               //this prop use to watch element value change in real time and auto to modify data
               if (el instanceof HTMLInputElement) {
                 _yrvUtil["default"].addElementEventListener(el, "input", function (e) {
-                  _yrvUtil["default"].createAndSendSimpleRvEvent(_yrvUtil["default"].generateHashMNameByMName("".concat(_this4.belong, "_").concat(_this4.componentUniqueTag, "_").concat(props[propName], "change")), el.value);
+                  if (_this4.eventCallback) {
+                    _this4.eventCallback(true, evantName, props[propName], el.value); //first param is isRvEvent 
+
+                  }
                 });
               } else {
                 console.log("RV warning:the rv-watch only use in input label");
@@ -196,7 +206,9 @@ var YrvElement = /*#__PURE__*/function () {
                   value: el
                 });
 
-                _yrvUtil["default"].createAndSendSimpleRvEvent(_yrvUtil["default"].generateHashMNameByMName("".concat(_this4.belong, "_").concat(_this4.componentUniqueTag, "_").concat(props[propName])), e);
+                if (_this4.eventCallback) {
+                  _this4.eventCallback(false, evantName, props[propName], e);
+                }
               });
             }
           } else {

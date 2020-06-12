@@ -8,28 +8,28 @@ import YrvElement from "./yrvElement"
 class YrvDomUtil {
     constructor(context) {
         this.context = {} //this Context use to save global info 
-        this.index=0
-        this.indexArrayOp=[]
+        this.index = 0
+        this.indexArrayOp = []
     }
-    updateContext(newContext){
-       this.context=newContext
+    updateContext(newContext) {
+        this.context = newContext
     }
-    getYrvElement(virtualDom,callback) {
+    getYrvElement(virtualDom, renderCallback, eventCallback) {
         let children = []
         for (let child in virtualDom.children) {
             let childVirtualDom = virtualDom.children[child]
             if (childVirtualDom instanceof Array) {
-               
-                childVirtualDom.forEach(singleChildDom => { 
-                    children.push(this.getYrvElement(singleChildDom,callback))
+
+                childVirtualDom.forEach(singleChildDom => {
+                    children.push(this.getYrvElement(singleChildDom, renderCallback, eventCallback))
                 })
             } else if (childVirtualDom instanceof Object) {
-                children.push(this.getYrvElement(childVirtualDom,callback))
+                children.push(this.getYrvElement(childVirtualDom, renderCallback, eventCallback))
             } else {
                 children.push(childVirtualDom)
             }
         }
-        return new YrvElement(virtualDom.tag, virtualDom.props, children, virtualDom.belong,virtualDom.componentUniqueTag,virtualDom.uniqueTag,virtualDom.isComponent,callback)
+        return new YrvElement(virtualDom.tag, virtualDom.props, children, virtualDom.belong, virtualDom.componentUniqueTag, virtualDom.uniqueTag, virtualDom.isComponent, renderCallback, eventCallback)
     }
     applyTruthfulData(dom) {
         if ("for" in dom.props) {
@@ -67,9 +67,9 @@ class YrvDomUtil {
             }
 
             let objs = []
-            
+
             if (dataArray) {
-                
+
                 dataArray.forEach((data) => {
                     let obj = this.vdom2rdom(dom, data, dataSingle)
                     if (obj.props.hasOwnProperty("for")) {
@@ -78,12 +78,12 @@ class YrvDomUtil {
                         //todo props childDomData ,domData
                         delete obj.props.for
                     }
-                    if(obj.props.hasOwnProperty("domData")){
+                    if (obj.props.hasOwnProperty("domData")) {
                         delete obj.props.domData
                     }
                     objs.push(obj)
                 })
-            }else{
+            } else {
                 throw new Error("the for directive only use in Array data")
             }
             let vDomObj = {
@@ -117,15 +117,15 @@ class YrvDomUtil {
      * @param {*} tdata 
      */
     vdom2rdom(dom, data, dataSingle) {
-        this.index+=1
+        this.index += 1
         let obj = {}
         obj.tag = dom.tag
         obj.children = []
         obj.props = {}
         obj.belong = dom.belong
-        obj.componentUniqueTag=dom.componentUniqueTag
-        obj.uniqueTag=dom.uniqueTag
-        obj.isComponent=dom.isComponent
+        obj.componentUniqueTag = dom.componentUniqueTag
+        obj.uniqueTag = dom.uniqueTag
+        obj.isComponent = dom.isComponent
         let props = Object.keys(dom.props)
         for (let prop in props) {
             let value = props[prop]
@@ -188,9 +188,9 @@ class YrvDomUtil {
                             dom.children[child].data = data
                         }
                     } else if ("domData" in dom.props) {
-                        if("nofor" in dom.children[child].props){
+                        if ("nofor" in dom.children[child].props) {
                             dom.children[child].data = data
-                        }else{
+                        } else {
                             dom.children[child].domDataKey = dom.props.domData
                             dom.children[child].data = data
                         }
@@ -198,7 +198,7 @@ class YrvDomUtil {
                 }
                 var domObj = this.applyTruthfulData(dom.children[child])
                 if (domObj.isFor) {
-                    domObj.rdom.forEach((rdom)=>{
+                    domObj.rdom.forEach((rdom) => {
                         obj.children.push(rdom)
                     })
                 } else {

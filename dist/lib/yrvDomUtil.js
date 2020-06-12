@@ -44,7 +44,7 @@ var YrvDomUtil = /*#__PURE__*/function () {
     }
   }, {
     key: "getYrvElement",
-    value: function getYrvElement(virtualDom, callback) {
+    value: function getYrvElement(virtualDom, renderCallback, eventCallback) {
       var _this = this;
 
       var children = [];
@@ -54,16 +54,16 @@ var YrvDomUtil = /*#__PURE__*/function () {
 
         if (childVirtualDom instanceof Array) {
           childVirtualDom.forEach(function (singleChildDom) {
-            children.push(_this.getYrvElement(singleChildDom, callback));
+            children.push(_this.getYrvElement(singleChildDom, renderCallback, eventCallback));
           });
         } else if (childVirtualDom instanceof Object) {
-          children.push(this.getYrvElement(childVirtualDom, callback));
+          children.push(this.getYrvElement(childVirtualDom, renderCallback, eventCallback));
         } else {
           children.push(childVirtualDom);
         }
       }
 
-      return new _yrvElement["default"](virtualDom.tag, virtualDom.props, children, virtualDom.belong, virtualDom.componentUniqueTag, virtualDom.uniqueTag, virtualDom.isComponent, callback);
+      return new _yrvElement["default"](virtualDom.tag, virtualDom.props, children, virtualDom.belong, virtualDom.componentUniqueTag, virtualDom.uniqueTag, virtualDom.isComponent, renderCallback, eventCallback);
     }
   }, {
     key: "applyTruthfulData",

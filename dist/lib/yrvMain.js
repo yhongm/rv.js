@@ -9,6 +9,8 @@ var _yrvUtil = _interopRequireDefault(require("./yrvUtil"));
 
 var _yrvComponent = _interopRequireDefault(require("./yrvComponent"));
 
+var _yrvMessage = _interopRequireDefault(require("./yrvMessage"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -83,11 +85,7 @@ var RV = /*#__PURE__*/function (_YrvComponent) {
         get: function get(obj, prop) {
           if (prop === "this") {
             return obj;
-          } // if (prop.startsWith("_")) {
-          //     // throw new Error("the prop start with _ is a inner function or data,please not call that")
-          //     return
-          // }
-
+          }
 
           return obj[prop];
         },

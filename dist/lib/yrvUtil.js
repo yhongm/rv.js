@@ -95,40 +95,6 @@ var YrvUtil = /*#__PURE__*/function () {
     key: "isRvEvent",
     value: function isRvEvent(direction) {
       return /^rv-\w*$/.test(direction);
-    } // static defineRvInnerGlobalValue(key, value, isCanWrite) {
-    //     if (!window.hasOwnProperty("_______js_yhongm_rv____")) {
-    //         Object.defineProperty(window, "_______js_yhongm_rv____", {
-    //             value: {}
-    //         })
-    //     }
-    //     Object.defineProperty(window["_______js_yhongm_rv____"], key, {
-    //         value: value,
-    //         writable: isCanWrite
-    //     })
-    // }
-    // static getRvInnerGlobalValue(key) {
-    //     if (!key) {
-    //         return undefined
-    //     }
-    //     return window["_______js_yhongm_rv____"][`${key}`]
-    // }
-    // static invokeGlobalFunName(name) {
-    //     return `window._______js_yhongm_rv____.${name}`
-    // }
-
-  }, {
-    key: "createAndSendSimpleRvEvent",
-    value: function createAndSendSimpleRvEvent(rvEventName, objData) {
-      var event = document.createEvent("CustomEvent");
-      event.initCustomEvent("rv_".concat(rvEventName, "_").concat(YrvUtil.getHashCode(rvEventName)), true, true, objData);
-      document.dispatchEvent(event);
-    }
-  }, {
-    key: "receiveRvEvent",
-    value: function receiveRvEvent(rvEventName, callback) {
-      document.addEventListener("rv_".concat(rvEventName, "_").concat(YrvUtil.getHashCode(rvEventName)), function (e) {
-        callback(e, e.detail);
-      });
     }
   }, {
     key: "addElementEventListener",
@@ -144,18 +110,12 @@ var YrvUtil = /*#__PURE__*/function () {
 
   }, {
     key: "generateHashMNameByMName",
-    value: function generateHashMNameByMName(method) {
-      return "".concat(YrvUtil.getMethodHashId(method), "_").concat(method);
-    }
-  }, {
-    key: "getMethodHashId",
-    value: function getMethodHashId(name) {
-      return "_rv_".concat(YrvUtil.getHashCode(name));
+    value: function generateHashMNameByMName(name) {
+      return "yrv_".concat(YrvUtil.getHashCode(name));
     }
   }, {
     key: "getHashCode",
     value: function getHashCode(str) {
-      // str = str.toLowerCase();
       var hash = 12345678;
 
       for (var i = str.length - 1; i >= 0; i--) {
@@ -488,11 +448,10 @@ var YrvUtil = /*#__PURE__*/function () {
             if (YrvUtil.typeObjOrArray(newVal)) {
               changed = YrvUtil.getHashCode(JSON.stringify(internalValue)) !== YrvUtil.getHashCode(JSON.stringify(newVal));
             } else {
-              changed = internalValue !== newVal; // console.log("internalValue:"+internalValue+",newVal:"+newVal)
+              changed = internalValue !== newVal;
             }
 
             if (changed) {
-              // console.log(`${key} ,changed:,newVal:${JSON.stringify(newVal)},internalValue:${internalValue}`)
               internalValue = newVal;
               observable.invoke();
             }

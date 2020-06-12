@@ -54,41 +54,9 @@ class YrvUtil {
         return ["domData", "childDomData", "for", "data"].includes(prop)
     }
     static isRvEvent(direction) {
-
         return /^rv-\w*$/.test(direction)
     }
 
-    // static defineRvInnerGlobalValue(key, value, isCanWrite) {
-    //     if (!window.hasOwnProperty("_______js_yhongm_rv____")) {
-    //         Object.defineProperty(window, "_______js_yhongm_rv____", {
-    //             value: {}
-    //         })
-    //     }
-    //     Object.defineProperty(window["_______js_yhongm_rv____"], key, {
-    //         value: value,
-    //         writable: isCanWrite
-    //     })
-    // }
-    // static getRvInnerGlobalValue(key) {
-    //     if (!key) {
-    //         return undefined
-    //     }
-    //     return window["_______js_yhongm_rv____"][`${key}`]
-    // }
-    // static invokeGlobalFunName(name) {
-    //     return `window._______js_yhongm_rv____.${name}`
-    // }
-
-    static createAndSendSimpleRvEvent(rvEventName, objData) {
-        var event = document.createEvent("CustomEvent")
-        event.initCustomEvent(`rv_${rvEventName}_${YrvUtil.getHashCode(rvEventName)}`, true, true, objData);
-        document.dispatchEvent(event)
-    }
-    static receiveRvEvent(rvEventName, callback) {
-        document.addEventListener(`rv_${rvEventName}_${YrvUtil.getHashCode(rvEventName)}`, (e) => {
-            callback(e, e.detail)
-        })
-    }
     static addElementEventListener(element, event, callback) {
         if (element instanceof HTMLElement) {
             element.addEventListener(event, callback)
@@ -98,14 +66,10 @@ class YrvUtil {
      * generate hash method name by method name
      * by yhongm
      */
-    static generateHashMNameByMName(method) {
-        return `${YrvUtil.getMethodHashId(method)}_${method}`
-    }
-    static getMethodHashId(name) {
-        return `_rv_${YrvUtil.getHashCode(name)}`
+    static generateHashMNameByMName(name) {
+        return `yrv_${YrvUtil.getHashCode(name)}`
     }
     static getHashCode(str) {
-        // str = str.toLowerCase();
         let hash = 12345678
         for (let i = str.length - 1; i >= 0; i--) {
             hash ^= ((hash << 6) + str.charCodeAt(i) + (hash >> 3));
@@ -393,11 +357,9 @@ class YrvUtil {
                         changed = YrvUtil.getHashCode(JSON.stringify(internalValue)) !== YrvUtil.getHashCode(JSON.stringify(newVal))
                     } else {
                         changed = internalValue !== newVal
-                        // console.log("internalValue:"+internalValue+",newVal:"+newVal)
                     }
 
                     if (changed) {
-                        // console.log(`${key} ,changed:,newVal:${JSON.stringify(newVal)},internalValue:${internalValue}`)
                         internalValue = newVal
 
                         observable.invoke()

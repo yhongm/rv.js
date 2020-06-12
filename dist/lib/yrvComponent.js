@@ -64,6 +64,7 @@ var YrvComponent = /*#__PURE__*/function () {
     this._rdom = {};
     this.props = props;
     this.data = data;
+    this._parentContext = undefined;
     this.methods = methods;
     this.componentRun = onRun;
     this.componentDomChange = onDomChange;
@@ -75,7 +76,7 @@ var YrvComponent = /*#__PURE__*/function () {
     this._cloneWatchObj = _yrvUtil["default"].cloneObj(watch);
     this.paramObj = {}; // the paramObj
 
-    this.belongComponent = "main";
+    this.belongComponentName = "main";
     this.componentkey = name;
     this._initInfo = false;
     this.componentUniqueTag = this.name; //the clone tag is unique
@@ -83,9 +84,9 @@ var YrvComponent = /*#__PURE__*/function () {
     this._isRender = false;
     this._isUpdate = false;
     this._isRun = false;
+    this._eventListener = {};
 
-    _yrvUtil["default"].addStyle2Head(this.style, this.name); // this._defineMethod()
-
+    _yrvUtil["default"].addStyle2Head(this.style, this.name);
 
     this._init();
   }
@@ -97,7 +98,8 @@ var YrvComponent = /*#__PURE__*/function () {
         componentName: this.name,
         componentData: this.data,
         componentUniqueTag: this.componentUniqueTag,
-        route: undefined
+        route: undefined,
+        eventListener: this._eventListener
       };
       this.parse = new _yrvParse["default"](this.context);
       this.rvDomUtil = new _yrvDomUtil["default"](this.context);
@@ -108,12 +110,12 @@ var YrvComponent = /*#__PURE__*/function () {
   }, {
     key: "_belong",
     value: function _belong(belongComponent) {
-      this.belongComponent = belongComponent;
+      this.belongComponentName = belongComponent;
     }
   }, {
     key: "getParentComponentName",
     value: function getParentComponentName() {
-      return this.belongComponent;
+      return this.belongComponentName;
     }
   }, {
     key: "getComponentUniqueTag",
@@ -142,47 +144,105 @@ var YrvComponent = /*#__PURE__*/function () {
       this.parse.useCustomComponent(rvComponentObj);
     }
   }, {
+    key: "$ref",
+    value: function $ref(componentName, componentkey) {
+      var componentQueue = this.parse.componentMap.get(componentName);
+
+      if (componentQueue && componentQueue.length > 1 && componentkey) {
+        return componentQueue.filter(function (component) {
+          return component.key == componentkey;
+        })[0];
+      } else {
+        return componentQueue[0];
+      }
+    }
+  }, {
     key: "_registerEvent",
     value: function _registerEvent() {
       var _this = this;
 
-      _yrvUtil["default"].receiveRvEvent(this.name + "_routeChange", function (e, detail) {
-        _this.context.route.go(detail);
+      this._eventListener[this.name + "_routeChange"] = function (value) {
+        _this.context.route.go(value);
 
         _this._parseHtmlTemplate(true);
 
         _this.context.route.getNeedRenderComponent()._rv_ev_run();
 
         _this._updatedom();
-      });
+      };
     }
+    /**
+     * the '$routeChange' function only use page component
+     * @param routeInfo 
+     * @param parentRouteChange if true the parent page compoent route change ,if false the current page component route change
+     */
+
   }, {
     key: "$routeChange",
     value: function $routeChange(routeInfo) {
-      var componentName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "main";
+      var parentRouteChange = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 
-      _yrvUtil["default"].createAndSendSimpleRvEvent(componentName + "_routeChange", routeInfo);
+      if (parentRouteChange) {
+        this.getParentContext().eventListener[this.getParentContext().componentName + "_routeChange"](routeInfo);
+      } else {
+        this._eventListener[this.name + "_routeChange"](routeInfo);
+      }
     }
+    /**
+     * emit event to component 
+     * @param {*} event 
+     * @param {*} toParent if true emit event to parent component,if false emit event to current component
+     */
+
   }, {
-    key: "$sendEvent",
-    value: function $sendEvent(event) {
+    key: "$emit",
+    value: function $emit(event) {
+      var toParent = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
       /**
-              * this function use to send event to other component
+              * this function use to child component send event to parent component
               * *params name   this is event name
               * *params value  this is event value
               * call $sendEvent(name,value) send event
+              * 
               */
       var name = event.name,
           value = event.value;
 
-      _yrvUtil["default"].createAndSendSimpleRvEvent(name, value);
+      if (toParent) {
+        if (this.getParentContext() && this.getParentContext().eventListener[name]) {
+          this.getParentContext().eventListener[name](value);
+        }
+      } else {
+        if (this._eventListener[name]) {
+          this._eventListener[name](value);
+        }
+      }
     }
+    /**
+     * receive event from component
+     * @param event event name
+     * @param fromParent if true receive event from parent component ,if false receive event from current component
+     * @param callback event callback function
+     * 
+     */
+
   }, {
-    key: "$onEvent",
-    value: function $onEvent(event, callback) {
-      _yrvUtil["default"].receiveRvEvent(event, function (value) {
-        callback(value.detail);
-      });
+    key: "$on",
+    value: function $on(event, callback) {
+      var fromParent = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+
+      if (fromParent) {
+        if (this.getParentContext()) {
+          this.getParentContext().eventListener[event] = function (value) {
+            callback(value);
+          };
+        }
+      } else {
+        this._eventListener[event] = function (value) {
+          callback(value);
+        };
+      }
     }
   }, {
     key: "_defineMethod",
@@ -203,13 +263,13 @@ var YrvComponent = /*#__PURE__*/function () {
           }
         };
 
-        _yrvUtil["default"].receiveRvEvent(_yrvUtil["default"].generateHashMNameByMName("".concat(_this2.name, "_").concat(_this2.componentUniqueTag, "_").concat(method)), function (e, detail) {
-          _this2.methods[method].call(thatThis, detail);
-        });
+        _this2._eventListener[_yrvUtil["default"].generateHashMNameByMName("".concat(_this2.name, "_").concat(method))] = function (value) {
+          _this2.methods[method].call(thatThis, value);
+        };
 
-        _yrvUtil["default"].receiveRvEvent("".concat(_this2.name, "_").concat(method), function (e, detail) {
-          _this2.methods[method].call(thatThis, detail);
-        });
+        _this2._eventListener["".concat(_this2.name, "_").concat(method)] = function (value) {
+          _this2.methods[method].call(thatThis, value);
+        };
       };
 
       for (var _i = 0, _Object$keys = Object.keys(this.methods); _i < _Object$keys.length; _i++) {
@@ -224,14 +284,24 @@ var YrvComponent = /*#__PURE__*/function () {
       var _loop2 = function _loop2() {
         var data = _Object$keys3[_i3];
 
-        _yrvUtil["default"].receiveRvEvent(_yrvUtil["default"].generateHashMNameByMName("".concat(_this2.name, "_").concat(_this2.componentUniqueTag, "_").concat(data, "change")), function (el, value) {
+        _this2._eventListener[_yrvUtil["default"].generateHashMNameByMName("".concat(_this2.name, "_").concat(data, "change"))] = function (value) {
           _this2.data[data] = value;
-        });
+        };
       };
 
       for (var _i3 = 0, _Object$keys3 = Object.keys(this.data); _i3 < _Object$keys3.length; _i3++) {
         _loop2();
       }
+    }
+  }, {
+    key: "_setParentContext",
+    value: function _setParentContext(context) {
+      this._parentContext = context;
+    }
+  }, {
+    key: "getParentContext",
+    value: function getParentContext() {
+      return this._parentContext;
     }
   }, {
     key: "_clearMethods",
@@ -272,22 +342,43 @@ var YrvComponent = /*#__PURE__*/function () {
 
       this._yrvElement = this.rvDomUtil.getYrvElement(this._rdom, function (el, props, belong, componentUniqueTag) {
         _this3._hookRender(el, props, belong, componentUniqueTag);
+      }, function (isRvent, eventPropName, evnetPropValue, value) {
+        if (isRvent) {
+          if (eventPropName === "watch") {
+            _this3._eventListener[_yrvUtil["default"].generateHashMNameByMName("".concat(_this3.name, "_").concat(evnetPropValue, "change"))](value);
+          }
+        } else {
+          _this3._eventListener[_yrvUtil["default"].generateHashMNameByMName("".concat(_this3.name, "_").concat(evnetPropValue))](value);
+        }
       });
       this.w = this._yrvElement.render(this._getComponentContainer());
       this._isRender = true;
       return this.w;
     }
   }, {
+    key: "_handleComponentPropEvent",
+    value: function _handleComponentPropEvent(props) {
+      var _this4 = this;
+
+      Object.keys(props).forEach(function (propKey) {
+        if (_yrvUtil["default"].isRvEventProp(propKey) && !_this4.methods[propKey.slice(2)]) {
+          _this4.methods[propKey.slice(2)] = function (param) {
+            _this4.getParentContext().eventListener[_yrvUtil["default"].generateHashMNameByMName("".concat(_this4.getParentContext().componentName, "_").concat(props[propKey]))](param);
+          };
+        }
+      });
+    }
+  }, {
     key: "_applyRealDataVdom",
     value: function _applyRealDataVdom() {
-      var _this4 = this;
+      var _this5 = this;
 
       this._getComponentContainer().forEach(function (componentContainer) {
         Object.keys(componentContainer.component.props).forEach(function (componentProp) {
           var propValue = componentContainer.prop[componentProp];
 
           if (_yrvUtil["default"].isPlaceHolder(propValue)) {
-            propValue = _this4.data[_yrvUtil["default"].getPlaceHolderValue(propValue)];
+            propValue = _this5.data[_yrvUtil["default"].getPlaceHolderValue(propValue)];
           }
 
           componentContainer.component.props[componentProp] = propValue;
@@ -319,7 +410,7 @@ var YrvComponent = /*#__PURE__*/function () {
   }, {
     key: "_updatedom",
     value: function _updatedom() {
-      var _this5 = this;
+      var _this6 = this;
 
       if (!this._isUpdate && this._isRender) {
         this._isUpdate = true;
@@ -327,7 +418,7 @@ var YrvComponent = /*#__PURE__*/function () {
         this._applyRealDataVdom();
 
         var _newYrvElement = this.rvDomUtil.getYrvElement(this._rdom, function (el, props, belong, componentUniqueTag) {
-          _this5._hookRender(el, props, belong, componentUniqueTag);
+          _this6._hookRender(el, props, belong, componentUniqueTag);
         });
 
         var diff = this._diff(this._yrvElement, _newYrvElement);
@@ -472,7 +563,8 @@ var YrvComponent = /*#__PURE__*/function () {
         componentName: cloneObj.name,
         componentData: cloneObj.data,
         componentUniqueTag: cloneObj.componentUniqueTag,
-        route: this.context.route //the component route object not allow clone,because the route include components ,the components  will not clone by route clone
+        route: this.context.route,
+        eventListener: cloneObj._eventListener //the component route object not allow clone,because the route include components ,the components  will not clone by route clone
         //so the route only use in page component
 
       };
@@ -481,13 +573,7 @@ var YrvComponent = /*#__PURE__*/function () {
 
       cloneObj._defineMethod(cloneObj);
 
-      var ev = cloneObj.componentUniqueTag + "_dataChange";
-
       _yrvUtil["default"].observeComponent(cloneObj, function () {
-        _yrvUtil["default"].createAndSendSimpleRvEvent(ev);
-      });
-
-      _yrvUtil["default"].receiveRvEvent(ev, function () {
         cloneObj._updatedom();
       });
 

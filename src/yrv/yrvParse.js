@@ -33,16 +33,11 @@ class YhmParse {
                 return comp.componentkey === prop.key
               })[0]
             } else {
-               component = that.componentMap.get(tagName)[0]
+              component = that.componentMap.get(tagName)[0]
             }
           }
-          Object.keys(prop).forEach((propKey) => {
-            if (YrvUtil.isRvEventProp(propKey)) {
-              component.methods[propKey.slice(2)] = function (param) {
-                YrvUtil.createAndSendSimpleRvEvent(YrvUtil.generateHashMNameByMName(`${that.context.componentName}_${that.context.componentUniqueTag}_${prop[propKey]}`), param)
-              }
-            }
-          })
+          component._setParentContext(that.context)
+          component._handleComponentPropEvent(prop)
           component._parseHtmlTemplate()
           component._applyTruthFulData()
           component._belong(that.context.componentName)
@@ -115,16 +110,16 @@ class YhmParse {
    */
   useCustomComponent(rvComponent) {
     if (this.componentMap.hasKey(rvComponent.getName())) {
-      let componentQueue=this.componentMap.get(rvComponent.getName())
-      if(!rvComponent in componentQueue){
-        
+      let componentQueue = this.componentMap.get(rvComponent.getName())
+      if (!rvComponent in componentQueue) {
+
       }
-      let componentIndex=componentQueue.findIndex((compoonent)=>{return compoonent.componentkey===rvComponent.componentkey})
-      if(componentIndex===-1){
+      let componentIndex = componentQueue.findIndex((compoonent) => { return compoonent.componentkey === rvComponent.componentkey })
+      if (componentIndex === -1) {
         componentQueue.push(rvComponent)
       }
-      
-    
+
+
     } else {
       let componentQueue = []
       componentQueue.push(rvComponent)
@@ -210,6 +205,6 @@ class YhmParse {
   getHtmlDom() {
     return this.mMap.get(1)
   }
-  
+
 }
 export default YhmParse

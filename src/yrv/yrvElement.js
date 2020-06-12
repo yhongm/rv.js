@@ -4,12 +4,18 @@ class YrvElement {
      * virtual dom object constructor
      * @param {*} tag  the html tag name
      * @param {*} props  the prop (key，style..)
-     * @param {*} children child data
-     * @param {*} belong
+     * @param {*} children child data or child element 
+     * @param {*} belong the element belong what component
      * @param {*} componentUniqueTag
-     * @param {*} renderCallback the renderCallback can hook render 
+     * @param {*} renderCallback the renderCallback can hook render
+     * @param {*} eventCallback the eventCallback  used to component watch dom event
+     * eventCallback（paramOne,paramTwo,paramThree,paramFour）
+     * the paramOne     if true is yrv event ,false dom event 
+     * the paramTwo     is the event name
+     * the paramThree   is the event prop
+     * the paramFour    is the event value
      */
-    constructor(tag, props, children, belong, componentUniqueTag, uniqueTag, isComponent, renderCallback) {
+    constructor(tag, props, children, belong, componentUniqueTag, uniqueTag, isComponent, renderCallback,eventCallback) {
         this.tag = tag
         this.belong = belong
         this.componentUniqueTag = componentUniqueTag
@@ -19,9 +25,13 @@ class YrvElement {
         this.children = children || []
         this.key = props ? props.key : undefined
         this.renderCallback = renderCallback
+        this.eventCallback=eventCallback
         if (YrvUtil.isHtmlTag(this.tag) && !this.key) {
-            throw new Error(`${tag} ... html tag in component ${this.belong} the key is undefined`)
+            throw new Error(`${tag} ... html tag in component ${this.belong} the key is undefined `)
         }
+        
+
+        
         let count = 0;
         this.children.forEach(child => {
             if (child instanceof YrvElement) {
@@ -135,7 +145,9 @@ class YrvElement {
                         //this prop use to watch element value change in real time and auto to modify data
                         if (el instanceof HTMLInputElement) {
                             YrvUtil.addElementEventListener(el, "input", (e) => {
-                                YrvUtil.createAndSendSimpleRvEvent(YrvUtil.generateHashMNameByMName(`${this.belong}_${this.componentUniqueTag}_${props[propName]}change`), el.value)
+                                if(this.eventCallback){
+                                    this.eventCallback(true,evantName,props[propName],el.value)  //first param is isRvEvent 
+                                }
                             })
                         } else {
                             console.log("RV warning:the rv-watch only use in input label")
@@ -146,7 +158,10 @@ class YrvElement {
                             Object.defineProperty(e, "element", {
                                 value: el
                             })
-                            YrvUtil.createAndSendSimpleRvEvent(YrvUtil.generateHashMNameByMName(`${this.belong}_${this.componentUniqueTag}_${props[propName]}`), e)
+                            if(this.eventCallback){
+                                this.eventCallback(false,evantName,props[propName],e) 
+                            }
+                            
                         })
                     }
 

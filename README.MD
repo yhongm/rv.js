@@ -252,10 +252,11 @@ RV组件构造函数形参componentParam对象属性onUnMount为RV组件生命�
 
 RV组件构造函数形参componentParam对象属性watch为RV组件对象，用于观察组件data数据变化
 
-RV组件对象函数内调用this.$sendEvent({name,value}) 发送事件到其他组件 ,name为事件名称,value为事件值,componentName为要发送到的组件名。可以将此组件状态或属性值发送到其他组件。其他组件通过在组件methods中声明(组件名+事件名+'event')函数监听次事件(比如RvSelectIDEvent(newId),其中RvSelect为组件名,ID为事件名,newId为事件的新值)。
+RV组件对象函数内调用this.$emit({name,value},toParent) 发送事件到其他组件 ,name为事件名称,value为事件值.toParent是否将此事件发送到父组件
 
-RV组件对象函数内调用this.$onEvent(event,(value)=>{}) 组件监听其他组件发送的事件，event为事件名,value为事件传过的值
+RV组件对象函数内调用this.$on(event,(value)=>{},fromParent) 组件监听其他组件发送的事件，event为事件名,value为事件传过的值,from是否为从父组件注册监听事件
 
+RV组件对象函数内调用this.$ref(componentName,componentKey)访问组件，可以调用组件方法，可以访问子组件的方法。componentName组件名，componentKey组件key.
 RV组件对象函数内调用this.$routeChange({path,paramObj},componentName?) 发送路由改变事件，更新页面组件。需要在路由配置文件中注册组件.componentName为空时默认主路由切换页面，componentName内为对应页面组件内路由切换嵌套页面
 
 RV组件对象函数内调用this.getComponentUniqueTag() 获取组件唯一标记
@@ -327,11 +328,11 @@ RV组件模板插槽标签slot，slot标签name属性用于区分插槽，如果
 
                 /*将此组件的color值变化发送到其他组件
                 其他组件在method中声明组件名+事件值+'event'方法接收此变化
-                $onEvent("Color",(color)=>{
-                    此事件在组件调用this.$sendEvent({name:"Color",value:this.data.pcolor})时触发
+                $on("Color",(color)=>{
+                    此事件在组件调用this.$emit({name:"Color",value:this.data.pcolor})时触发
                 })
                 */
-                this.$sendEvent({name:"Color",value:this.data.pcolor})
+                this.$emit({name:"Color",value:this.data.pcolor})
 
 
             }, 1000)
@@ -390,8 +391,8 @@ rv = new RV({
                        </div>`,
   // MyComponent为自定义RV组件名字，定义组件时name值.content,value,time为定义组件时属性,定义组件时props值
   methods:{
-    $onEvent("Color",(color)=>{
-      //组件MyComponent调用this.$sendEvent({name:"Color",value:this.data.pcolor}) 会触发此函数，color为新值
+    $on("Color",(color)=>{
+      //组件MyComponent调用this.$emit({name:"Color",value:this.data.pcolor}) 会触发此函数，color为新值
        //this指向本组件,通过this可以访问本组件
       this.methods.fun1()
     })

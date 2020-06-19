@@ -291,6 +291,15 @@ class YrvComponent {
             this._applyRealDataVdom()
             let _newYrvElement = this.rvDomUtil.getYrvElement(this._rdom, (el, props, belong, componentUniqueTag) => {
                 this._hookRender(el, props, belong, componentUniqueTag)
+            }, (isRvent, eventPropName, evnetPropValue, value) => {
+                if (isRvent) {
+                  if (eventPropName === "watch") {
+                    this._eventListener[YrvUtil.generateHashMNameByMName(`${this.name}_${evnetPropValue}change`)](value)
+                  }
+
+                } else {
+                  this._eventListener[YrvUtil.generateHashMNameByMName(`${this.name}_${evnetPropValue}`)](value)
+                }
             })
             let diff = this._diff(this._yrvElement, _newYrvElement)
             this._patch(this.w, diff)

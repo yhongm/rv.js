@@ -419,6 +419,14 @@ var YrvComponent = /*#__PURE__*/function () {
 
         var _newYrvElement = this.rvDomUtil.getYrvElement(this._rdom, function (el, props, belong, componentUniqueTag) {
           _this6._hookRender(el, props, belong, componentUniqueTag);
+        }, function (isRvent, eventPropName, evnetPropValue, value) {
+          if (isRvent) {
+            if (eventPropName === "watch") {
+              _this6._eventListener[_yrvUtil["default"].generateHashMNameByMName("".concat(_this6.name, "_").concat(evnetPropValue, "change"))](value);
+            }
+          } else {
+            _this6._eventListener[_yrvUtil["default"].generateHashMNameByMName("".concat(_this6.name, "_").concat(evnetPropValue))](value);
+          }
         });
 
         var diff = this._diff(this._yrvElement, _newYrvElement);

@@ -130,6 +130,7 @@ class YhmParse {
     this.context = newContext
   }
   parseHtmlTemplate(html) {
+    
     let startTime = new Date() / 1000
     var index = 0
     while (html) {
@@ -201,6 +202,9 @@ class YhmParse {
     function parseComment(html) {
       // console.log(`parseComment=${html}`)
     }
+  }
+  setComponentUniqueKey(key){
+    this.mMap.get(1).props.key=key
   }
   getHtmlDom() {
     return this.mMap.get(1)

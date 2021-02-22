@@ -75,9 +75,14 @@ window.data = myData; //控制台修改data数据，视图自动刷新内容
 var rv = new RV({
   //创建对象
   el: "#app", //el对象挂载的节点
-  style: ``, //css样式
+  style: `
+  <%%style%%>
+  <%%/style%%>
+  `, //css样式
   data: myData, //数据对象，用于驱动视图更新，数据变化，视图自动更新
-  template: `<div key="1" style="color:%#pcolor#%,width:100px,height:100px"           onclick="clickDiv()">
+  template: `
+  <%%template%%>
+  <div key="1" style="color:%#pcolor#%,width:100px,height:100px"           onclick="clickDiv()">
                          "%#parent#%"
                          <p key="2" style="color:%#c1color#%,width:50px,height:50px" onclick="clickP1()">
                              "%#child#%"
@@ -89,7 +94,9 @@ var rv = new RV({
                             <p key="{%#v.id#%+'_content'}" childDomData="v" for="v _in_ week"  domData="week">"%#v.content#%"</p>
                          </div>
                          <MyComponent content="%#componentCotent#%"  time="{Math.floor(new Date()/1000)+'_ttt'}" value="%#componentValue#%" key="888"></MyComponent>
-                       </div>`,
+                       </div>
+  <%%/template%%>
+  `,
   methods:{
     test1(){
        this.methods.test2()//调用test2()函数
@@ -203,10 +210,11 @@ export default routerConfig
 ```javascript
    let rv=new RV("#app",{
         template:`
-            
+            <%%template%%>
             <div key="main" style="width:100%;height:100%">
                 <routerview/>
             </div>
+            <%%/template%%>
         `,
         style: commonStyle,
         data: {
@@ -278,12 +286,15 @@ RV组件模板插槽标签slot，slot标签name属性用于区分插槽，如果
   var con = RV.component({ //定义自定义RV组件
         name: "MyComponent",//定义RV组件名字
         template: `
+        <%%template%%>
             <div class="aaa" key="aaa">
              <p key="bbb" style="color:%#pcolor#%" time="%#time#%" componentValue="%#pvalue#%">"%#pcontent#%"</p>
                 <slot name="foot" key="slot"></slot>   <!--slot标签为组件添加插槽-->
              <div>
+        <%%/template%%>     
         `,//定义RV组件,HTML语法声明组件模板
         style: `
+        <%%style%%>
         .aaa {
             background-color: red
         }
@@ -291,6 +302,7 @@ RV组件模板插槽标签slot，slot标签name属性用于区分插槽，如果
             width: 500px;
             height:200px;
         }
+        <%%/style%%>
         `,//定义RV组件样式表,css语法声明组件样式
         props: {//定义RV组件属性,用于外部设值组件属性
             time: "1000",
@@ -374,7 +386,9 @@ rv = new RV({
   el: "#app",
   //el对象挂载的节点s
   data: myData,
-  template: `<div key="1" style="color:%#pcolor#%,width:100px,height:100px" onclick="clickDiv()">
+  template: `
+  <%%template%%>
+  <div key="1" style="color:%#pcolor#%,width:100px,height:100px" onclick="clickDiv()">
                          "%#parent#%"
                          <p key="2" style="color:%#c1color#%,width:50px,height:50px" onclick="clickP1()">
                              "%#child#%"
@@ -388,7 +402,9 @@ rv = new RV({
                          <MyComponent ::clickMyCon="fun2" content="%#componentCotent#%"  time="{Math.floor(new Date()/1000)+'_ttt'}" value="%#componentValue#%" key="888">
                              <div slot="foot">"插槽demo"</div>
                          </MyComponent>
-                       </div>`,
+                       </div>
+  <%%/template%%>                     
+  `,
   // MyComponent为自定义RV组件名字，定义组件时name值.content,value,time为定义组件时属性,定义组件时props值
   methods:{
     $on("Color",(color)=>{

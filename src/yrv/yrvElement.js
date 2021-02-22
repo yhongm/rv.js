@@ -1,4 +1,5 @@
 import YrvUtil from "./yrvUtil"
+
 class YrvElement {
     /**
      * virtual dom object constructor
@@ -15,7 +16,7 @@ class YrvElement {
      * the paramThree   is the event prop
      * the paramFour    is the event value
      */
-    constructor(tag, props, children, belong, componentUniqueTag, uniqueTag, isComponent, renderCallback,eventCallback) {
+    constructor(tag, props, children, belong, componentUniqueTag, uniqueTag, isComponent, renderCallback, eventCallback) {
         this.tag = tag
         this.belong = belong
         this.componentUniqueTag = componentUniqueTag
@@ -25,14 +26,12 @@ class YrvElement {
         this.children = children || []
         this.key = props ? props.key : undefined
         this.renderCallback = renderCallback
-        this.eventCallback=eventCallback
+        this.eventCallback = eventCallback
         if (YrvUtil.isHtmlTag(this.tag) && !this.key) {
             throw new Error(`${tag} ... html tag in component ${this.belong} the key is undefined `)
         }
-        
-
-        
         let count = 0;
+        this.isRender=false
         this.children.forEach(child => {
             if (child instanceof YrvElement) {
                 count += child.count
@@ -42,6 +41,7 @@ class YrvElement {
 
         this.count = count
     }
+   
     /**
     * the method use to virtual dom  rende to real dom
     */
@@ -68,8 +68,14 @@ class YrvElement {
 
         })
         this._calcCount(componentContainer)
+        this.isRender=true
         return el;
     }
+
+    isSlot(){
+        return this.props.slot!==undefined
+    }
+
     _calcCount(componentContainer) {
         let count = 0;
         if (!this.isComponent) {
@@ -83,13 +89,10 @@ class YrvElement {
                             count += component._yrvElement.count
                             child.count = component._yrvElement.count
                         }
-
                     } else {
-
                         count += child.count
-                     }
+                    }
                 }
-
                 count++
             });
             this.count = count
@@ -97,14 +100,15 @@ class YrvElement {
             let componentTemp = componentContainer.filter((component) => { return component.componentUniqueTag === this.uniqueTag })
             if (componentTemp.length > 0) {
                 let component = componentTemp[0].component
-                 this.count = component._yrvElement.count
+                this.count = component._yrvElement.count
             } else {
             }
-
         }
-
+    
     }
+    
     _handleSlotDom(node, slotDom, slotPosition) {
+
         let position = slotPosition
         let positionIndex = -1
         if (position === "default") {
@@ -127,7 +131,7 @@ class YrvElement {
 
             node.replaceChild(slotDom, node.childNodes[positionIndex])
         }
-
+        
     }
 
     /**
@@ -145,8 +149,8 @@ class YrvElement {
                         //this prop use to watch element value change in real time and auto to modify data
                         if (el instanceof HTMLInputElement) {
                             YrvUtil.addElementEventListener(el, "input", (e) => {
-                                if(this.eventCallback){
-                                    this.eventCallback(true,evantName,props[propName],el.value)  //first param is isRvEvent 
+                                if (this.eventCallback) {
+                                    this.eventCallback(true, evantName, props[propName], el.value)  //first param is isRvEvent 
                                 }
                             })
                         } else {
@@ -158,10 +162,10 @@ class YrvElement {
                             Object.defineProperty(e, "element", {
                                 value: el
                             })
-                            if(this.eventCallback){
-                                this.eventCallback(false,evantName,props[propName],e) 
+                            if (this.eventCallback) {
+                                this.eventCallback(false, evantName, props[propName], e)
                             }
-                            
+
                         })
                     }
 

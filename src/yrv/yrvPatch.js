@@ -59,7 +59,7 @@ class YrvPatch {
         let staticNodeList = YrvUtil.toArray(node.childNodes)
         let nodeMaps = {}
         staticNodeList.forEach((snode) => {
-            if (snode.nodeType === 1) {
+            if (snode.nodeType === 1) { //The read-only Node.nodeType property is an integer that identifies what the node is. It distinguishes different kind of nodes from each other, such as elements, text and comments.nodeType 1 isNode.ELEMENT_NODE	1	An Element node like <p> or <div>.
                 let key = snode.getAttribute('key')
                 if (key) {
                     nodeMaps[key] = snode

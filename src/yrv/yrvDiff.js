@@ -24,7 +24,6 @@ class YrvDiff {
         this.componentContainer = componentContainer
     }
     dfsWalk(oldYrvElement, newYrvElement, index) {
-        
         this.tempIndex = index
         let currentPatch = []
         if (newYrvElement == null) {
@@ -40,22 +39,20 @@ class YrvDiff {
             let propsPatches = this.diffProps(oldYrvElement, newYrvElement)
             if (propsPatches) {
                 currentPatch.push({
-                    type:YrvUtil.NODE_PROPS,
+                    type: YrvUtil.NODE_PROPS,
                     props: propsPatches
                 })
             }
             if (!YrvUtil.isIgnoreChildren(newYrvElement) && !YrvUtil.isIgnoreChildren(oldYrvElement)) {
-                let oChildren = oldYrvElement.children
-                let nChildren = newYrvElement.children
-
-                this.diffChildren(oChildren, nChildren, index, currentPatch)
+                this.diffChildren(oldYrvElement, newYrvElement, index, currentPatch)
             }
         } else {
-           currentPatch.push({
+            currentPatch.push({
                 type: YrvUtil.NODE_REPLACE,
                 node: newYrvElement
             })
         }
+
         if (currentPatch.length) {
             this.patches[index] = currentPatch
         }
@@ -66,7 +63,6 @@ class YrvDiff {
         }
         const oldProps = oldYrvElement.props
         const newProps = newYrvElement.props
-
         const propsPatches = {}
         let isSame = true;
         for (let key in oldProps) {
@@ -82,13 +78,15 @@ class YrvDiff {
             }
         }
         return isSame ? null : propsPatches
-
     }
-    diffChildren(oldChildren, newChildren, index, currentPatch) {
+    diffChildren(oldYrvElement, newYrvElement, index, currentPatch) {
+        let oldChildren = oldYrvElement.children
+        let newChildren = newYrvElement.children
         let diffList = new DiffList(oldChildren, newChildren)
         diffList.goDiff()
         let diffs = diffList.getResult()
         newChildren = diffs.child
+
         if (diffs.moves.length) {
             let reorderPatch = {
                 type: YrvUtil.CHILD_RE_ORDER,
@@ -98,13 +96,17 @@ class YrvDiff {
         }
         let leftNode = null
         let currentNodeIndex = index
-       
-
         oldChildren.forEach((child, i) => {
             let newChild = newChildren[i]
             currentNodeIndex = (leftNode && leftNode.count) ?
                 currentNodeIndex + leftNode.count + 1 :
                 currentNodeIndex + 1
+            if(!YrvUtil.isString(child)){
+                if(child.isSlot()){
+                    currentNodeIndex+=(newYrvElement.count-(newChild.count-2))
+                 }
+            }    
+           
             this.dfsWalk(child, newChild, currentNodeIndex)
             leftNode = child
         })

@@ -73,9 +73,7 @@ var YrvDiff = /*#__PURE__*/function () {
         }
 
         if (!_yrvUtil["default"].isIgnoreChildren(newYrvElement) && !_yrvUtil["default"].isIgnoreChildren(oldYrvElement)) {
-          var oChildren = oldYrvElement.children;
-          var nChildren = newYrvElement.children;
-          this.diffChildren(oChildren, nChildren, index, currentPatch);
+          this.diffChildren(oldYrvElement, newYrvElement, index, currentPatch);
         }
       } else {
         currentPatch.push({
@@ -118,9 +116,11 @@ var YrvDiff = /*#__PURE__*/function () {
     }
   }, {
     key: "diffChildren",
-    value: function diffChildren(oldChildren, newChildren, index, currentPatch) {
+    value: function diffChildren(oldYrvElement, newYrvElement, index, currentPatch) {
       var _this = this;
 
+      var oldChildren = oldYrvElement.children;
+      var newChildren = newYrvElement.children;
       var diffList = new _yrvDiffList["default"](oldChildren, newChildren);
       diffList.goDiff();
       var diffs = diffList.getResult();
@@ -139,6 +139,12 @@ var YrvDiff = /*#__PURE__*/function () {
       oldChildren.forEach(function (child, i) {
         var newChild = newChildren[i];
         currentNodeIndex = leftNode && leftNode.count ? currentNodeIndex + leftNode.count + 1 : currentNodeIndex + 1;
+
+        if (!_yrvUtil["default"].isString(child)) {
+          if (child.isSlot()) {
+            currentNodeIndex += newYrvElement.count - (newChild.count - 2);
+          }
+        }
 
         _this.dfsWalk(child, newChild, currentNodeIndex);
 

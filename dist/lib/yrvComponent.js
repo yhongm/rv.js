@@ -52,7 +52,7 @@ var YrvComponent = /*#__PURE__*/function () {
         onUnMount = componentParam.onUnMount,
         onInit = componentParam.onInit;
     this.isMainRvComponent = ismain;
-    this.template = template;
+    this.template = template.trim();
     this.name = name;
 
     if (this.isMainRvComponent) {
@@ -60,7 +60,7 @@ var YrvComponent = /*#__PURE__*/function () {
     }
 
     this.isParsedHtml = false;
-    this.style = style;
+    this.style = style.trim();
     this._rdom = {};
     this.props = props;
     this.data = data;
@@ -85,6 +85,20 @@ var YrvComponent = /*#__PURE__*/function () {
     this._isUpdate = false;
     this._isRun = false;
     this._eventListener = {};
+
+    if (this.template.startsWith("<%%template%%>") && this.template.endsWith("<%%/template%%>")) {
+      this.template = this.template.replace("<%%template%%>", "");
+      this.template = this.template.replace("<%%/template%%>", "");
+    } else {
+      throw new Error("write error,component:" + this.name + ",html template grammar  error,the RV  framework  html template begin with <%%template%%> and end with <%%/template%%> ");
+    }
+
+    if (this.style.startsWith("<%%style%%>") && this.style.endsWith("<%%/style%%>")) {
+      this.style = this.style.replace("<%%style%%>", "");
+      this.style = this.style.replace("<%%/style%%>", "");
+    } else {
+      throw new Error("write error,component:" + this.name + ",style template grammar  error,the RV  framework  style template begin with <%%style%%> and end with <%%/style%%>");
+    }
 
     _yrvUtil["default"].addStyle2Head(this.style, this.name);
 
@@ -324,6 +338,7 @@ var YrvComponent = /*#__PURE__*/function () {
   }, {
     key: "_getDomTree",
     value: function _getDomTree() {
+      this.parse.setComponentUniqueKey(this.componentkey + "_" + this.getComponentUniqueTag());
       return this.parse.getHtmlDom();
     }
   }, {

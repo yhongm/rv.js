@@ -269,6 +269,11 @@ var YhmParse = /*#__PURE__*/function () {
       }
     }
   }, {
+    key: "setComponentUniqueKey",
+    value: function setComponentUniqueKey(key) {
+      this.mMap.get(1).props.key = key;
+    }
+  }, {
     key: "getHtmlDom",
     value: function getHtmlDom() {
       return this.mMap.get(1);

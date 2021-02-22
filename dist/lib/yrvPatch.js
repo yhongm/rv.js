@@ -99,6 +99,7 @@ var YrvPatch = /*#__PURE__*/function () {
       var nodeMaps = {};
       staticNodeList.forEach(function (snode) {
         if (snode.nodeType === 1) {
+          //The read-only Node.nodeType property is an integer that identifies what the node is. It distinguishes different kind of nodes from each other, such as elements, text and comments.nodeType 1 isNode.ELEMENT_NODE	1	An Element node like <p> or <div>.
           var key = snode.getAttribute('key');
 
           if (key) {

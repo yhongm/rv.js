@@ -50,6 +50,7 @@ var YrvElement = /*#__PURE__*/function () {
     }
 
     var count = 0;
+    this.isRender = false;
     this.children.forEach(function (child) {
       if (child instanceof YrvElement) {
         count += child.count;
@@ -98,7 +99,13 @@ var YrvElement = /*#__PURE__*/function () {
 
       this._calcCount(componentContainer);
 
+      this.isRender = true;
       return el;
+    }
+  }, {
+    key: "isSlot",
+    value: function isSlot() {
+      return this.props.slot !== undefined;
     }
   }, {
     key: "_calcCount",

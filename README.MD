@@ -26,6 +26,10 @@ npm i yrv.js
 ```
 "%# #%"                    数据占位符。html模板中的数据占位符最终会渲染成data中对应的真实数据
 
+"<%%template%%><%%/template%%>" 用于标记html模板,以便yrv-extension插件高亮html标签
+
+"<%%style%%><%%/style%%>" 用于标记css模板,以便yrv-extension插件高亮css
+
 "{   }"                    函数运行符。html模板中的函数运行符最终会将JavaScript函数返回的真实数据渲染到dom中。("{}"中可以使用"%##%"数据占位符,"{}"最终会将JavaScript函数返回值和数据占位符在data中的对应真实数据拼接成字符串后渲染到dom,比如"
 {%#id#%+'_icon'}",假如id对应在data中为1，那么渲染到dom中为"1_icon"。假如"{}"中不包含%##%,那么直接将JavaScript函数运行结果渲染到dom)
 

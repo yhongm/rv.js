@@ -211,15 +211,13 @@ class YrvDomUtil {
     handleSingleStyle(data, style, dataSingle) {
         let newStyle = ''
         if (dataSingle) {
-            if (YrvUtil.isPlaceHolder(style)) {
-                if (YrvUtil.getPlaceHolderValue(style).indexOf(dataSingle) != -1) {
-                    let key = YrvUtil.getPlaceHolderValue(style).split(".")[1]
-                    newStyle = data[key]
+            let styleKey = style.split(":")[0]
+            let styleValue = style.split(":")[1]
+            if (YrvUtil.isPlaceHolder(styleValue)) {
+                if (YrvUtil.getPlaceHolderValue(styleValue).indexOf(dataSingle) != -1) {
+                    newStyle =  styleKey + ":" +data[YrvUtil.getPlaceHolderValue(styleValue).split(".")[1]]
                 } else {
-                    let styleKey = style.split(":")[0]
-                    let styleValue = style.split(":")[1]
-                    styleValue = data[YrvUtil.getPlaceHolderValue(styleValue)]
-                    newStyle = styleKey + ":" + styleValue
+                    newStyle = styleKey + ":" + data[YrvUtil.getPlaceHolderValue(styleValue)]
                 }
             } else {
                 newStyle = style
@@ -228,13 +226,12 @@ class YrvDomUtil {
             let styleKey = style.split(":")[0]
             let styleValue = style.split(":")[1]
             if (YrvUtil.isPlaceHolder(styleValue)) {
-                styleValue = data[YrvUtil.getPlaceHolderValue(styleValue)]
-
-                newStyle = styleKey + ":" + styleValue
+                newStyle = styleKey + ":" + data[YrvUtil.getPlaceHolderValue(styleValue)]
             } else {
                 newStyle = style
             }
         }
+       
         return newStyle
     }
     handleArrayStyle(data, styles, dataSingle) {

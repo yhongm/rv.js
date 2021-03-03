@@ -274,16 +274,14 @@ var YrvDomUtil = /*#__PURE__*/function () {
       var newStyle = '';
 
       if (dataSingle) {
-        if (_yrvUtil["default"].isPlaceHolder(style)) {
-          if (_yrvUtil["default"].getPlaceHolderValue(style).indexOf(dataSingle) != -1) {
-            var key = _yrvUtil["default"].getPlaceHolderValue(style).split(".")[1];
+        var styleKey = style.split(":")[0];
+        var styleValue = style.split(":")[1];
 
-            newStyle = data[key];
+        if (_yrvUtil["default"].isPlaceHolder(styleValue)) {
+          if (_yrvUtil["default"].getPlaceHolderValue(styleValue).indexOf(dataSingle) != -1) {
+            newStyle = styleKey + ":" + data[_yrvUtil["default"].getPlaceHolderValue(styleValue).split(".")[1]];
           } else {
-            var styleKey = style.split(":")[0];
-            var styleValue = style.split(":")[1];
-            styleValue = data[_yrvUtil["default"].getPlaceHolderValue(styleValue)];
-            newStyle = styleKey + ":" + styleValue;
+            newStyle = styleKey + ":" + data[_yrvUtil["default"].getPlaceHolderValue(styleValue)];
           }
         } else {
           newStyle = style;
@@ -293,8 +291,7 @@ var YrvDomUtil = /*#__PURE__*/function () {
         var _styleValue = style.split(":")[1];
 
         if (_yrvUtil["default"].isPlaceHolder(_styleValue)) {
-          _styleValue = data[_yrvUtil["default"].getPlaceHolderValue(_styleValue)];
-          newStyle = _styleKey + ":" + _styleValue;
+          newStyle = _styleKey + ":" + data[_yrvUtil["default"].getPlaceHolderValue(_styleValue)];
         } else {
           newStyle = style;
         }

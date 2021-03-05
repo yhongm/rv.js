@@ -5,14 +5,16 @@ import YrvMap from "./yrvMap"
  * the route only use in page component
  */
 class YrvRoute {
-    constructor(name) {
+    constructor(name,context) {
         this.needRenderpath = ""
         this.routeName=name
+        this.context=context
         this.routers = new YrvMap("RvRouteMap")
     }
     register(routerConfigs) {
         routerConfigs.forEach(routerConfig => {
             routerConfig.component=routerConfig.component["this"]._cloneNew("")
+            routerConfig.component._setParentContext(this.context)
             this.routers.put(routerConfig.path, routerConfig)
         })
 
@@ -41,6 +43,7 @@ class YrvRoute {
             if (paramObj) {
                 this.routers.get(this.needRenderpath).param = paramObj
             }
+           
             this.routers.get(this.needRenderpath).component._rv_ev_mount()
         } else {
             throw new Error("the route path unexisted ,please first declaration in route config")

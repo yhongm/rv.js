@@ -100,7 +100,7 @@ class YrvComponent {
         return this.componentUniqueTag
     }
     route(routeConfigs) {
-        this.context.route = new YrvRoute(this.name)
+        this.context.route = new YrvRoute(this.name,this.context)
         this.context.route.register(routeConfigs)
     }
     use(rvComponentObjProxy, key = "", needClone = true,) {
@@ -187,6 +187,7 @@ class YrvComponent {
             }
            
         }else{
+           
             this._eventListener[event] = (value) => {
                 callback(value)
             }

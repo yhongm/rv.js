@@ -21,11 +21,12 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
  * the route only use in page component
  */
 var YrvRoute = /*#__PURE__*/function () {
-  function YrvRoute(name) {
+  function YrvRoute(name, context) {
     _classCallCheck(this, YrvRoute);
 
     this.needRenderpath = "";
     this.routeName = name;
+    this.context = context;
     this.routers = new _yrvMap["default"]("RvRouteMap");
   }
 
@@ -36,6 +37,8 @@ var YrvRoute = /*#__PURE__*/function () {
 
       routerConfigs.forEach(function (routerConfig) {
         routerConfig.component = routerConfig.component["this"]._cloneNew("");
+
+        routerConfig.component._setParentContext(_this.context);
 
         _this.routers.put(routerConfig.path, routerConfig);
       });

@@ -139,7 +139,7 @@ var YrvComponent = /*#__PURE__*/function () {
   }, {
     key: "route",
     value: function route(routeConfigs) {
-      this.context.route = new _yrvRoute["default"](this.name);
+      this.context.route = new _yrvRoute["default"](this.name, this.context);
       this.context.route.register(routeConfigs);
     }
   }, {

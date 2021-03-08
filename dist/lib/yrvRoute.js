@@ -72,11 +72,14 @@ var YrvRoute = /*#__PURE__*/function () {
 
         }
 
+        var prevPath = this.needRenderpath;
         this.needRenderpath = path;
 
         if (paramObj) {
           this.routers.get(this.needRenderpath).param = paramObj;
         }
+
+        this.routers.get(this.needRenderpath).component._rv_set_routeInfo(prevPath, path, paramObj);
 
         this.routers.get(this.needRenderpath).component._rv_ev_mount();
       } else {

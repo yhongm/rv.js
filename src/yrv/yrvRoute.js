@@ -39,11 +39,12 @@ class YrvRoute {
                 this.routers.get(this.needRenderpath).component._rv_ev_un_mount()
                 //unMount the component before the new Component mount
             }
+            let prevPath=this.needRenderpath;
             this.needRenderpath = path
             if (paramObj) {
                 this.routers.get(this.needRenderpath).param = paramObj
             }
-           
+            this.routers.get(this.needRenderpath).component._rv_set_routeInfo(prevPath,path,paramObj)
             this.routers.get(this.needRenderpath).component._rv_ev_mount()
         } else {
             throw new Error("the route path unexisted ,please first declaration in route config")

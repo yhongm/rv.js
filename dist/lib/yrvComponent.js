@@ -76,6 +76,8 @@ var YrvComponent = /*#__PURE__*/function () {
     this._cloneWatchObj = _yrvUtil["default"].cloneObj(watch);
     this.paramObj = {}; // the paramObj
 
+    this._yrvRouteInfo = {}; //this  value behalf of the route info ,inclue previous path��path and param
+
     this.belongComponentName = "main";
     this.componentkey = name;
     this._initInfo = false;
@@ -505,6 +507,20 @@ var YrvComponent = /*#__PURE__*/function () {
         this.componentInit.call(this);
         this._initInfo = true;
       }
+    }
+  }, {
+    key: "_rv_set_routeInfo",
+    value: function _rv_set_routeInfo(prevPath, path, paramObj) {
+      this._yrvRouteInfo = {
+        prevPath: prevPath,
+        path: path,
+        param: paramObj
+      };
+    }
+  }, {
+    key: "getRouteInfo",
+    value: function getRouteInfo() {
+      return this._yrvRouteInfo;
     }
     /**
      * this is yrv.js inner event ,only call by yrv.js framework

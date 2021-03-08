@@ -49,6 +49,7 @@ class YrvComponent {
         this._cloneMethods = YrvUtil.cloneObj(methods)
         this._cloneWatchObj = YrvUtil.cloneObj(watch)
         this.paramObj = {} // the paramObj
+        this._yrvRouteInfo={} //this  value behalf of the route info ,inclue previous path¡¢path and param
         this.belongComponentName = "main"
         this.componentkey = name
         this._initInfo = false
@@ -370,6 +371,16 @@ class YrvComponent {
             this.componentInit.call(this)
             this._initInfo = true
         }
+    }
+    _rv_set_routeInfo(prevPath,path,paramObj){
+        this._yrvRouteInfo={
+            prevPath:prevPath,
+            path:path,
+            param:paramObj
+        }
+    }
+    getRouteInfo(){
+        return this._yrvRouteInfo
     }
     /**
      * this is yrv.js inner event ,only call by yrv.js framework

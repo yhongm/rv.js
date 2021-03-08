@@ -1,7 +1,7 @@
 {
   "name": "yrv.js",
-  "version": "2.0.5",
-  "description": "a javascript Framework",
+  "version": "2.0.6",
+  "description": "a javascript Framework；一个响应式组件化单页面框架",
   "main": "dist/lib/yrvMain.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

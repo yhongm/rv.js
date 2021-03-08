@@ -18,7 +18,11 @@ export interface YrvRouteConfig {
   param?: string;
   ismain: boolean;
 }
-
+export interface YrvRouteInfo{
+  prevPath:string;]
+  path:string;
+  param:any;
+}
 export interface YrvEvent {
   name: string;
   value: any;
@@ -35,6 +39,7 @@ declare class YrvComponent {
   $on(event:string,callback:((value) => {}),fromParent?:boolean)
   $ref(componentName:string, componentkey?:string)
   route(routeConfig: Array<YrvRouteConfig>): void;
+  getRouteInfo():YrvRouteInfo
   getParentComponentName(): string;
   getComponentUniqueTag(): string;
 }

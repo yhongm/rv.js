@@ -49,7 +49,7 @@ class YrvComponent {
         this._cloneMethods = YrvUtil.cloneObj(methods)
         this._cloneWatchObj = YrvUtil.cloneObj(watch)
         this.paramObj = {} // the paramObj
-        this._yrvRouteInfo={} //this  value behalf of the route info ,inclue previous path¡¢path and param
+        this._yrvRouteInfo={} //this  value behalf of the route info ,inclue previous pathï¿½ï¿½path and param
         this.belongComponentName = "main"
         this.componentkey = name
         this._initInfo = false
@@ -379,7 +379,7 @@ class YrvComponent {
             param:paramObj
         }
     }
-    getRouteInfo(){
+    $getRouteInfo(){
         return this._yrvRouteInfo
     }
     /**

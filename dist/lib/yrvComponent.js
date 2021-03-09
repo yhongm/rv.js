@@ -518,8 +518,8 @@ var YrvComponent = /*#__PURE__*/function () {
       };
     }
   }, {
-    key: "getRouteInfo",
-    value: function getRouteInfo() {
+    key: "$getRouteInfo",
+    value: function $getRouteInfo() {
       return this._yrvRouteInfo;
     }
     /**

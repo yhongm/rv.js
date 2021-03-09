@@ -1,6 +1,6 @@
 {
   "name": "yrv.js",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "a javascript Framework；一个响应式组件化单页面框架",
   "main": "dist/lib/yrvMain.js",
   "scripts": {

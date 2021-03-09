@@ -39,7 +39,7 @@ declare class YrvComponent {
   $on(event:string,callback:((value) => {}),fromParent?:boolean)
   $ref(componentName:string, componentkey?:string)
   route(routeConfig: Array<YrvRouteConfig>): void;
-  getRouteInfo():YrvRouteInfo
+  $getRouteInfo():YrvRouteInfo
   getParentComponentName(): string;
   getComponentUniqueTag(): string;
 }

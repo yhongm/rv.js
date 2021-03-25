@@ -11,8 +11,9 @@ class YhmParse {
     this.context = context
     this.componentMap = new YrvMap(this.context.componentName + "YhmParseComponentMap")
     this.mMap = new YrvMap(this.context.componentName + "HtmlDomAndComponentMap")
+    this.mSlotMap=new YrvMap(this.context.componentName+"SlotMap")
     this.mComponentContainer = []
-
+    this.hasSlot=false
     this.mPropRe = /([^=\s]+)(\s*=\s*((\"([^"]*)\")|(\'([^']*)\')|[^>\s]+))?/gm
     this.mHandler = {
       startELement: function (tagName, prop, content, that) {
@@ -66,6 +67,9 @@ class YhmParse {
             that.mComponentContainer[componentIndex] = { name: component.name, componentUniqueTag: component.componentUniqueTag, component: component, prop: prop, content: content }
           }
         } else {
+          if(tagName==="slot"){
+            that.hasSlot=true
+          }
           var obj = {
             tag: tagName,
             props: prop,
@@ -209,6 +213,26 @@ class YhmParse {
   getHtmlDom() {
     return this.mMap.get(1)
   }
-
+  _loop(vdom){
+    vdom.children.forEach((cvdom)=>{
+      this._slotIndex++;
+      if(!YrvUtil.isString(cvdom)){
+        if(cvdom.tag==="slot"){
+          let slotPositionName="default"
+          if(cvdom.props&&cvdom.props.name){
+            slotPositionName=cvdom.props.name
+          }
+          this.mSlotMap.put(slotPositionName,this._slotIndex)
+        }
+        this._loop(cvdom)
+      }
+    })
+  }
+  _calcSlot(){
+    this._slotIndex=0;
+    if(this.hasSlot){
+      this._loop(this.mMap.get(1))
+    }
+  }
 }
 export default YhmParse

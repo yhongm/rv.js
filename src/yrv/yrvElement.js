@@ -104,11 +104,9 @@ class YrvElement {
             } else {
             }
         }
-    
     }
     
     _handleSlotDom(node, slotDom, slotPosition) {
-
         let position = slotPosition
         let positionIndex = -1
         if (position === "default") {

@@ -11,6 +11,7 @@ export interface YrvOption {
   onMount(): void;
   onUnMount():void;
   onInit();void;
+  onRender?(el:Element, props:any, belong:string, componentUniqueTag:string):void
 }
 export interface YrvRouteConfig {
   path: string;
@@ -19,7 +20,7 @@ export interface YrvRouteConfig {
   ismain: boolean;
 }
 export interface YrvRouteInfo{
-  prevPath:string;]
+  prevPath:string;
   path:string;
   param:any;
 }

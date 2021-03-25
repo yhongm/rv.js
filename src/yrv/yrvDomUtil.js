@@ -55,7 +55,7 @@ class YrvDomUtil {
                         if (forERKey in this.context.componentData) {
                             dataArray = this.context.componentData[forERKey][forERValue]
                         } else {
-                            throw new Error("the for directive use error,the Dot Operator Express only in global context data")
+                            throw new Error("the"+this.context.componentName+",component, "+forERKey+"error."+"the for directive use error,the Dot Operator Express only in global context data")
                         }
                     } else {
                         dataArray = this.context.componentData[forExpressRight]
@@ -84,7 +84,7 @@ class YrvDomUtil {
                     objs.push(obj)
                 })
             } else {
-                throw new Error("the for directive only use in Array data")
+                throw new Error("the "+this.context.componentName+",component, "+"the for directive only use in Array data")
             }
             let vDomObj = {
                 isFor: true,

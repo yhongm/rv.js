@@ -50,7 +50,8 @@ var YrvComponent = /*#__PURE__*/function () {
         onDomChange = componentParam.onDomChange,
         onMount = componentParam.onMount,
         onUnMount = componentParam.onUnMount,
-        onInit = componentParam.onInit;
+        onInit = componentParam.onInit,
+        onRender = componentParam.onRender;
     this.isMainRvComponent = ismain;
     this.template = template.trim();
     this.name = name;
@@ -87,6 +88,7 @@ var YrvComponent = /*#__PURE__*/function () {
     this._isUpdate = false;
     this._isRun = false;
     this._eventListener = {};
+    this._onRender = onRender;
 
     if (this.template.startsWith("<%%template%%>") && this.template.endsWith("<%%/template%%>")) {
       this.template = this.template.replace("<%%template%%>", "");
@@ -334,8 +336,16 @@ var YrvComponent = /*#__PURE__*/function () {
 
       if (!this.isParsedHtml || isforce) {
         this.parse.parseHtmlTemplate(this.template.trim());
+
+        this.parse._calcSlot();
+
         this.isParsedHtml = true;
       }
+    }
+  }, {
+    key: "_getSlotPositionMap",
+    value: function _getSlotPositionMap() {
+      return this.parse.mSlotMap;
     }
   }, {
     key: "_getDomTree",
@@ -459,7 +469,11 @@ var YrvComponent = /*#__PURE__*/function () {
     }
   }, {
     key: "_hookRender",
-    value: function _hookRender(el, props, belong, componentUniqueTag) {}
+    value: function _hookRender(el, props, belong, componentUniqueTag) {
+      if (this._onRender) {
+        this._onRender.call(this, el, props, belong, componentUniqueTag);
+      }
+    }
   }, {
     key: "_applyTruthFulData",
     value: function _applyTruthFulData() {

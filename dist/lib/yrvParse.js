@@ -29,7 +29,9 @@ var YhmParse = /*#__PURE__*/function () {
     this.context = context;
     this.componentMap = new _yrvMap["default"](this.context.componentName + "YhmParseComponentMap");
     this.mMap = new _yrvMap["default"](this.context.componentName + "HtmlDomAndComponentMap");
+    this.mSlotMap = new _yrvMap["default"](this.context.componentName + "SlotMap");
     this.mComponentContainer = [];
+    this.hasSlot = false;
     this.mPropRe = /([^=\s]+)(\s*=\s*((\"([^"]*)\")|(\'([^']*)\')|[^>\s]+))?/gm;
     this.mHandler = {
       startELement: function startELement(tagName, prop, content, that) {
@@ -104,6 +106,10 @@ var YhmParse = /*#__PURE__*/function () {
             };
           }
         } else {
+          if (tagName === "slot") {
+            that.hasSlot = true;
+          }
+
           var obj = {
             tag: tagName,
             props: prop,
@@ -277,6 +283,38 @@ var YhmParse = /*#__PURE__*/function () {
     key: "getHtmlDom",
     value: function getHtmlDom() {
       return this.mMap.get(1);
+    }
+  }, {
+    key: "_loop",
+    value: function _loop(vdom) {
+      var _this = this;
+
+      vdom.children.forEach(function (cvdom) {
+        _this._slotIndex++;
+
+        if (!_yrvUtil["default"].isString(cvdom)) {
+          if (cvdom.tag === "slot") {
+            var slotPositionName = "default";
+
+            if (cvdom.props && cvdom.props.name) {
+              slotPositionName = cvdom.props.name;
+            }
+
+            _this.mSlotMap.put(slotPositionName, _this._slotIndex);
+          }
+
+          _this._loop(cvdom);
+        }
+      });
+    }
+  }, {
+    key: "_calcSlot",
+    value: function _calcSlot() {
+      this._slotIndex = 0;
+
+      if (this.hasSlot) {
+        this._loop(this.mMap.get(1));
+      }
     }
   }]);
 

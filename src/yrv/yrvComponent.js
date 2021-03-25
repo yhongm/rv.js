@@ -25,7 +25,8 @@ class YrvComponent {
             onDomChange,
             onMount,
             onUnMount,
-            onInit
+            onInit,
+            onRender
         } = componentParam
         this.isMainRvComponent = ismain
         this.template = template.trim()
@@ -58,6 +59,7 @@ class YrvComponent {
         this._isUpdate = false
         this._isRun = false
         this._eventListener = {}
+        this._onRender=onRender
         if(this.template.startsWith("<%%template%%>")&&this.template.endsWith("<%%/template%%>")){
             this.template=this.template.replace("<%%template%%>","")
             this.template=this.template.replace("<%%/template%%>","")
@@ -127,6 +129,7 @@ class YrvComponent {
         this._eventListener[this.name + "_routeChange"] = (value) => {
             this.context.route.go(value)
             this._parseHtmlTemplate(true)
+
             this.context.route.getNeedRenderComponent()._rv_ev_run()
             this._updatedom()
         }
@@ -186,15 +189,12 @@ class YrvComponent {
                     callback(value)
                 }
             }
-           
         }else{
-           
             this._eventListener[event] = (value) => {
                 callback(value)
             }
         }
     }
-
     _defineMethod(thatThis) {
         if (!thatThis) {
             thatThis = this
@@ -227,7 +227,6 @@ class YrvComponent {
     }
     getParentContext() {
         return this._parentContext
-
     }
     _clearMethods() {
         for (let method of Object.keys(this.methods)) {
@@ -237,8 +236,12 @@ class YrvComponent {
     _parseHtmlTemplate(isforce = false) {
         if (!this.isParsedHtml || isforce) {
             this.parse.parseHtmlTemplate(this.template.trim())
+            this.parse._calcSlot()
             this.isParsedHtml = true
         }
+    }
+    _getSlotPositionMap(){
+        return this.parse.mSlotMap
     }
     _getDomTree() {
         this.parse.setComponentUniqueKey(this.componentkey+"_"+this.getComponentUniqueTag())
@@ -297,10 +300,9 @@ class YrvComponent {
     _diff(oldYrvElement, newYrvElement) {
         this.yrvDiff.setComponentContainer(this._getComponentContainer())
         this.yrvDiff.goDiff(oldYrvElement, newYrvElement)
-       
         return this.yrvDiff.patches
     }
-    _patch(node, patches) { 
+    _patch(node, patches) {
         this.yrvPatch.setComponentContainer(this._getComponentContainer())
         this.yrvPatch.apply(node, patches)
     }
@@ -328,7 +330,9 @@ class YrvComponent {
         }
     }
     _hookRender(el, props, belong, componentUniqueTag) {
-
+       if(this._onRender){
+            this._onRender.call(this,el, props, belong, componentUniqueTag)
+       }
     }
     _applyTruthFulData() {
         this._rdom = this.rvDomUtil.applyTruthfulData(this._getDomTree()).rdom
@@ -344,17 +348,14 @@ class YrvComponent {
         this.parse.componentMap.forEachKV((name, componentQueue) => {
             componentQueue.forEach((component) => {
                 if (!component._isRun) {
-
                     component._rv_ev_run()
                 }
             })
         })
-
         this._getComponentContainer().forEach((componentInfo) => {
             if (!componentInfo.component._isRun) {
                 componentInfo.component._rv_ev_run()
             }
-
         })
         if (this.context.route !== undefined) {
             this.context.route.getRoutes().forEach(routeConfig => {
@@ -364,7 +365,6 @@ class YrvComponent {
                 }
             })
         }
-
     }
     _rv_ev_init_props() {
         if (this.componentInit && !this._initInfo) {

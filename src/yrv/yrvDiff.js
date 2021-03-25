@@ -86,7 +86,6 @@ class YrvDiff {
         diffList.goDiff()
         let diffs = diffList.getResult()
         newChildren = diffs.child
-
         if (diffs.moves.length) {
             let reorderPatch = {
                 type: YrvUtil.CHILD_RE_ORDER,
@@ -102,11 +101,12 @@ class YrvDiff {
                 currentNodeIndex + leftNode.count + 1 :
                 currentNodeIndex + 1
             if(!YrvUtil.isString(child)){
-                if(child.isSlot()){
-                    currentNodeIndex+=(newYrvElement.count-(newChild.count-2))
+                if(child.isSlot()&&oldYrvElement.isComponent){
+                    
+                    let slotIndex=this.componentContainer.filter((component) => { return component.componentUniqueTag === oldYrvElement.uniqueTag })[0].component._getSlotPositionMap().get(child.props.slot)
+                    currentNodeIndex+=(slotIndex-1)
                  }
-            }    
-           
+            }     
             this.dfsWalk(child, newChild, currentNodeIndex)
             leftNode = child
         })

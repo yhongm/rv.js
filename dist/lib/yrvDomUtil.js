@@ -85,24 +85,26 @@ var YrvDomUtil = /*#__PURE__*/function () {
             } else {
               throw new Error("domData key error");
             }
-          } else {
-            var forExpressRight = dom.props['for'].split(" _in_ ")[1];
-
-            if (_yrvUtil["default"].isDotOperatorExpression(forExpressRight)) {
-              var forERKey = forExpressRight.split(".")[0];
-              var forERValue = forExpressRight.split(".")[1];
-
-              if (forERKey in this.context.componentData) {
-                dataArray = this.context.componentData[forERKey][forERValue];
-              } else {
-                throw new Error("the" + this.context.componentName + ",component, " + forERKey + "error." + "the for directive use error,the Dot Operator Express only in global context data");
-              }
-            } else {
-              dataArray = this.context.componentData[forExpressRight];
-            }
-
-            dataSingle = dom.props['for'].split(" _in_ ")[0];
           }
+
+          var forExpressRight = dom.props['for'].split(" _in_ ")[1];
+
+          if (_yrvUtil["default"].isDotOperatorExpression(forExpressRight)) {
+            var forERKey = forExpressRight.split(".")[0];
+            var forERValue = forExpressRight.split(".")[1];
+
+            if (forERKey in this.context.componentData) {
+              dataArray = this.context.componentData[forERKey][forERValue];
+            } else if (forERKey === dom.childDomDatakey) {
+              dataArray = dom.data[forERValue];
+            } else {
+              throw new Error("the" + this.context.componentName + ",component, " + forERKey + "error." + "the for directive use error,the Dot Operator Express only in global context data");
+            }
+          } else {
+            dataArray = this.context.componentData[forExpressRight];
+          }
+
+          dataSingle = dom.props['for'].split(" _in_ ")[0];
         } else {
           throw new Error("the for directive use error");
         }

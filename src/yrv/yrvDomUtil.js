@@ -47,21 +47,23 @@ class YrvDomUtil {
                     } else {
                         throw new Error("domData key error")
                     }
-                } else {
-                    let forExpressRight = dom.props['for'].split(" _in_ ")[1]
-                    if (YrvUtil.isDotOperatorExpression(forExpressRight)) {
-                        let forERKey = forExpressRight.split(".")[0]
-                        let forERValue = forExpressRight.split(".")[1]
-                        if (forERKey in this.context.componentData) {
-                            dataArray = this.context.componentData[forERKey][forERValue]
-                        } else {
-                            throw new Error("the"+this.context.componentName+",component, "+forERKey+"error."+"the for directive use error,the Dot Operator Express only in global context data")
-                        }
-                    } else {
-                        dataArray = this.context.componentData[forExpressRight]
-                    }
-                    dataSingle = dom.props['for'].split(" _in_ ")[0]
                 }
+                let forExpressRight = dom.props['for'].split(" _in_ ")[1]
+                if (YrvUtil.isDotOperatorExpression(forExpressRight)) {
+                    let forERKey = forExpressRight.split(".")[0]
+                    let forERValue = forExpressRight.split(".")[1]
+                    if (forERKey in this.context.componentData) {
+                        dataArray = this.context.componentData[forERKey][forERValue]
+                    } else if(forERKey===dom.childDomDatakey){
+                        dataArray=dom.data[forERValue]
+                    }else {
+                        throw new Error("the" + this.context.componentName + ",component, " + forERKey + "error." + "the for directive use error,the Dot Operator Express only in global context data")
+                    }
+                } else {
+                    dataArray = this.context.componentData[forExpressRight]
+                }
+                dataSingle = dom.props['for'].split(" _in_ ")[0]
+
             } else {
                 throw new Error("the for directive use error")
             }
@@ -69,7 +71,6 @@ class YrvDomUtil {
             let objs = []
 
             if (dataArray) {
-
                 dataArray.forEach((data) => {
                     let obj = this.vdom2rdom(dom, data, dataSingle)
                     if (obj.props.hasOwnProperty("for")) {
@@ -84,7 +85,7 @@ class YrvDomUtil {
                     objs.push(obj)
                 })
             } else {
-                throw new Error("the "+this.context.componentName+",component, "+"the for directive only use in Array data")
+                throw new Error("the " + this.context.componentName + ",component, " + "the for directive only use in Array data")
             }
             let vDomObj = {
                 isFor: true,

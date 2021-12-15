@@ -8,13 +8,14 @@ class YrvRoute {
     constructor(name,context) {
         this.needRenderpath = ""
         this.routeName=name
-        this.context=context
+        // this.context=context //bug ,not used the value
+       
         this.routers = new YrvMap("RvRouteMap")
     }
     register(routerConfigs) {
         routerConfigs.forEach(routerConfig => {
             routerConfig.component=routerConfig.component["this"]._cloneNew("")
-            routerConfig.component._setParentContext(this.context)
+            // routerConfig.component._setParentContext(this.context)  //no require step,the  set parent component context value to  current  compoent in parse  process
             this.routers.put(routerConfig.path, routerConfig)
         })
 

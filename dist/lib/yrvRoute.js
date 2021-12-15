@@ -25,8 +25,8 @@ var YrvRoute = /*#__PURE__*/function () {
     _classCallCheck(this, YrvRoute);
 
     this.needRenderpath = "";
-    this.routeName = name;
-    this.context = context;
+    this.routeName = name; // this.context=context //bug ,not used the value
+
     this.routers = new _yrvMap["default"]("RvRouteMap");
   }
 
@@ -36,9 +36,7 @@ var YrvRoute = /*#__PURE__*/function () {
       var _this = this;
 
       routerConfigs.forEach(function (routerConfig) {
-        routerConfig.component = routerConfig.component["this"]._cloneNew("");
-
-        routerConfig.component._setParentContext(_this.context);
+        routerConfig.component = routerConfig.component["this"]._cloneNew(""); // routerConfig.component._setParentContext(this.context)  //no require step,the  set parent component context value to  current  compoent in parse  process
 
         _this.routers.put(routerConfig.path, routerConfig);
       });

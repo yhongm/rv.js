@@ -37,17 +37,7 @@ class YrvDomUtil {
             let dataSingle
 
             if (YrvUtil.isForIn(dom.props['for'])) {
-                if ("childDomDatakey" in dom) {
-                    dataArray = dom.data
-                    dataSingle = dom.childDomDatakey
-                } else if ("domDataKey" in dom) {
-                    if (dom.props['for'].split(" _in_ ")[1] === dom.domDataKey) {
-                        dataArray = dom.data
-                        dataSingle = dom.props['for'].split(" _in_ ")[0]
-                    } else {
-                        throw new Error("domData key error")
-                    }
-                }
+                
                 let forExpressRight = dom.props['for'].split(" _in_ ")[1]
                 if (YrvUtil.isDotOperatorExpression(forExpressRight)) {
                     let forERKey = forExpressRight.split(".")[0]
@@ -60,9 +50,23 @@ class YrvDomUtil {
                         throw new Error("the" + this.context.componentName + ",component, " + forERKey + "error." + "the for directive use error,the Dot Operator Express only in global context data")
                     }
                 } else {
-                    dataArray = this.context.componentData[forExpressRight]
+                    if ("childDomDatakey" in dom) {
+                        dataArray = dom.data
+                        dataSingle = dom.childDomDatakey
+                    } else if ("domDataKey" in dom) {
+                        if (dom.props['for'].split(" _in_ ")[1] === dom.domDataKey) {
+                            dataArray = dom.data
+                            
+                            dataSingle = dom.props['for'].split(" _in_ ")[0]
+                        } else {
+                            throw new Error("domData key error")
+                        }
+                    }else{
+                        dataArray = this.context.componentData[forExpressRight]
+                        dataSingle = dom.props['for'].split(" _in_ ")[0]
+                    }
+                  
                 }
-                dataSingle = dom.props['for'].split(" _in_ ")[0]
 
             } else {
                 throw new Error("the for directive use error")

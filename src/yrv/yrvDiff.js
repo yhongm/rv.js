@@ -100,7 +100,7 @@ class YrvDiff {
             currentNodeIndex = (leftNode && leftNode.count) ?
                 currentNodeIndex + leftNode.count + 1 :
                 currentNodeIndex + 1
-            if(!YrvUtil.isString(child)){
+            if(YrvUtil.isYrvElement(child)){
                 if(child.isSlot()&&oldYrvElement.isComponent){
                     
                     let slotIndex=this.componentContainer.filter((component) => { return component.componentUniqueTag === oldYrvElement.uniqueTag })[0].component._getSlotPositionMap().get(child.props.slot)

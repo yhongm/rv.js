@@ -9,6 +9,8 @@ var _yrvObservable = _interopRequireDefault(require("./yrvObservable"));
 
 var _yrvMap = _interopRequireDefault(require("./yrvMap"));
 
+var _yrvElement = _interopRequireDefault(require("./yrvElement"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -30,6 +32,11 @@ var YrvUtil = /*#__PURE__*/function () {
     key: "isString",
     value: function isString(some) {
       return typeof some === 'string';
+    }
+  }, {
+    key: "isYrvElement",
+    value: function isYrvElement(some) {
+      return some instanceof _yrvElement["default"];
     }
   }, {
     key: "toArray",

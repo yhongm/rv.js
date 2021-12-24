@@ -140,7 +140,7 @@ var YrvDiff = /*#__PURE__*/function () {
         var newChild = newChildren[i];
         currentNodeIndex = leftNode && leftNode.count ? currentNodeIndex + leftNode.count + 1 : currentNodeIndex + 1;
 
-        if (!_yrvUtil["default"].isString(child)) {
+        if (_yrvUtil["default"].isYrvElement(child)) {
           if (child.isSlot() && oldYrvElement.isComponent) {
             var slotIndex = _this.componentContainer.filter(function (component) {
               return component.componentUniqueTag === oldYrvElement.uniqueTag;

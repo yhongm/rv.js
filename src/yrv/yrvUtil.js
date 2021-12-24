@@ -1,5 +1,6 @@
 import YrvObservable from "./yrvObservable"
 import YrvMap from "./yrvMap"
+import YrvElement from "./yrvElement"
 /**
  * @author
  * the YruUtil is a common function set
@@ -8,6 +9,9 @@ class YrvUtil {
 
     static isString(some) {
         return typeof some === 'string'
+    }
+    static isYrvElement(some) {
+        return some instanceof YrvElement
     }
     static toArray(list) {
         if (!list) {

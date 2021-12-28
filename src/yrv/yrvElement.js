@@ -145,14 +145,15 @@ class YrvElement {
                     var evantName = propName.slice(3)
                     if (evantName == "watch") {
                         //this prop use to watch element value change in real time and auto to modify data
-                        if (el instanceof HTMLInputElement) {
+                        if (el instanceof HTMLInputElement ||el instanceof HTMLTextAreaElement) {
+                            
                             YrvUtil.addElementEventListener(el, "input", (e) => {
                                 if (this.eventCallback) {
                                     this.eventCallback(true, evantName, props[propName], el.value)  //first param is isRvEvent 
                                 }
                             })
                         } else {
-                            console.log("RV warning:the rv-watch only use in input label")
+                            throw new Error("RV warning:the rv-watch only use in input and textarea element")
                         }
 
                     } else {

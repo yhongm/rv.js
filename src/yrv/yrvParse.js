@@ -37,6 +37,9 @@ class YhmParse {
               component = that.componentMap.get(tagName)[0]
             }
           }
+          if(!component){
+            throw new Error(`${that.context.componentName} parse template error ,the ${tagName} component (key:${prop.key} )is not found,please check the component tagName and component key in ${that.context.componentName}.use(${tagName},'${prop.key}')`)
+          }
           component._setParentContext(that.context)
           component._handleComponentPropEvent(prop)
           component._parseHtmlTemplate()

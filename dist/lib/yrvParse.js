@@ -57,6 +57,10 @@ var YhmParse = /*#__PURE__*/function () {
             }
           }
 
+          if (!component) {
+            throw new Error("".concat(that.context.componentName, " parse template error ,the ").concat(tagName, " component (key:").concat(prop.key, " )is not found,please check the component tagName and component key in ").concat(that.context.componentName, ".use(").concat(tagName, ",'").concat(prop.key, "')"));
+          }
+
           component._setParentContext(that.context);
 
           component._handleComponentPropEvent(prop);

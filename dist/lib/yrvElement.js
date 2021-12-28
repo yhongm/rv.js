@@ -197,7 +197,7 @@ var YrvElement = /*#__PURE__*/function () {
 
             if (evantName == "watch") {
               //this prop use to watch element value change in real time and auto to modify data
-              if (el instanceof HTMLInputElement) {
+              if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
                 _yrvUtil["default"].addElementEventListener(el, "input", function (e) {
                   if (_this4.eventCallback) {
                     _this4.eventCallback(true, evantName, props[propName], el.value); //first param is isRvEvent 
@@ -205,7 +205,7 @@ var YrvElement = /*#__PURE__*/function () {
                   }
                 });
               } else {
-                console.log("RV warning:the rv-watch only use in input label");
+                throw new Error("RV warning:the rv-watch only use in input and textarea element");
               }
             } else {
               _yrvUtil["default"].addElementEventListener(el, evantName, function (e) {

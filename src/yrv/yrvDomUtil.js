@@ -10,6 +10,11 @@ class YrvDomUtil {
         this.context = {} //this Context use to save global info 
         this.index = 0
         this.indexArrayOp = []
+        this.watchDataKeyStrings=[]
+    }
+    getNeedWatchDataKey(){
+        return  this.watchDataKeyStrings
+        
     }
     updateContext(newContext) {
         this.context = newContext
@@ -44,8 +49,10 @@ class YrvDomUtil {
                     let forERValue = forExpressRight.split(".")[1]
                     if (forERKey in this.context.componentData) {
                         dataArray = this.context.componentData[forERKey][forERValue]
+                        this.watchDataKeyStrings.push(forERKey) // add key to watch
                     } else if(forERKey===dom.childDomDatakey){
                         dataArray=dom.data[forERValue]
+                        this.watchDataKeyStrings.push(forERValue) // add key to watch
                     }else {
                         throw new Error("the" + this.context.componentName + ",component, " + forERKey + "error." + "the for directive use error,the Dot Operator Express only in global context data")
                     }
@@ -63,6 +70,7 @@ class YrvDomUtil {
                         }
                     }else{
                         dataArray = this.context.componentData[forExpressRight]
+                        this.watchDataKeyStrings.push(forExpressRight) // add key to watch
                         dataSingle = dom.props['for'].split(" _in_ ")[0]
                     }
                   
@@ -147,17 +155,20 @@ class YrvDomUtil {
                     var propValue = YrvUtil.getPlaceHolderValue(dom.props[value])
                     if (!YrvUtil.isDotOperatorExpression(propValue)) {
                         obj.props[value] = data[propValue]
+                        this.watchDataKeyStrings.push(propValue) // add key to watch
                     } else {
                         var propKey = propValue.split(".")[0]
                         var propValue = propValue.split(".")[1]
                         if (propKey in this.context.componentData) {
                             obj.props[value] = this.context.componentData[propKey][propValue]
+                            this.watchDataKeyStrings.push(propKey) // add key to watch
                         } else {
                             obj.props[value] = data[propValue]
+                            this.watchDataKeyStrings.push(propValue) // add key to watch
                         }
                     }
                 } else if (YrvUtil.isOperatorExpression(dom.props[value])) {
-                    obj.props[value] = YrvUtil.getOperatorExpression(dom.props[value], data, dataSingle, this.context)
+                    obj.props[value] = YrvUtil.getOperatorExpression(dom.props[value], data, dataSingle, this.context,this.watchDataKeyStrings)
                 } else {
                     obj.props[value] = dom.props[value]
                 }
@@ -169,17 +180,20 @@ class YrvDomUtil {
                     var childValue = YrvUtil.getPlaceHolderValue(dom.children[child])
                     if (!YrvUtil.isDotOperatorExpression(childValue)) {
                         obj.children[child] = YrvUtil.getNotUndefinedContent(data[childValue])
+                        this.watchDataKeyStrings.push(childValue) // add key to watch
                     } else {
                         var childValueKey = childValue.split(".")[0]
                         var childValueValue = childValue.split(".")[1]
                         if (childValueKey in this.context.componentData) {
                             obj.children[child] = YrvUtil.getNotUndefinedContent(this.context.componentData[childValueKey][childValueValue])
+                            this.watchDataKeyStrings.push(childValueKey) // add key to watch
                         } else {
                             obj.children[child] = YrvUtil.getNotUndefinedContent(data[childValueValue])
+                            this.watchDataKeyStrings.push(childValueValue)
                         }
                     }
                 } else if (YrvUtil.isOperatorExpression(dom.children[child])) {
-                    obj.children[child] = YrvUtil.getNotUndefinedContent(YrvUtil.getOperatorExpression(dom.children[child], data, dataSingle, this.context))
+                    obj.children[child] = YrvUtil.getNotUndefinedContent(YrvUtil.getOperatorExpression(dom.children[child], data, dataSingle, this.context,this.watchDataKeyStrings))
                 } else {
                     obj.children[child] = YrvUtil.getNotUndefinedContent(dom.children[child])
                 }
@@ -219,10 +233,14 @@ class YrvDomUtil {
             let styleKey = style.split(":")[0]
             let styleValue = style.split(":")[1]
             if (YrvUtil.isPlaceHolder(styleValue)) {
-                if (YrvUtil.getPlaceHolderValue(styleValue).indexOf(dataSingle) != -1) {
-                    newStyle =  styleKey + ":" +data[YrvUtil.getPlaceHolderValue(styleValue).split(".")[1]]
+                let styleRealValue=YrvUtil.getPlaceHolderValue(styleValue)
+                if (styleRealValue.indexOf(dataSingle) != -1) {
+                    newStyle =  styleKey + ":" +data[styleRealValue.split(".")[1]]
+                    this.watchDataKeyStrings.push(styleRealValue.split(".")[1]) // add key to watch
                 } else {
-                    newStyle = styleKey + ":" + data[YrvUtil.getPlaceHolderValue(styleValue)]
+                    newStyle = styleKey + ":" + data[styleRealValue]
+                    this.watchDataKeyStrings.push(styleRealValue) // add key to watch
+
                 }
             } else {
                 newStyle = style
@@ -231,7 +249,9 @@ class YrvDomUtil {
             let styleKey = style.split(":")[0]
             let styleValue = style.split(":")[1]
             if (YrvUtil.isPlaceHolder(styleValue)) {
-                newStyle = styleKey + ":" + data[YrvUtil.getPlaceHolderValue(styleValue)]
+                let styleRealValue=YrvUtil.getPlaceHolderValue(styleValue)
+                newStyle = styleKey + ":" + data[styleRealValue]
+                this.watchDataKeyStrings.push(styleRealValue) // add key to watch
             } else {
                 newStyle = style
             }

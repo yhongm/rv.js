@@ -49,6 +49,11 @@ var YrvElement = /*#__PURE__*/function () {
       throw new Error("".concat(tag, " ... html tag in component ").concat(this.belong, " the key is undefined "));
     }
 
+    if (!this.key && this.isComponent) {
+      //if the component  key is undefined ,the key is uniqueTag
+      this.key = this.belong + "_" + this.uniqueTag;
+    }
+
     var count = 0;
     this.isRender = false;
     this.children.forEach(function (child) {

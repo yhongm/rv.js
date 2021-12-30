@@ -30,6 +30,11 @@ class YrvElement {
         if (YrvUtil.isHtmlTag(this.tag) && !this.key) {
             throw new Error(`${tag} ... html tag in component ${this.belong} the key is undefined `)
         }
+        if(!this.key&&this.isComponent){
+            //if the component  key is undefined ,the key is uniqueTag
+            this.key=this.belong+"_"+this.uniqueTag 
+        }
+
         let count = 0;
         this.isRender=false
         this.children.forEach(child => {

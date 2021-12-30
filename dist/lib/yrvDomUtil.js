@@ -35,9 +35,15 @@ var YrvDomUtil = /*#__PURE__*/function () {
 
     this.index = 0;
     this.indexArrayOp = [];
+    this.watchDataKeyStrings = [];
   }
 
   _createClass(YrvDomUtil, [{
+    key: "getNeedWatchDataKey",
+    value: function getNeedWatchDataKey() {
+      return this.watchDataKeyStrings;
+    }
+  }, {
     key: "updateContext",
     value: function updateContext(newContext) {
       this.context = newContext;
@@ -83,8 +89,10 @@ var YrvDomUtil = /*#__PURE__*/function () {
 
             if (forERKey in this.context.componentData) {
               dataArray = this.context.componentData[forERKey][forERValue];
+              this.watchDataKeyStrings.push(forERKey); // add key to watch
             } else if (forERKey === dom.childDomDatakey) {
               dataArray = dom.data[forERValue];
+              this.watchDataKeyStrings.push(forERValue); // add key to watch
             } else {
               throw new Error("the" + this.context.componentName + ",component, " + forERKey + "error." + "the for directive use error,the Dot Operator Express only in global context data");
             }
@@ -101,6 +109,8 @@ var YrvDomUtil = /*#__PURE__*/function () {
               }
             } else {
               dataArray = this.context.componentData[forExpressRight];
+              this.watchDataKeyStrings.push(forExpressRight); // add key to watch
+
               dataSingle = dom.props['for'].split(" _in_ ")[0];
             }
           }
@@ -196,18 +206,21 @@ var YrvDomUtil = /*#__PURE__*/function () {
 
             if (!_yrvUtil["default"].isDotOperatorExpression(propValue)) {
               obj.props[value] = data[propValue];
+              this.watchDataKeyStrings.push(propValue); // add key to watch
             } else {
               var propKey = propValue.split(".")[0];
               var propValue = propValue.split(".")[1];
 
               if (propKey in this.context.componentData) {
                 obj.props[value] = this.context.componentData[propKey][propValue];
+                this.watchDataKeyStrings.push(propKey); // add key to watch
               } else {
                 obj.props[value] = data[propValue];
+                this.watchDataKeyStrings.push(propValue); // add key to watch
               }
             }
           } else if (_yrvUtil["default"].isOperatorExpression(dom.props[value])) {
-            obj.props[value] = _yrvUtil["default"].getOperatorExpression(dom.props[value], data, dataSingle, this.context);
+            obj.props[value] = _yrvUtil["default"].getOperatorExpression(dom.props[value], data, dataSingle, this.context, this.watchDataKeyStrings);
           } else {
             obj.props[value] = dom.props[value];
           }
@@ -221,18 +234,21 @@ var YrvDomUtil = /*#__PURE__*/function () {
 
             if (!_yrvUtil["default"].isDotOperatorExpression(childValue)) {
               obj.children[child] = _yrvUtil["default"].getNotUndefinedContent(data[childValue]);
+              this.watchDataKeyStrings.push(childValue); // add key to watch
             } else {
               var childValueKey = childValue.split(".")[0];
               var childValueValue = childValue.split(".")[1];
 
               if (childValueKey in this.context.componentData) {
                 obj.children[child] = _yrvUtil["default"].getNotUndefinedContent(this.context.componentData[childValueKey][childValueValue]);
+                this.watchDataKeyStrings.push(childValueKey); // add key to watch
               } else {
                 obj.children[child] = _yrvUtil["default"].getNotUndefinedContent(data[childValueValue]);
+                this.watchDataKeyStrings.push(childValueValue);
               }
             }
           } else if (_yrvUtil["default"].isOperatorExpression(dom.children[child])) {
-            obj.children[child] = _yrvUtil["default"].getNotUndefinedContent(_yrvUtil["default"].getOperatorExpression(dom.children[child], data, dataSingle, this.context));
+            obj.children[child] = _yrvUtil["default"].getNotUndefinedContent(_yrvUtil["default"].getOperatorExpression(dom.children[child], data, dataSingle, this.context, this.watchDataKeyStrings));
           } else {
             obj.children[child] = _yrvUtil["default"].getNotUndefinedContent(dom.children[child]);
           }
@@ -279,10 +295,14 @@ var YrvDomUtil = /*#__PURE__*/function () {
         var styleValue = style.split(":")[1];
 
         if (_yrvUtil["default"].isPlaceHolder(styleValue)) {
-          if (_yrvUtil["default"].getPlaceHolderValue(styleValue).indexOf(dataSingle) != -1) {
-            newStyle = styleKey + ":" + data[_yrvUtil["default"].getPlaceHolderValue(styleValue).split(".")[1]];
+          var styleRealValue = _yrvUtil["default"].getPlaceHolderValue(styleValue);
+
+          if (styleRealValue.indexOf(dataSingle) != -1) {
+            newStyle = styleKey + ":" + data[styleRealValue.split(".")[1]];
+            this.watchDataKeyStrings.push(styleRealValue.split(".")[1]); // add key to watch
           } else {
-            newStyle = styleKey + ":" + data[_yrvUtil["default"].getPlaceHolderValue(styleValue)];
+            newStyle = styleKey + ":" + data[styleRealValue];
+            this.watchDataKeyStrings.push(styleRealValue); // add key to watch
           }
         } else {
           newStyle = style;
@@ -292,7 +312,10 @@ var YrvDomUtil = /*#__PURE__*/function () {
         var _styleValue = style.split(":")[1];
 
         if (_yrvUtil["default"].isPlaceHolder(_styleValue)) {
-          newStyle = _styleKey + ":" + data[_yrvUtil["default"].getPlaceHolderValue(_styleValue)];
+          var _styleRealValue = _yrvUtil["default"].getPlaceHolderValue(_styleValue);
+
+          newStyle = _styleKey + ":" + data[_styleRealValue];
+          this.watchDataKeyStrings.push(_styleRealValue); // add key to watch
         } else {
           newStyle = style;
         }

@@ -290,7 +290,7 @@ var YrvUtil = /*#__PURE__*/function () {
     }
   }, {
     key: "getOperatorExpression",
-    value: function getOperatorExpression(content, data, dataKey, context) {
+    value: function getOperatorExpression(content, data, dataKey, context, watchDataKeyStrings) {
       if (YrvUtil.isString(content)) {
         var expression = content.slice(content.indexOf("{") + 1, content.indexOf("}"));
         var startIndex = expression.indexOf("%#");
@@ -308,15 +308,19 @@ var YrvUtil = /*#__PURE__*/function () {
 
             if (placeHolderValueKey in context.componentData) {
               placeHolderVValue = data[placeHolderValueKey][placeHolderValueValue];
+              watchDataKeyStrings.push(watchDataKeyStrings);
             } else {
               if (placeHolderValueKey === dataKey && !dataKey) {
                 placeHolderVValue = data[placeHolderValueValue];
+                watchDataKeyStrings.push(placeHolderValueValue);
               }
             }
 
             realValue = YrvUtil.isNumber(placeHolderVValue) ? placeHolderVValue : "\"".concat(placeHolderVValue, "\""); //get real value by PlaceHolder
           } else {
             realValue = data[YrvUtil.getPlaceHolderValue(placeHolder)]; //get real value by PlaceHolder 
+
+            watchDataKeyStrings.push(placeHolderValue);
           }
 
           expression = expression.replace(placeHolder, realValue);
@@ -428,7 +432,7 @@ var YrvUtil = /*#__PURE__*/function () {
     }
   }, {
     key: "observe",
-    value: function observe(obj, observeMap, callback) {
+    value: function observe(obj, observeMap, callback, watchDataKeys) {
       Object.keys(obj).forEach(function (key) {
         var internalValue = obj[key];
         var observable = new _yrvObservable["default"](); // if (internalValue instanceof Object) {
@@ -460,7 +464,11 @@ var YrvUtil = /*#__PURE__*/function () {
 
             if (changed) {
               internalValue = newVal;
-              observable.invoke();
+
+              if (watchDataKeys.indexOf(key) > -1) {
+                observable.invoke();
+              } else {//the yrv.js framework virtualdom  not used the data[key] ,so do not notify the change
+              }
             }
           }
         });
@@ -470,7 +478,9 @@ var YrvUtil = /*#__PURE__*/function () {
     key: "observeComponent",
     value: function observeComponent(component, callback) {
       if (component.data) {
-        YrvUtil.observe(component.data, component.observeMap, callback);
+        var needWatchDataKeys = component.rvDomUtil.getNeedWatchDataKey();
+        console.log(component.context.componentName + "observe:" + JSON.stringify(needWatchDataKeys));
+        YrvUtil.observe(component.data, component.observeMap, callback, needWatchDataKeys);
       }
 
       if (component.watchObj) {

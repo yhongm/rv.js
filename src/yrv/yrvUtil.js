@@ -209,7 +209,7 @@ class YrvUtil {
         }
         return false
     }
-    static getOperatorExpression(content, data, dataKey, context) {
+    static getOperatorExpression(content, data, dataKey, context,watchDataKeyStrings) {
         if (YrvUtil.isString(content)) {
 
             var expression = content.slice(content.indexOf("{") + 1, content.indexOf("}"))
@@ -227,14 +227,17 @@ class YrvUtil {
                     let placeHolderVValue = data[placeHolderValueValue]
                     if (placeHolderValueKey in context.componentData) {
                         placeHolderVValue = data[placeHolderValueKey][placeHolderValueValue]
+                        watchDataKeyStrings.push(watchDataKeyStrings)
                     } else {
                         if (placeHolderValueKey === dataKey && !dataKey) {
                             placeHolderVValue = data[placeHolderValueValue]
+                            watchDataKeyStrings.push(placeHolderValueValue)
                         }
                     }
                     realValue = YrvUtil.isNumber(placeHolderVValue) ? placeHolderVValue : `"${placeHolderVValue}"` //get real value by PlaceHolder
                 } else {
                     realValue = data[YrvUtil.getPlaceHolderValue(placeHolder)] //get real value by PlaceHolder 
+                    watchDataKeyStrings.push(placeHolderValue)
                 }
                 expression = expression.replace(placeHolder, realValue)
 
@@ -333,7 +336,7 @@ class YrvUtil {
         }
 
     }
-    static observe(obj, observeMap, callback) {
+    static observe(obj, observeMap, callback,watchDataKeys) {
         Object.keys(obj).forEach(key => {
             let internalValue = obj[key]
             let observable = new YrvObservable()
@@ -365,8 +368,12 @@ class YrvUtil {
 
                     if (changed) {
                         internalValue = newVal
-
-                        observable.invoke()
+                        if(watchDataKeys.indexOf(key)>-1){
+                            observable.invoke()
+                        }else{
+                            //the yrv.js framework virtualdom  not used the data[key] ,so do not notify the change
+                        }
+                       
                     }
                 }
             })
@@ -375,7 +382,9 @@ class YrvUtil {
     }
     static observeComponent(component, callback) {
         if (component.data) {
-            YrvUtil.observe(component.data, component.observeMap, callback)
+            let needWatchDataKeys=component.rvDomUtil.getNeedWatchDataKey()
+            console.log(component.context.componentName+"observe:"+JSON.stringify(needWatchDataKeys))
+            YrvUtil.observe(component.data, component.observeMap, callback,needWatchDataKeys)
         }
         if (component.watchObj) {
             Object.keys(component.watchObj).forEach((watchFun) => {

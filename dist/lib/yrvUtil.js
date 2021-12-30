@@ -479,7 +479,6 @@ var YrvUtil = /*#__PURE__*/function () {
     value: function observeComponent(component, callback) {
       if (component.data) {
         var needWatchDataKeys = component.rvDomUtil.getNeedWatchDataKey();
-        console.log(component.context.componentName + "observe:" + JSON.stringify(needWatchDataKeys));
         YrvUtil.observe(component.data, component.observeMap, callback, needWatchDataKeys);
       }
 

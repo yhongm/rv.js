@@ -383,7 +383,6 @@ class YrvUtil {
     static observeComponent(component, callback) {
         if (component.data) {
             let needWatchDataKeys=component.rvDomUtil.getNeedWatchDataKey()
-            console.log(component.context.componentName+"observe:"+JSON.stringify(needWatchDataKeys))
             YrvUtil.observe(component.data, component.observeMap, callback,needWatchDataKeys)
         }
         if (component.watchObj) {

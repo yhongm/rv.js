@@ -431,4 +431,5 @@ rv = new RV({
 rv.use(con); //调用rv对象的use方法注册自定义组件
 ```
 
+
 # [DEMO](https://github.com/yhongm/rvDemo)
